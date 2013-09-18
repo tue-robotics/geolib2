@@ -1,0 +1,17 @@
+<package>
+  <description brief="geolib">
+
+     geolib
+
+  </description>
+  <author>Sjoerd van den Dries</author>
+  <license>BSD</license>
+  <review status="unreviewed" notes=""/>
+  <url>http://ros.org/wiki/geolib</url>
+  <depend package="roscpp"/>
+  <depend package="tf"/>
+  <depend package="opencv2"/>
+
+</package>
+
+
