@@ -1,6 +1,6 @@
-#include "wire_volume/Ray.h"
+#include "geolib/Ray.h"
 
-namespace vwm {
+namespace geo {
 
 Ray::Ray(const Vector3 &o, const Vector3 &d)
     : origin_(o),

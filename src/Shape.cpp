@@ -1,6 +1,6 @@
-#include "wire_volume/Shape.h"
+#include "geolib/Shape.h"
 
-namespace vwm {
+namespace geo {
 
 Shape::Shape() {
 

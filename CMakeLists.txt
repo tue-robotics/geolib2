@@ -16,6 +16,10 @@ set(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/bin)
 #set the default path for built libraries to the "lib" directory
 set(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib)
 
+# to show header files in Qt Creator
+file(GLOB_RECURSE HEADER_FILES include/*.h)
+
+
 #uncomment if you have defined messages
 #rosbuild_genmsg()
 #uncomment if you have defined services
@@ -30,4 +34,4 @@ set(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib)
 #target_link_libraries(example ${PROJECT_NAME})
 
 
-rosbuild_add_library(geolib src/Box.cpp src/datatypes.cpp src/Octree.cpp src/OctreeNode.cpp src/Ray.cpp src/Shape.cpp src/Triangle.cpp)
+rosbuild_add_library(geolib src/Box.cpp src/datatypes.cpp src/Octree.cpp src/OctreeNode.cpp src/Ray.cpp src/Shape.cpp src/Triangle.cpp ${HEADER_FILES})

@@ -1,9 +1,9 @@
-#ifndef _Triangle_H_
-#define _Triangle_H_
+#ifndef GEOLIB_TRIANGLE_H_
+#define GEOLIB_TRIANGLE_H_
 
 #include "datatypes.h"
 
-namespace vwm {
+namespace geo {
 
 class Triangle {
 

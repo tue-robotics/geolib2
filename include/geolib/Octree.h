@@ -1,10 +1,10 @@
-#ifndef _Octree_H_
-#define _Octree_H_
+#ifndef GEOLIB_OCTREE_H_
+#define GEOLIB_OCTREE_H_
 
 #include "datatypes.h"
 #include "OctreeNode.h"
 
-namespace vwm {
+namespace geo {
 
 class Octree {
 

@@ -1,8 +1,8 @@
-#include "wire_volume/OctreeNode.h"
-#include "wire_volume/Octree.h"
-#include "wire_volume/Box.h"
+#include "geolib/OctreeNode.h"
+#include "geolib/Octree.h"
+#include "geolib/Box.h"
 
-namespace vwm {
+namespace geo {
 
 OctreeNode::OctreeNode(double size, Octree* tree)
     : size_(size), split_(size_ / 2), occupied_(false), tree_(tree) {

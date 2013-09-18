@@ -1,9 +1,9 @@
-#ifndef _FAST_SIMULATOR_BOX_H_
-#define _FAST_SIMULATOR_BOX_H_
+#ifndef GEOLIB_BOX_H_
+#define GEOLIB_BOX_H_
 
 #include "Shape.h"
 
-namespace vwm {
+namespace geo {
 
 class Box : public Shape {
 

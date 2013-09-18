@@ -1,10 +1,10 @@
-#ifndef _FAST_SIMULATOR_SHAPE_H_
-#define _FAST_SIMULATOR_SHAPE_H_
+#ifndef GEOLIB_SHAPE_H_
+#define GEOLIB_SHAPE_H_
 
 #include "Ray.h"
 #include "Triangle.h"
 
-namespace vwm {
+namespace geo {
 
 class Box;
 

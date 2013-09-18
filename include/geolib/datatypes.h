@@ -1,5 +1,5 @@
-#ifndef WIRE_DESK_DATATYPES_H_
-#define WIRE_DESK_DATATYPES_H_
+#ifndef GEOLIB_DATATYPES_H_
+#define GEOLIB_DATATYPES_H_
 
 #include <string>
 #include <map>
@@ -8,7 +8,7 @@
 
 #include <tf/transform_datatypes.h>
 
-namespace vwm {
+namespace geo {
 
 typedef tf::StampedTransform Transform;
 typedef tf::Vector3 Vector3;

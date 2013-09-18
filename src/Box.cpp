@@ -1,6 +1,6 @@
-#include "wire_volume/Box.h"
+#include "geolib/Box.h"
 
-namespace vwm {
+namespace geo {
 
 Box::Box(const Vector3 &min, const Vector3 &max) {
     bounds[0] = min;

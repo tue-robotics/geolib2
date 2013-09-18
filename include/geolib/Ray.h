@@ -1,9 +1,9 @@
-#ifndef _FAST_SIMULATOR_RAY_H_
-#define _FAST_SIMULATOR_RAY_H_
+#ifndef GEOLIB_RAY_H_
+#define GEOLIB_RAY_H_
 
 #include "datatypes.h"
 
-namespace vwm {
+namespace geo {
 
 class Ray {
 

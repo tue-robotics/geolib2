@@ -1,7 +1,7 @@
-#include "wire_volume/Octree.h"
-#include "wire_volume/Box.h"
+#include "geolib/Octree.h"
+#include "geolib/Box.h"
 
-namespace vwm {
+namespace geo {
 
 Octree::Octree(double size, double resolution) : offset_(-size / 2, -size / 2, -size / 2),
         max_(size / 2, size / 2, size / 2), size_(size), root_(new OctreeNode(size, this)) {

@@ -1,6 +1,6 @@
-#include "wire_volume/datatypes.h"
+#include "geolib/datatypes.h"
 
-namespace vwm {
+namespace geo {
 
 std::ostream& operator<< (std::ostream& out, const Vector3& v) {
     out << "(" << v.x() << ", " << v.y() << ", " << v.z() << ")";
