@@ -8,6 +8,25 @@
 
 using namespace geo;
 
+cv::Mat depthToRGBImage(const cv::Mat& depth_image, double max_depth) {
+    cv::Mat rgb_image(depth_image.rows, depth_image.cols, CV_8UC3, cv::Scalar(0, 0, 0));
+    for(int y = 0;  y < depth_image.rows; ++y) {
+        for(int x = 0; x < depth_image.cols; ++x) {
+            float depth = depth_image.at<float>(y, x);
+            int c = depth / max_depth * 255;
+
+            cv::Vec3b color;
+            color[0] = c;
+            color[1] = c;
+            color[2] = c;
+
+            rgb_image.at<cv::Vec3b>(y, x) = color;
+        }
+    }
+
+    return rgb_image;
+}
+
 int main(int argc, char **argv) {
 
     Octree tree(10);
@@ -126,7 +145,7 @@ int main(int argc, char **argv) {
 
         cam.render(shape, Pose3D(0, 0, 3, angle, angle / 2, angle * 2), new_image);
 
-        cv::imshow("box", new_image);
+        cv::imshow("box", depthToRGBImage(new_image, 10));
         cv::waitKey(3);
 
     }
