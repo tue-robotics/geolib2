@@ -33,8 +33,6 @@ void DepthCamera::render(const Shape& shape, const Pose3D& pose, cv::Mat& image)
                 if (image.at<float>(my, mx) == 0 || distance < image.at<float>(my, mx)) {
                     image.at<float>(my, mx) = distance;
                 }
-            } else {
-                image.at<float>(my, mx) = 0;
             }
         }
     }
