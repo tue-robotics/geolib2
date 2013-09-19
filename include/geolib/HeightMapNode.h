@@ -5,6 +5,8 @@
 #include "Ray.h"
 #include "Box.h"
 
+namespace geo {
+
 class HeightMap;
 
 class HeightMapNode {
@@ -40,5 +42,7 @@ public:
     bool occupied_;
 
 };
+
+}
 
 #endif

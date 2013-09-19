@@ -33,7 +33,19 @@ file(GLOB_RECURSE HEADER_FILES include/*.h)
 #rosbuild_add_executable(example examples/example.cpp)
 #target_link_libraries(example ${PROJECT_NAME})
 
-rosbuild_add_library(geolib src/Box.cpp src/datatypes.cpp src/Octree.cpp src/OctreeNode.cpp src/Ray.cpp src/Shape.cpp src/Triangle.cpp ${HEADER_FILES})
+rosbuild_add_library(geolib src/Box.cpp
+                             src/datatypes.cpp
+                             src/Octree.cpp
+                             src/OctreeNode.cpp
+                             src/Ray.cpp
+                             src/Shape.cpp
+                             src/Triangle.cpp
+                             src/HeightMap.cpp
+                             src/HeightMapNode.cpp
+
+                             src/sensors/DepthCamera.cpp
+                             
+                              ${HEADER_FILES})
 
 # Tests
 rosbuild_add_executable(test_octree test/test_octree.cpp)

@@ -20,8 +20,6 @@ public:
 
     virtual bool intersect(const Ray &, float t0, float t1, double& distance) const = 0;
 
-    virtual Box getBoundingBox() const = 0;
-
     const std::vector<Triangle>& getMesh() const;
 
 protected:

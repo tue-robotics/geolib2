@@ -1,6 +1,9 @@
 #include <geolib/Octree.h>
 #include <geolib/Box.h>
 
+#include <geolib/sensors/DepthCamera.h>
+#include <opencv2/highgui/highgui.hpp>
+
 #include <profiling/Timer.h>
 
 using namespace geo;
@@ -106,6 +109,17 @@ int main(int argc, char **argv) {
     }
     timer5.stop();
     std::cout << "Octree::raytrace(Ray):\t" << timer5.getElapsedTimeInMilliSec() / rays.size() << " ms" << std::endl;
+
+
+    // * * * * * * * * * * * * * * * * * * * *
+
+    cv::Mat image = cv::Mat(480, 640, CV_32FC1, 10.0);
+
+    DepthCamera cam;
+    cam.render(Box(Vector3(-0.3, -0.5, -0.5), Vector3(0.3, 0.5, 0.5)), Pose3D(0, 0, 0), image);
+
+    cv::imshow("box", image);
+    cv::waitKey();
 
     return 0;
 }

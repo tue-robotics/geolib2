@@ -5,6 +5,8 @@
 #include "HeightMapNode.h"
 #include "Box.h"
 
+namespace geo {
+
 class HeightMap : public Shape {
 
 public:
@@ -19,10 +21,6 @@ public:
 
     bool intersect(const Ray &, float t0, float t1, double& distance) const;
 
-    void getBoundingBox(tf::Vector3 &min, tf::Vector3 &max) const;
-
-    void add(double x, double y, double height);
-
     static HeightMap fromGrid(const std::vector<std::vector<double> >& grid, double resolution);
 
 protected:
@@ -36,5 +34,7 @@ protected:
                                 unsigned int mx_max, unsigned int my_max, double resolution);
 
 };
+
+}
 
 #endif

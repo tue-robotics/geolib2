@@ -1,4 +1,6 @@
-#include "fast_simulator/HeightMap.h"
+#include "geolib/HeightMap.h"
+
+namespace geo {
 
 HeightMap::HeightMap() : root_(0) {
 }
@@ -24,16 +26,6 @@ bool HeightMap::intersect(const Ray& r, float t0, float t1, double& distance) co
         return false;
     }
     return root_->intersect(r, t0, t1, distance);
-}
-
-void HeightMap::getBoundingBox(tf::Vector3 &min, tf::Vector3 &max) const {
-    if (root_) {
-        min = root_->box_.bounds[0];
-        max = root_->box_.bounds[1];
-    } else {
-        min = tf::Vector3(0, 0, 0);
-        max = tf::Vector3(0, 0, 0);
-    }
 }
 
 HeightMap HeightMap::fromGrid(const std::vector<std::vector<double> >& grid, double resolution) {
@@ -156,5 +148,7 @@ HeightMapNode* HeightMap::createQuadTree(const std::vector<std::vector<double> >
 
 //    }
 //}
+
+}
 
 

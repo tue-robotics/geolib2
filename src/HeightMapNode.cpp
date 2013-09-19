@@ -1,4 +1,6 @@
-#include "fast_simulator/HeightMapNode.h"
+#include "geolib/HeightMapNode.h"
+
+namespace geo {
 
 HeightMapNode::HeightMapNode(const Box& box) : box_(box), occupied_(false) {
     for(unsigned int i = 0; i < 4; ++i) {
@@ -42,7 +44,7 @@ bool HeightMapNode::intersect(const Ray& r, float t0, float t1, double& distance
 
     unsigned int i_child_origin = 5;
     for(unsigned int i = 0; i < 4; ++i) {
-        if (children_[i] && children_[i]->box_.intersect(r.origin)) {
+        if (children_[i] && children_[i]->box_.intersect(r.origin_)) {
             if (children_[i]->intersect(r, t0, t1, distance)) {
                 return true;
             }
@@ -79,3 +81,5 @@ bool HeightMapNode::intersect(const Box& b) const {
 
 }
 */
+
+}
