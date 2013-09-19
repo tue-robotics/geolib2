@@ -116,10 +116,17 @@ int main(int argc, char **argv) {
     cv::Mat image = cv::Mat(480, 640, CV_32FC1, 10.0);
 
     DepthCamera cam;
-    cam.render(Box(Vector3(-0.3, -0.5, -0.5), Vector3(0.3, 0.5, 0.5)), Pose3D(0, 0, 0), image);
+    Box shape(Vector3(-0.3, -0.5, -0.5), Vector3(0.3, 0.5, 0.5));
 
-    cv::imshow("box", image);
-    cv::waitKey();
+    for(double angle = 0; angle < 6.28; angle += 0.1) {
+        cam.render(shape, Pose3D(0, 0, 3, angle, angle / 2, angle * 2), image);
+
+        cv::imshow("box", image);
+        cv::waitKey(3);
+
+    }
+
+
 
     return 0;
 }
