@@ -20,25 +20,33 @@ cv::Mat depthToRGBImage(const cv::Mat& depth_image, double max_depth) {
                 color[1] = 0;
                 color[2] = 0;
             } else {
-                float rel_depth = depth / max_depth;
-                int i = rel_depth * 3;
-                float rest = rel_depth * 3 - i;
+//                float rel_depth = depth / max_depth;
+//                int i = rel_depth * 3;
+//                float rest = rel_depth * 3 - i;
 
-                //std::cout << depth << ": " << i << ", " << rest << std::endl;
+//                //std::cout << depth << ": " << i << ", " << rest << std::endl;
 
-                if (i == 0) {
-                    color[0] = 255 * (1 - rest);
-                    color[1] = 255 * rest;
-                    color[2] = 0;
-                } else if (i == 1) {
-                    color[0] = 0;
-                    color[1] = 255 * (1 - rest);
-                    color[2] = 255 * rest;
-                } else if (i == 2) {
-                    color[0] = 0;
-                    color[1] = 0;
-                    color[2] = 255;
-                }
+//                if (i == 0) {
+//                    color[0] = 255 * (1 - rest);
+//                    color[1] = 255 * rest;
+//                    color[2] = 0;
+//                } else if (i == 1) {
+//                    color[0] = 0;
+//                    color[1] = 255 * (1 - rest);
+//                    color[2] = 255 * rest;
+//                } else if (i == 2) {
+//                    color[0] = 0;
+//                    color[1] = 0;
+//                    color[2] = 255;
+//                }
+                int c = depth / max_depth * 255;
+//                if (c % 10 == 0) {
+//                    c = 0;
+//                }
+
+                color[0] = c;
+                color[1] = c;
+                color[2] = c;
             }
 
             rgb_image.at<cv::Vec3b>(y, x) = color;
