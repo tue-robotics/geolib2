@@ -164,22 +164,27 @@ int main(int argc, char **argv) {
     cv::Mat image = cv::Mat(480, 640, CV_32FC1, 0.0);
 
     DepthCamera cam;
-    //cam.render(Box(Vector3(-0.3, -0.5, -0.5), Vector3(0.3, 0.5, 0.5)), Pose3D(2, 1, 6, 1, 0, 0), image);
-
     cam.render(Box(Vector3(-2, -5, -5), Vector3(2, 5, 5)), Pose3D(-2.82, 0, 1.82, 0, 0.5, 0), image);
-
     Box shape(Vector3(-0.3, -0.5, -0.5), Vector3(0.3, 0.5, 0.5));
 
+    Timer timer6;
+    timer6.start();
+
+    N = 0;
     for(double angle = 0; angle < 6.28; angle += 0.1) {
         cv::Mat new_image;
         image.copyTo(new_image);
 
         cam.render(shape, Pose3D(0, 0, 3, angle, angle / 2, angle * 2), new_image);
 
-        cv::imshow("box", depthToRGBImage(new_image, 8));
-        cv::waitKey(3);
+        //cv::imshow("box", depthToRGBImage(new_image, 8));
+        //cv::waitKey(3);
 
+        ++N;
     }
+
+    timer6.stop();
+    std::cout << "DepthCamera::render():\t" << timer6.getElapsedTimeInMilliSec() / rays.size() << " ms" << std::endl;
 
 
 
