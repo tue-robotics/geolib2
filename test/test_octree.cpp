@@ -13,12 +13,33 @@ cv::Mat depthToRGBImage(const cv::Mat& depth_image, double max_depth) {
     for(int y = 0;  y < depth_image.rows; ++y) {
         for(int x = 0; x < depth_image.cols; ++x) {
             float depth = depth_image.at<float>(y, x);
-            int c = depth / max_depth * 255;
 
             cv::Vec3b color;
-            color[0] = c;
-            color[1] = c;
-            color[2] = c;
+            if (depth == 0) {
+                color[0] = 0;
+                color[1] = 0;
+                color[2] = 0;
+            } else {
+                float rel_depth = depth / max_depth;
+                int i = rel_depth * 3;
+                float rest = rel_depth * 3 - i;
+
+                //std::cout << depth << ": " << i << ", " << rest << std::endl;
+
+                if (i == 0) {
+                    color[0] = 255 * (1 - rest);
+                    color[1] = 255 * rest;
+                    color[2] = 0;
+                } else if (i == 1) {
+                    color[0] = 0;
+                    color[1] = 255 * (1 - rest);
+                    color[2] = 255 * rest;
+                } else if (i == 2) {
+                    color[0] = 0;
+                    color[1] = 0;
+                    color[2] = 255;
+                }
+            }
 
             rgb_image.at<cv::Vec3b>(y, x) = color;
         }
@@ -135,7 +156,9 @@ int main(int argc, char **argv) {
     cv::Mat image = cv::Mat(480, 640, CV_32FC1, 0.0);
 
     DepthCamera cam;
-    cam.render(Box(Vector3(-0.3, -0.5, -0.5), Vector3(0.3, 0.5, 0.5)), Pose3D(2, 1, 6, 1, 0, 0), image);
+    //cam.render(Box(Vector3(-0.3, -0.5, -0.5), Vector3(0.3, 0.5, 0.5)), Pose3D(2, 1, 6, 1, 0, 0), image);
+
+    cam.render(Box(Vector3(-2, -5, -5), Vector3(2, 5, 5)), Pose3D(-2.82, 0, 1.82, 0, 0.5, 0), image);
 
     Box shape(Vector3(-0.3, -0.5, -0.5), Vector3(0.3, 0.5, 0.5));
 
@@ -145,7 +168,7 @@ int main(int argc, char **argv) {
 
         cam.render(shape, Pose3D(0, 0, 3, angle, angle / 2, angle * 2), new_image);
 
-        cv::imshow("box", depthToRGBImage(new_image, 10));
+        cv::imshow("box", depthToRGBImage(new_image, 8));
         cv::waitKey(3);
 
     }
