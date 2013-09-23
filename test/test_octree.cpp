@@ -161,19 +161,19 @@ int main(int argc, char **argv) {
 
     // * * * * * * * * * * * * * * * * * * * *
 
-    cv::Mat image = cv::Mat(240, 320, CV_32FC1, 0.0);
+    cv::Mat image = cv::Mat(480, 640, CV_32FC1, 0.0);
 
     DepthCamera cam;
     //cam.render(Box(Vector3(-2, -5, -5), Vector3(2, 5, 5)), Pose3D(-2.82, 0, 1.82, 0, 0.5, 0), image);
     Box shape(Vector3(-0.3, -0.5, -0.5), Vector3(0.3, 0.5, 0.5));
 
-    bool measure_time = true;
+    std::string render_type = "raytrace";
 
     while(true) {
 
         Timer timer6;
 
-        if (measure_time) {
+        if (render_type != "") {
             timer6.start();
         }
 
@@ -182,13 +182,14 @@ int main(int argc, char **argv) {
             cv::Mat new_image;
             image.copyTo(new_image);
 
-            cam.rasterize(shape, Pose3D(-0.8, 0, 3, angle, angle / 2, angle * 2), new_image);
+            if (render_type == "raytrace" || render_type == "") {
+                cam.render(shape, Pose3D(0.8, 0, 3, angle, angle / 2, angle * 2), new_image);
+            }
+            if (render_type == "rasterize" || render_type == "") {
+                cam.rasterize(shape, Pose3D(-0.8, 0, 3, angle, angle / 2, angle * 2), new_image);
+            }
 
-            cam.render(shape, Pose3D(0.8, 0, 3, angle, angle / 2, angle * 2), new_image);
-
-            //        cam.rasterize(shape, Pose3D(0, 0, 6, angle, 0, 0), new_image);
-
-            if (!measure_time) {
+            if (render_type == "") {
                 cv::imshow("box", depthToRGBImage(new_image, 8));
                 cv::waitKey(30);
             }
@@ -196,10 +197,14 @@ int main(int argc, char **argv) {
             ++N;
         }
 
-        if (measure_time) {
+        if (render_type != "") {
             timer6.stop();
-            std::cout << "DepthCamera::render():\t" << timer6.getElapsedTimeInMilliSec() / N << " ms" << std::endl;
-            measure_time = false;
+            std::cout << "DepthCamera::" << render_type << ":\t" << timer6.getElapsedTimeInMilliSec() / N << " ms" << std::endl;
+            if (render_type == "raytrace") {
+                render_type = "rasterize";
+            } else {
+                render_type = "";
+            }
         }
 
     }
