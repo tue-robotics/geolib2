@@ -39,6 +39,8 @@ public:
 
     bool intersect(const Box& b) const;
 
+    const std::vector<Triangle>& getMesh() const;
+
 protected:
 
     double resolution_;
@@ -50,6 +52,8 @@ protected:
     double size_;
 
     OctreeNode* root_;
+
+    mutable std::vector<Triangle> mesh_;
 
 };
 

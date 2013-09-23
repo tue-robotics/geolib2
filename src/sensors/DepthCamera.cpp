@@ -97,9 +97,9 @@ bool DepthCamera::rasterize(const Shape& shape, const Pose3D& pose, cv::Mat& ima
 
 //            std::cout << "DRAW!" << std::endl;
 
-            drawTriangle(p1_2d.x, p1_2d.y, p1_3d.z(),
-                         p2_2d.x, p2_2d.y, p2_3d.z(),
-                         p3_2d.x, p3_2d.y, p3_3d.z(), image);
+            drawTriangle(p1_2d.x, p1_2d.y, -p1_3d.z(),
+                         p2_2d.x, p2_2d.y, -p2_3d.z(),
+                         p3_2d.x, p3_2d.y, -p3_3d.z(), image);
 
         }
     }
@@ -211,9 +211,13 @@ void DepthCamera::drawSpan(const Span &span, int y, cv::Mat& image) const {
     // draw each pixel in the span
     for(int x = span.X1; x < span.X2; x++) {
         if (x >= 0 && x < image.cols) {
-            float depth = std::min(image.at<float>(y, x), span.Color1 + (colordiff * factor));
+            float depth = span.Color1 + (colordiff * factor);
+            float old_depth = image.at<float>(y, x);
+            if (old_depth == 0 || old_depth > depth) {
+                image.at<float>(y, x) = depth;
+            }
+
 //            std::cout << "        Pixel: " << x << " , " << y << ": " << depth << std::endl;
-            image.at<float>(y, x) = depth;
         }
         factor += factorStep;
     }

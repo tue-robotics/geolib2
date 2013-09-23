@@ -97,4 +97,18 @@ bool Octree::intersect(const Box& b) const {
                                         std::min(b.bounds[1].z(), max_.z())) - offset_));
 }
 
+const std::vector<Triangle>& Octree::getMesh() const {
+    mesh_.clear();
+
+    std::vector<Box> cubes;
+    getCubes(cubes);
+
+    for(std::vector<Box>::iterator it = cubes.begin(); it != cubes.end(); ++it) {
+        Box& b = *it;
+        mesh_.insert(mesh_.end(), b.getMesh().begin(), b.getMesh().end());
+    }
+
+    return mesh_;
+}
+
 }

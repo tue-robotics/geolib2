@@ -56,6 +56,37 @@ cv::Mat depthToRGBImage(const cv::Mat& depth_image, double max_depth) {
     return rgb_image;
 }
 
+double render(cv::Mat& image, const Shape& shape, bool rasterize, bool show) {
+    Timer timer;
+    timer.start();
+
+    DepthCamera cam;
+
+    int N = 0;
+    for(double angle = 0; angle < 6.28; angle += 0.1) {
+        if (show) {
+            image = cv::Mat(image.rows, image.cols, CV_32FC1, 0.0);
+        }
+
+
+        Pose3D pose(0, 0, 3, -1.58, angle, 0);
+        if (rasterize) {
+            cam.rasterize(shape, pose, image);
+        } else {
+            cam.render(shape, pose, image);
+        }
+
+        if (show) {
+            cv::imshow("visualization", depthToRGBImage(image, 8));
+            cv::waitKey(3);
+        }
+
+        ++N;
+    }
+
+    return timer.getElapsedTimeInMilliSec() / N;
+}
+
 int main(int argc, char **argv) {
 
     Octree tree(10);
@@ -169,43 +200,26 @@ int main(int argc, char **argv) {
 
     std::string render_type = "raytrace";
 
+//    std::cout << "DepthCamera::raytrace(box):\t" << render(image, shape, false, false) << " ms" << std::endl;
+    std::cout << "DepthCamera::rasterize(box):\t" << render(image, shape, true, false) << " ms" << std::endl;
+    std::cout << "DepthCamera::rasterize(table):\t" << render(image, table, true, false) << " ms" << std::endl;
+
     while(true) {
+        render(image, table, true, true);
 
-        Timer timer6;
 
-        if (render_type != "") {
-            timer6.start();
-        }
 
-        N = 0;
-        for(double angle = 0; angle < 6.28; angle += 0.1) {
-            cv::Mat new_image;
-            image.copyTo(new_image);
+//        std::cout << "Min depth = " << min_depth << std::endl;
 
-            if (render_type == "raytrace" || render_type == "") {
-                cam.render(shape, Pose3D(0.8, 0, 3, angle, angle / 2, angle * 2), new_image);
-            }
-            if (render_type == "rasterize" || render_type == "") {
-                cam.rasterize(shape, Pose3D(-0.8, 0, 3, angle, angle / 2, angle * 2), new_image);
-            }
-
-            if (render_type == "") {
-                cv::imshow("box", depthToRGBImage(new_image, 8));
-                cv::waitKey(30);
-            }
-
-            ++N;
-        }
-
-        if (render_type != "") {
-            timer6.stop();
-            std::cout << "DepthCamera::" << render_type << ":\t" << timer6.getElapsedTimeInMilliSec() / N << " ms" << std::endl;
-            if (render_type == "raytrace") {
-                render_type = "rasterize";
-            } else {
-                render_type = "";
-            }
-        }
+//        if (render_type != "") {
+//            timer6.stop();
+//            std::cout << "DepthCamera::" << render_type << ":\t" << timer6.getElapsedTimeInMilliSec() / N << " ms" << std::endl;
+//            if (render_type == "raytrace") {
+//                render_type = "rasterize";
+//            } else {
+//                render_type = "";
+//            }
+//        }
 
     }
 
