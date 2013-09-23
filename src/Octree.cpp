@@ -16,6 +16,10 @@ Octree::~Octree() {
     delete root_;
 }
 
+Octree* Octree::clone() const {
+    return new Octree(*this);
+}
+
 void Octree::clear() {
     delete root_;
     root_ = new OctreeNode(size_, this);

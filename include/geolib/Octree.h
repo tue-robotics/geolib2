@@ -3,10 +3,11 @@
 
 #include "datatypes.h"
 #include "OctreeNode.h"
+#include "Shape.h"
 
 namespace geo {
 
-class Octree {
+class Octree : public Shape {
 
     friend class OctreeNode;
 
@@ -15,6 +16,8 @@ public:
     Octree(double size, double resolution = 0.1);
 
     Octree(const Octree& orig);
+
+    virtual Octree* clone() const;
 
     virtual ~Octree();
 

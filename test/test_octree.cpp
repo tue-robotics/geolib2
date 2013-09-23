@@ -161,10 +161,10 @@ int main(int argc, char **argv) {
 
     // * * * * * * * * * * * * * * * * * * * *
 
-    cv::Mat image = cv::Mat(480, 640, CV_32FC1, 0.0);
+    cv::Mat image = cv::Mat(240, 320, CV_32FC1, 0.0);
 
     DepthCamera cam;
-    cam.render(Box(Vector3(-2, -5, -5), Vector3(2, 5, 5)), Pose3D(-2.82, 0, 1.82, 0, 0.5, 0), image);
+    //cam.render(Box(Vector3(-2, -5, -5), Vector3(2, 5, 5)), Pose3D(-2.82, 0, 1.82, 0, 0.5, 0), image);
     Box shape(Vector3(-0.3, -0.5, -0.5), Vector3(0.3, 0.5, 0.5));
 
     Timer timer6;
@@ -175,16 +175,16 @@ int main(int argc, char **argv) {
         cv::Mat new_image;
         image.copyTo(new_image);
 
-        cam.render(shape, Pose3D(0, 0, 3, angle, angle / 2, angle * 2), new_image);
+        cam.rasterize(shape, Pose3D(0, 0, 6, angle, angle / 2, angle * 2), new_image);
 
-        //cv::imshow("box", depthToRGBImage(new_image, 8));
-        //cv::waitKey(3);
+        cv::imshow("box", depthToRGBImage(new_image, 8));
+        cv::waitKey(3);
 
         ++N;
     }
 
     timer6.stop();
-    std::cout << "DepthCamera::render():\t" << timer6.getElapsedTimeInMilliSec() / rays.size() << " ms" << std::endl;
+    std::cout << "DepthCamera::render():\t" << timer6.getElapsedTimeInMilliSec() / N << " ms" << std::endl;
 
 
 
