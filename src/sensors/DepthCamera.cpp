@@ -57,7 +57,9 @@ cv::Point2d DepthCamera::project3Dto2D(const Vector3 p, int width, int height) {
 
 bool DepthCamera::rasterize(const Shape& shape, const Pose3D& pose, cv::Mat& image) {
 
-    tf::Transform pose_in = Pose3D(0, 0, -5);//pose.inverse();
+    tf::Transform pose_in = pose;
+    pose_in.setOrigin(-pose.getOrigin());
+    //tf::Transform pose_in = Pose3D(0, 0, -5, 2.3, 0.3, 0.3);//pose.inverse();
 
     std::vector<Triangle> triangles = shape.getMesh();
 

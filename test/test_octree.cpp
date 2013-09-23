@@ -175,10 +175,14 @@ int main(int argc, char **argv) {
         cv::Mat new_image;
         image.copyTo(new_image);
 
-        cam.rasterize(shape, Pose3D(0, 0, 6, angle, angle / 2, angle * 2), new_image);
+        cam.rasterize(shape, Pose3D(-0.8, 0, 3, angle, angle / 2, angle * 2), new_image);
+
+        cam.render(shape, Pose3D(0.8, 0, 3, angle, angle / 2, angle * 2), new_image);
+
+//        cam.rasterize(shape, Pose3D(0, 0, 6, angle, 0, 0), new_image);
 
         cv::imshow("box", depthToRGBImage(new_image, 8));
-        cv::waitKey(3);
+        cv::waitKey(30);
 
         ++N;
     }
