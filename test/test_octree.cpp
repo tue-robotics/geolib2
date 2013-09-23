@@ -167,28 +167,42 @@ int main(int argc, char **argv) {
     //cam.render(Box(Vector3(-2, -5, -5), Vector3(2, 5, 5)), Pose3D(-2.82, 0, 1.82, 0, 0.5, 0), image);
     Box shape(Vector3(-0.3, -0.5, -0.5), Vector3(0.3, 0.5, 0.5));
 
-    Timer timer6;
-    timer6.start();
+    bool measure_time = true;
 
-    N = 0;
-    for(double angle = 0; angle < 6.28; angle += 0.1) {
-        cv::Mat new_image;
-        image.copyTo(new_image);
+    while(true) {
 
-        cam.rasterize(shape, Pose3D(-0.8, 0, 3, angle, angle / 2, angle * 2), new_image);
+        Timer timer6;
 
-        cam.render(shape, Pose3D(0.8, 0, 3, angle, angle / 2, angle * 2), new_image);
+        if (measure_time) {
+            timer6.start();
+        }
 
-//        cam.rasterize(shape, Pose3D(0, 0, 6, angle, 0, 0), new_image);
+        N = 0;
+        for(double angle = 0; angle < 6.28; angle += 0.1) {
+            cv::Mat new_image;
+            image.copyTo(new_image);
 
-        cv::imshow("box", depthToRGBImage(new_image, 8));
-        cv::waitKey(30);
+            cam.rasterize(shape, Pose3D(-0.8, 0, 3, angle, angle / 2, angle * 2), new_image);
 
-        ++N;
+            cam.render(shape, Pose3D(0.8, 0, 3, angle, angle / 2, angle * 2), new_image);
+
+            //        cam.rasterize(shape, Pose3D(0, 0, 6, angle, 0, 0), new_image);
+
+            if (!measure_time) {
+                cv::imshow("box", depthToRGBImage(new_image, 8));
+                cv::waitKey(30);
+            }
+
+            ++N;
+        }
+
+        if (measure_time) {
+            timer6.stop();
+            std::cout << "DepthCamera::render():\t" << timer6.getElapsedTimeInMilliSec() / N << " ms" << std::endl;
+            measure_time = false;
+        }
+
     }
-
-    timer6.stop();
-    std::cout << "DepthCamera::render():\t" << timer6.getElapsedTimeInMilliSec() / N << " ms" << std::endl;
 
 
 
