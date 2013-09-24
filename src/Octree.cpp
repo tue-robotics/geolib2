@@ -27,6 +27,7 @@ void Octree::clear() {
 
 void Octree::add(const Vector3& p) {
     root_->add(p - offset_);
+    mesh_.clear();
 }
 
 void Octree::getCubes(std::vector<Box>& cubes) const {
@@ -72,6 +73,8 @@ void Octree::raytrace(const Ray& r, float t0, float t1) {
 
     root_->raytrace(r.origin_ - offset_, r.direction_, t0 + dist + resolution_ * 0.1, t1, offset_);
     this->add(r.origin_ + r.direction_ * t1);
+
+    mesh_.clear();
 }
 
 bool Octree::intersect(const Vector3& p) const {
@@ -98,14 +101,14 @@ bool Octree::intersect(const Box& b) const {
 }
 
 const std::vector<Triangle>& Octree::getMesh() const {
-    mesh_.clear();
+    if (mesh_.empty()) {
+        std::vector<Box> cubes;
+        getCubes(cubes);
 
-    std::vector<Box> cubes;
-    getCubes(cubes);
-
-    for(std::vector<Box>::iterator it = cubes.begin(); it != cubes.end(); ++it) {
-        Box& b = *it;
-        mesh_.insert(mesh_.end(), b.getMesh().begin(), b.getMesh().end());
+        for(std::vector<Box>::iterator it = cubes.begin(); it != cubes.end(); ++it) {
+            Box& b = *it;
+            mesh_.insert(mesh_.end(), b.getMesh().begin(), b.getMesh().end());
+        }
     }
 
     return mesh_;

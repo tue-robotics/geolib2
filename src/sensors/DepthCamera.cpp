@@ -63,7 +63,6 @@ bool DepthCamera::rasterize(const Shape& shape, const Pose3D& pose, cv::Mat& ima
 
     std::vector<Triangle> triangles = shape.getMesh();
 
-
     for(std::vector<Triangle>::const_iterator it_tri = triangles.begin(); it_tri != triangles.end(); ++it_tri) {
         const Triangle& t = *it_tri;
 
@@ -97,11 +96,17 @@ bool DepthCamera::rasterize(const Shape& shape, const Pose3D& pose, cv::Mat& ima
 
 //            std::cout << "DRAW!" << std::endl;
 
+        if ((p1_2d.x >= 0 && p1_2d.x < image.cols && p1_2d.y >= 0 && p1_2d.y < image.rows)
+            || (p2_2d.x >= 0 && p2_2d.x < image.cols && p2_2d.y >= 0 && p2_2d.y < image.rows)
+            || (p3_2d.x >= 0 && p3_2d.x < image.cols && p3_2d.y >= 0 && p3_2d.y < image.rows)) {
+
             drawTriangle(p1_2d.x, p1_2d.y, -p1_3d.z(),
                          p2_2d.x, p2_2d.y, -p2_3d.z(),
                          p3_2d.x, p3_2d.y, -p3_3d.z(), image);
 
-//        }
+
+
+        }
     }
 
     for(int y = 0; y < image.rows; ++y) {
