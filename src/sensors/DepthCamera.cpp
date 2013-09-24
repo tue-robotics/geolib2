@@ -91,9 +91,9 @@ bool DepthCamera::rasterize(const Shape& shape, const Pose3D& pose, cv::Mat& ima
 //        std::cout << p3_2d << std::endl;
 //        std::cout << "---" << std::endl;
 
-        if (p1_2d.x >= -1000 && p1_2d.x < 6400 && p1_2d.y >= -1000 && p1_2d.y < 4800
-                && p2_2d.x >= -1000 && p2_2d.x < 6400 && p2_2d.y >= -1000 && p2_2d.y < 4800
-                && p3_2d.x >= -1000 && p3_2d.x < 6400 && p3_2d.y >= -1000 && p3_2d.y < 4800) {
+//        if (p1_2d.x >= -1000 && p1_2d.x < 6400 && p1_2d.y >= -1000 && p1_2d.y < 4800
+//                && p2_2d.x >= -1000 && p2_2d.x < 6400 && p2_2d.y >= -1000 && p2_2d.y < 4800
+//                && p3_2d.x >= -1000 && p3_2d.x < 6400 && p3_2d.y >= -1000 && p3_2d.y < 4800) {
 
 //            std::cout << "DRAW!" << std::endl;
 
@@ -101,7 +101,7 @@ bool DepthCamera::rasterize(const Shape& shape, const Pose3D& pose, cv::Mat& ima
                          p2_2d.x, p2_2d.y, -p2_3d.z(),
                          p3_2d.x, p3_2d.y, -p3_3d.z(), image);
 
-        }
+//        }
     }
 
     for(int y = 0; y < image.rows; ++y) {
@@ -177,8 +177,14 @@ void DepthCamera::drawSpansBetweenEdges(const Edge& e1, const Edge& e2, cv::Mat&
     float factor2 = 0.0f;
     float factorStep2 = 1.0f / e2ydiff;
 
+
+    if (e2.Y1 < 0) {
+        factor1 += -e2.Y1 * factorStep1;
+        factor2 += -e2.Y1 * factorStep2;
+    }
+
     // loop through the lines between the edges and draw spans
-    for(int y = e2.Y1; y < e2.Y2; y++) {
+    for(int y = std::max(0, e2.Y1); y < std::min(e2.Y2, image.rows); y++) {
         if (y >= 0 && y < image.rows) {
             //cout << y << endl;
             // create and draw span
@@ -208,8 +214,12 @@ void DepthCamera::drawSpan(const Span &span, int y, cv::Mat& image) const {
     float factor = 0.0f;
     float factorStep = 1.0f / (float)xdiff;
 
+    if (span.X1 < 0) {
+        factor += -span.X1 * factorStep;
+    }
+
     // draw each pixel in the span
-    for(int x = span.X1; x < span.X2; x++) {
+    for(int x = std::max(0, span.X1); x < std::min(span.X2, image.cols); x++) {
         if (x >= 0 && x < image.cols) {
             float depth = span.Color1 + (colordiff * factor);
             float old_depth = image.at<float>(y, x);

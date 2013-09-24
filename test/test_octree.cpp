@@ -202,10 +202,10 @@ int main(int argc, char **argv) {
 
 //    std::cout << "DepthCamera::raytrace(box):\t" << render(image, shape, false, false) << " ms" << std::endl;
     std::cout << "DepthCamera::rasterize(box):\t" << render(image, shape, true, false) << " ms" << std::endl;
-    std::cout << "DepthCamera::rasterize(table):\t" << render(image, table, true, false) << " ms" << std::endl;
+    std::cout << "DepthCamera::rasterize(table):\t" << render(image, tree, true, false) << " ms" << std::endl;
 
     while(true) {
-        render(image, table, true, true);
+        render(image, tree, true, true);
 
 
 
