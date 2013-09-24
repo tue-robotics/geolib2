@@ -54,6 +54,35 @@ HeightMap HeightMap::fromGrid(const std::vector<std::vector<double> >& grid, dou
 
     HeightMap hmap;
     hmap.root_ = createQuadTree(pow_grid, 0, 0, pow_size, pow_size, resolution);
+
+    // calculate mesh for rasterization
+    for(unsigned int mx = 0; mx < mx_max; ++mx) {
+        for(unsigned int my = 0; my < my_max; ++my) {
+            double h = grid[mx][my];
+            double x1 = resolution * mx;
+            double x2 = resolution * (mx + 1);
+            double y1 = resolution * my;
+            double y2 = resolution * (my + 1);
+
+            // add top triangles
+            hmap.mesh_.push_back(Triangle(Vector3(x1, y1, h), Vector3(x2, y1, h), Vector3(x1, y2, h)));
+            hmap.mesh_.push_back(Triangle(Vector3(x2, y1, h), Vector3(x2, y2, h), Vector3(x1, y2, h)));
+
+            // add side triangles
+            if (mx > 0 && grid[mx-1][my] != grid[mx][my]) {
+                double h2 = grid[mx-1][my];
+                hmap.mesh_.push_back(Triangle(Vector3(x1, y1, h2), Vector3(x1, y2, h), Vector3(x1, y1, h)));
+                hmap.mesh_.push_back(Triangle(Vector3(x1, y1, h2), Vector3(x1, y2, h), Vector3(x1, y2, h2)));
+            }
+
+            if (my > 0 && grid[mx][my-1] != grid[mx][my]) {
+                double h2 = grid[mx][my-1];
+                hmap.mesh_.push_back(Triangle(Vector3(x1, y1, h2), Vector3(x2, y1, h), Vector3(x1, y1, h)));
+                hmap.mesh_.push_back(Triangle(Vector3(x1, y1, h2), Vector3(x2, y1, h), Vector3(x2, y1, h2)));
+            }
+        }
+    }
+
     return hmap;
 }
 

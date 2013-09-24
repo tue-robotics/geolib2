@@ -1,5 +1,6 @@
 #include <geolib/Octree.h>
 #include <geolib/Box.h>
+#include <geolib/HeightMap.h>
 
 #include <geolib/sensors/DepthCamera.h>
 #include <opencv2/highgui/highgui.hpp>
@@ -69,7 +70,7 @@ double render(cv::Mat& image, const Shape& shape, bool rasterize, bool show) {
         }
 
 
-        Pose3D pose(0, 0, 3, -1.58, angle, 0);
+        Pose3D pose(0, 0.5, 3, -1.58, angle, 0);
         if (rasterize) {
             cam.rasterize(shape, pose, image);
         } else {
@@ -201,8 +202,27 @@ int main(int argc, char **argv) {
     std::string render_type = "raytrace";
 
 //    std::cout << "DepthCamera::raytrace(box):\t" << render(image, shape, false, false) << " ms" << std::endl;
+
+    // Create height map
+    int hmap_size = 20;
+    std::vector<std::vector<double> > map(hmap_size);
+    for(int mx = 0; mx < hmap_size; ++mx) {
+        map[mx].resize(hmap_size, 0);
+    }
+    for(int j = 0; j < hmap_size / 2; ++j) {
+        for(int i = 0; i < hmap_size - j * 2; ++i) {
+            map[i+j][j] = j * 0.1;
+            map[i+j][hmap_size-j-1] = j * 0.1;
+            map[j][i+j] = j * 0.1;
+            map[hmap_size-j-1][i+j] = j * 0.1;
+        }
+    }
+
+    HeightMap hmap = HeightMap::fromGrid(map, 0.1);
+
     std::cout << "DepthCamera::rasterize(box):\t" << render(image, shape, true, false) << " ms" << std::endl;
     std::cout << "DepthCamera::rasterize(table):\t" << render(image, table, true, false) << " ms" << std::endl;
+    std::cout << "DepthCamera::rasterize(heightmap):\t" << render(image, hmap, true, false) << " ms" << std::endl;
 
     while(true) {
         render(image, table, true, true);
