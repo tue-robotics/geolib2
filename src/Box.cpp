@@ -158,5 +158,9 @@ Vector3 Box::getSize() const {
     return tf::Vector3(bounds[1].x() - bounds[0].x(), bounds[1].y() - bounds[0].y(), bounds[1].z() - bounds[0].z());
 }
 
+Vector3 Box::getCenter() const {
+    return (bounds[0] + bounds[1]) / 2;
+}
+
 }
 

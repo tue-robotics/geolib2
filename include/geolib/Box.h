@@ -25,6 +25,8 @@ public:
 
     Vector3 getSize() const;
 
+    Vector3 getCenter() const;
+
     Vector3 bounds[2];
 
 };

@@ -225,7 +225,7 @@ int main(int argc, char **argv) {
     std::cout << "DepthCamera::rasterize(heightmap):\t" << render(image, hmap, true, false) << " ms" << std::endl;
 
     while(true) {
-        render(image, table, true, true);
+        render(image, tree, true, true);
 
 
 

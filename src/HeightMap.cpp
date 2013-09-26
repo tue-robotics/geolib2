@@ -11,6 +11,7 @@ HeightMap::HeightMap(const HeightMap& orig) {
     } else {
         root_ = 0;
     }
+    mesh_ = orig.mesh_;
 }
 
 HeightMap::~HeightMap() {

@@ -10,6 +10,12 @@
 
 namespace geo {
 
+typedef double Probability;
+
+const static double PI = 3.1415;
+
+//#define PI 3.1415
+
 typedef tf::StampedTransform Transform;
 typedef tf::Vector3 Vector3;
 typedef tf::Point Point;
@@ -91,10 +97,6 @@ public:
     }
 
 };
-
-typedef double Probability;
-
-#define PI 3.1415
 
 }
 
