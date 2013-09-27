@@ -65,9 +65,12 @@ HeightMap HeightMap::fromGrid(const std::vector<std::vector<double> >& grid, dou
             double y1 = resolution * my;
             double y2 = resolution * (my + 1);
 
-            // add top triangles
-            hmap.mesh_.push_back(Triangle(Vector3(x1, y1, h), Vector3(x2, y1, h), Vector3(x1, y2, h)));
-            hmap.mesh_.push_back(Triangle(Vector3(x2, y1, h), Vector3(x2, y2, h), Vector3(x1, y2, h)));
+
+            if (h > 0) {
+                // add top triangles
+                hmap.mesh_.push_back(Triangle(Vector3(x1, y1, h), Vector3(x2, y1, h), Vector3(x1, y2, h)));
+                hmap.mesh_.push_back(Triangle(Vector3(x2, y1, h), Vector3(x2, y2, h), Vector3(x1, y2, h)));
+            }
 
             // add side triangles
             if (mx > 0 && grid[mx-1][my] != grid[mx][my]) {
