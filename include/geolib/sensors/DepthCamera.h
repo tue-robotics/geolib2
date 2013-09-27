@@ -72,7 +72,17 @@ public:
 
     cv::Point2d project3Dto2D(const Vector3 p, int width, int height);
 
+    void setFocalLengths(double fx, double fy);
+
+    void setOpticalCenter(double cx, double cy);
+
+    void setOpticalTranslation(double tx, double ty);
+
 protected:
+
+    double fx_, fy_;
+    double cx_, cy_;
+    double tx_, ty_;
 
     void drawTriangle(float x1, float y1, float depth1,
                                       float x2, float y2, float depth2,

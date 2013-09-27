@@ -62,6 +62,9 @@ double render(cv::Mat& image, const Shape& shape, bool rasterize, bool show) {
     timer.start();
 
     DepthCamera cam;
+    cam.setFocalLengths(554.2559327880068, 554.2559327880068);
+    cam.setOpticalCenter(320.5, 240.5);
+    cam.setOpticalTranslation(0, 0);
 
     int N = 0;
     for(double angle = 0; angle < 6.28; angle += 0.1) {

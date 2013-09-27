@@ -44,9 +44,31 @@ void DepthCamera::render(const Shape& shape, const Pose3D& pose, cv::Mat& image)
     }
 }
 
+void DepthCamera::setFocalLengths(double fx, double fy) {
+    fx_ = fx;
+    fy_ = fy;
+}
+
+void DepthCamera::setOpticalCenter(double cx, double cy) {
+    cx_ = cx;
+    cy_ = cy;
+}
+
+void DepthCamera::setOpticalTranslation(double tx, double ty) {
+    tx_ = tx;
+    ty_ = ty;
+}
+
 cv::Point2d DepthCamera::project3Dto2D(const Vector3 p, int width, int height) {
     //std::cout << -p.z() << std::endl;
-    return cv::Point2d((p.x() / -p.z() + 0.5) * width, (-p.y() / -p.z() + 0.5) * height);
+    //return cv::Point2d((p.x() / -p.z() + 0.5) * width, (-p.y() / -p.z() + 0.5) * height);
+
+//    cv::Point2d uv_rect;
+//    uv_rect.x = (fx()*xyz.x + Tx()) / xyz.z + cx();
+//    uv_rect.y = (fy()*xyz.y + Ty()) / xyz.z + cy();
+//    return uv_rect;
+
+    return cv::Point2d((fx_ * p.x() + tx_) / -p.z() + cx_, (fy_ * -p.y() + ty_) / -p.z() + cy_);
 }
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
