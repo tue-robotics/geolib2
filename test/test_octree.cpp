@@ -70,7 +70,7 @@ double render(cv::Mat& image, const Shape& shape, bool rasterize, bool show) {
         }
 
 
-        Pose3D pose(0, 0.5, 3, -1.58, angle, 0);
+        Pose3D pose(0, -0.5, -3, 0, 0, angle);
         if (rasterize) {
             cam.rasterize(shape, pose, image);
         } else {
@@ -79,7 +79,7 @@ double render(cv::Mat& image, const Shape& shape, bool rasterize, bool show) {
 
         if (show) {
             cv::imshow("visualization", depthToRGBImage(image, 8));
-            cv::waitKey(3);
+            cv::waitKey(30);
         }
 
         ++N;
@@ -123,8 +123,10 @@ int main(int argc, char **argv) {
 
     for(int mx = -1; mx <= 1; mx += 2) {
         for(int my = -1; my <= 1; my += 2) {
-            for(double z = 0.05; z < 0.75; z += res) {
-                table.add(Vector3(0.7 * mx, 0.25 * my, z));
+            if (mx != 1 || my != 1) {
+                for(double z = 0.05; z < 0.75; z += res) {
+                    table.add(Vector3(0.7 * mx, 0.25 * my, z));
+                }
             }
         }
     }
@@ -191,6 +193,13 @@ int main(int argc, char **argv) {
     std::cout << "Octree::raytrace(Ray):\t" << timer5.getElapsedTimeInMilliSec() / rays.size() << " ms" << std::endl;
 
 
+    Octree axis(2);
+    double res2 = table.setResolution(0.1);
+    for(double v = 0; v < 1; v += res2) { axis.add(Vector3(v, 0, 0)); }
+    for(double v = 0; v < 1; v += res2 * 2) { axis.add(Vector3(0, v, 0)); }
+    for(double v = 0; v < 1; v += res2 * 4) { axis.add(Vector3(0, 0, v)); }
+
+
     // * * * * * * * * * * * * * * * * * * * *
 
     cv::Mat image = cv::Mat(480, 640, CV_32FC1, 0.0);
@@ -223,9 +232,10 @@ int main(int argc, char **argv) {
     std::cout << "DepthCamera::rasterize(box):\t" << render(image, shape, true, false) << " ms" << std::endl;
     std::cout << "DepthCamera::rasterize(table):\t" << render(image, table, true, false) << " ms" << std::endl;
     std::cout << "DepthCamera::rasterize(heightmap):\t" << render(image, hmap, true, false) << " ms" << std::endl;
+    //std::cout << "DepthCamera::rasterize(abstract_shape):\t" << render(image, tree, true, false) << " ms" << std::endl;
 
     while(true) {
-        render(image, tree, true, true);
+        render(image, axis, true, true);
 
 
 

@@ -45,7 +45,8 @@ void DepthCamera::render(const Shape& shape, const Pose3D& pose, cv::Mat& image)
 }
 
 cv::Point2d DepthCamera::project3Dto2D(const Vector3 p, int width, int height) {
-    return cv::Point2d((p.x() / p.z() + 0.5) * width, (p.y() / p.z() + 0.5) * height);
+    //std::cout << -p.z() << std::endl;
+    return cv::Point2d((p.x() / -p.z() + 0.5) * width, (-p.y() / -p.z() + 0.5) * height);
 }
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -58,7 +59,7 @@ cv::Point2d DepthCamera::project3Dto2D(const Vector3 p, int width, int height) {
 bool DepthCamera::rasterize(const Shape& shape, const Pose3D& pose, cv::Mat& image) {
 
     tf::Transform pose_in = pose;
-    pose_in.setOrigin(-pose.getOrigin());
+    //pose_in.setOrigin(-pose.getOrigin());
     //tf::Transform pose_in = Pose3D(0, 0, -5, 2.3, 0.3, 0.3);//pose.inverse();
 
     std::vector<Triangle> triangles = shape.getMesh();
