@@ -147,11 +147,15 @@ void DepthCamera::drawTriangle(float x1, float y1, float depth1,
                                   float x2, float y2, float depth2,
                                   float x3, float y3, float depth3, cv::Mat& image) const {
 
+    float depth1_inv = 1 / depth1;
+    float depth2_inv = 1 / depth2;
+    float depth3_inv = 1 / depth3;
+
     // create edges for the triangle
     Edge edges[3] = {
-        Edge((int)x1, (int)y1, depth1, (int)x2, (int)y2, depth2),
-        Edge((int)x2, (int)y2, depth2, (int)x3, (int)y3, depth3),
-        Edge((int)x3, (int)y3, depth3, (int)x1, (int)y1, depth1)
+        Edge((int)x1, (int)y1, depth1_inv, (int)x2, (int)y2, depth2_inv),
+        Edge((int)x2, (int)y2, depth2_inv, (int)x3, (int)y3, depth3_inv),
+        Edge((int)x3, (int)y3, depth3_inv, (int)x1, (int)y1, depth1_inv)
     };
 
     int maxLength = 0;
@@ -249,7 +253,7 @@ void DepthCamera::drawSpan(const Span &span, int y, cv::Mat& image) const {
     // draw each pixel in the span
     for(int x = std::max(0, span.X1); x < std::min(span.X2, image.cols); x++) {
         if (x >= 0 && x < image.cols) {
-            float depth = span.Color1 + (colordiff * factor);
+            float depth = 1 / (span.Color1 + (colordiff * factor));
             float old_depth = image.at<float>(y, x);
             if (old_depth == 0 || old_depth > depth) {
                 image.at<float>(y, x) = depth;
