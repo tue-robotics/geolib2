@@ -59,7 +59,7 @@ void DepthCamera::setOpticalTranslation(double tx, double ty) {
     ty_ = ty;
 }
 
-cv::Point2d DepthCamera::project3Dto2D(const Vector3 p, int width, int height) {
+cv::Point2d DepthCamera::project3Dto2D(const Vector3 p, int width, int height) const {
     //std::cout << -p.z() << std::endl;
     //return cv::Point2d((p.x() / -p.z() + 0.5) * width, (-p.y() / -p.z() + 0.5) * height);
 
@@ -77,8 +77,12 @@ cv::Point2d DepthCamera::project3Dto2D(const Vector3 p, int width, int height) {
 //
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 
+bool DepthCamera::rasterize(const Shape& shape, const Pose3D& cam_pose, const Pose3D& obj_pose, cv::Mat& image) const {
+    tf::Transform t = cam_pose.inverse() * obj_pose;
+    return rasterize(shape, geo::Pose3D(t.getOrigin(), t.getRotation()), image);
+}
 
-bool DepthCamera::rasterize(const Shape& shape, const Pose3D& pose, cv::Mat& image) {
+bool DepthCamera::rasterize(const Shape& shape, const Pose3D& pose, cv::Mat& image) const {
 
     tf::Transform pose_in = pose;
     //pose_in.setOrigin(-pose.getOrigin());

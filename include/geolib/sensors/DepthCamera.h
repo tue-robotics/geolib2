@@ -68,9 +68,11 @@ public:
 
     void render(const Shape& shape, const Pose3D& pose, cv::Mat& image);   
 
-    bool rasterize(const Shape& shape, const Pose3D& pose, cv::Mat& image);
+    bool rasterize(const Shape& shape, const Pose3D& pose, cv::Mat& image) const;
 
-    cv::Point2d project3Dto2D(const Vector3 p, int width, int height);
+    bool rasterize(const Shape& shape, const Pose3D& cam_pose, const Pose3D& obj_pose, cv::Mat& image) const;
+
+    cv::Point2d project3Dto2D(const Vector3 p, int width, int height) const;
 
     void setFocalLengths(double fx, double fy);
 
