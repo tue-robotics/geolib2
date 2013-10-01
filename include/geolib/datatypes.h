@@ -10,9 +10,9 @@
 
 namespace geo {
 
-typedef double Probability;
+//typedef double Probability;
 
-const static double PI = 3.1415;
+//const static double PI = 3.1415;
 
 //#define PI 3.1415
 

@@ -1,5 +1,5 @@
-#ifndef WIRE_DESK_DEPTHCAMERA_H_
-#define WIRE_DESK_DEPTHCAMERA_H_
+#ifndef GEOLIB_DEPTHCAMERA_H_
+#define GEOLIB_DEPTHCAMERA_H_
 
 #include <opencv2/core/core.hpp>
 
