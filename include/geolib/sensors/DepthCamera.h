@@ -58,6 +58,13 @@ public:
 
 };
 
+struct RasterizeResult {
+    int min_x;
+    int min_y;
+    int max_x;
+    int max_y;
+};
+
 class DepthCamera {
 
 public:
@@ -68,9 +75,9 @@ public:
 
     void render(const Shape& shape, const Pose3D& pose, cv::Mat& image);   
 
-    bool rasterize(const Shape& shape, const Pose3D& pose, cv::Mat& image) const;
+    RasterizeResult rasterize(const Shape& shape, const Pose3D& pose, cv::Mat& image) const;
 
-    bool rasterize(const Shape& shape, const Pose3D& cam_pose, const Pose3D& obj_pose, cv::Mat& image) const;
+    RasterizeResult rasterize(const Shape& shape, const Pose3D& cam_pose, const Pose3D& obj_pose, cv::Mat& image) const;
 
     cv::Point2d project3Dto2D(const Vector3 p, int width, int height) const;
 

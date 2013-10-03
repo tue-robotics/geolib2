@@ -77,12 +77,18 @@ cv::Point2d DepthCamera::project3Dto2D(const Vector3 p, int width, int height) c
 //
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 
-bool DepthCamera::rasterize(const Shape& shape, const Pose3D& cam_pose, const Pose3D& obj_pose, cv::Mat& image) const {
+RasterizeResult DepthCamera::rasterize(const Shape& shape, const Pose3D& cam_pose, const Pose3D& obj_pose, cv::Mat& image) const {
     tf::Transform t = cam_pose.inverse() * obj_pose;
     return rasterize(shape, geo::Pose3D(t.getOrigin(), t.getRotation()), image);
 }
 
-bool DepthCamera::rasterize(const Shape& shape, const Pose3D& pose, cv::Mat& image) const {
+RasterizeResult DepthCamera::rasterize(const Shape& shape, const Pose3D& pose, cv::Mat& image) const {
+
+    RasterizeResult res;
+    res.min_x = image.cols;
+    res.min_y = image.rows;
+    res.max_x = 0;
+    res.max_y = 0;
 
     tf::Transform pose_in = pose;
     //pose_in.setOrigin(-pose.getOrigin());
@@ -127,6 +133,11 @@ bool DepthCamera::rasterize(const Shape& shape, const Pose3D& pose, cv::Mat& ima
             || (p2_2d.x >= 0 && p2_2d.x < image.cols && p2_2d.y >= 0 && p2_2d.y < image.rows)
             || (p3_2d.x >= 0 && p3_2d.x < image.cols && p3_2d.y >= 0 && p3_2d.y < image.rows)) {
 
+            res.min_x = std::max(0, std::min<int>(res.min_x, std::min<int>(p1_2d.x, std::min<int>(p2_2d.x, p3_2d.x))));
+            res.min_y = std::max(0, std::min<int>(res.min_y, std::min<int>(p1_2d.y, std::min<int>(p2_2d.y, p3_2d.y))));
+            res.max_x = std::min(image.cols - 1, std::max<int>(res.max_x, std::max<int>(p1_2d.x, std::max<int>(p2_2d.x, p3_2d.x))));
+            res.max_y = std::min(image.cols - 1, std::max<int>(res.max_y, std::max<int>(p1_2d.y, std::max<int>(p2_2d.y, p3_2d.y))));
+
             drawTriangle(p1_2d.x, p1_2d.y, -p1_3d.z(),
                          p2_2d.x, p2_2d.y, -p2_3d.z(),
                          p3_2d.x, p3_2d.y, -p3_3d.z(), image);
@@ -136,6 +147,7 @@ bool DepthCamera::rasterize(const Shape& shape, const Pose3D& pose, cv::Mat& ima
         }
     }
 
+    /*
     for(int y = 0; y < image.rows; ++y) {
         for(int x = 0; x < image.cols; ++x) {
             if (image.at<float>(y, x) > 9) {
@@ -143,8 +155,9 @@ bool DepthCamera::rasterize(const Shape& shape, const Pose3D& pose, cv::Mat& ima
             }
         }
     }
+    */
 
-    return true;
+    return res;
 }
 
 void DepthCamera::drawTriangle(float x1, float y1, float depth1,
