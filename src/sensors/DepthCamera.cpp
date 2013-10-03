@@ -136,7 +136,7 @@ RasterizeResult DepthCamera::rasterize(const Shape& shape, const Pose3D& pose, c
             res.min_x = std::max(0, std::min<int>(res.min_x, std::min<int>(p1_2d.x, std::min<int>(p2_2d.x, p3_2d.x))));
             res.min_y = std::max(0, std::min<int>(res.min_y, std::min<int>(p1_2d.y, std::min<int>(p2_2d.y, p3_2d.y))));
             res.max_x = std::min(image.cols - 1, std::max<int>(res.max_x, std::max<int>(p1_2d.x, std::max<int>(p2_2d.x, p3_2d.x))));
-            res.max_y = std::min(image.cols - 1, std::max<int>(res.max_y, std::max<int>(p1_2d.y, std::max<int>(p2_2d.y, p3_2d.y))));
+            res.max_y = std::min(image.rows - 1, std::max<int>(res.max_y, std::max<int>(p1_2d.y, std::max<int>(p2_2d.y, p3_2d.y))));
 
             drawTriangle(p1_2d.x, p1_2d.y, -p1_3d.z(),
                          p2_2d.x, p2_2d.y, -p2_3d.z(),
