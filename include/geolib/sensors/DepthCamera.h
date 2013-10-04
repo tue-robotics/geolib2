@@ -93,6 +93,8 @@ protected:
     double cx_, cy_;
     double tx_, ty_;
 
+    void drawTriangle(const Vector3& p1, const Vector3& p2, const Vector3& p3, cv::Mat& image, RasterizeResult& res) const;
+
     void drawTriangle(float x1, float y1, float depth1,
                                       float x2, float y2, float depth2,
                                       float x3, float y3, float depth3, cv::Mat& image) const;

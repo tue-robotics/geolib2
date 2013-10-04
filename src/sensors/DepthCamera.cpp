@@ -94,59 +94,61 @@ RasterizeResult DepthCamera::rasterize(const Shape& shape, const Pose3D& pose, c
     //pose_in.setOrigin(-pose.getOrigin());
     //tf::Transform pose_in = Pose3D(0, 0, -5, 2.3, 0.3, 0.3);//pose.inverse();
 
+    double near_clip_z = -0.1;
+
     std::vector<Triangle> triangles = shape.getMesh();
 
     for(std::vector<Triangle>::const_iterator it_tri = triangles.begin(); it_tri != triangles.end(); ++it_tri) {
         const Triangle& t = *it_tri;
 
         Vector3 p1_3d = pose_in * t.p1_;
-        if (p1_3d.z() < 0) {
-            Vector3 p2_3d = pose_in * t.p2_;
-            if (p2_3d.z() < 0) {
-                Vector3 p3_3d = pose_in * t.p3_;
-                if (p3_3d.z() < 0) {
+        Vector3 p2_3d = pose_in * t.p2_;
+        Vector3 p3_3d = pose_in * t.p3_;
 
-                    cv::Point2d p1_2d = project3Dto2D(p1_3d, image.cols, image.rows);
-                    cv::Point2d p2_2d = project3Dto2D(p2_3d, image.cols, image.rows);
-                    cv::Point2d p3_2d = project3Dto2D(p3_3d, image.cols, image.rows);
+        int n_verts_in = 0;
+        bool v1_in = false;
+        bool v2_in = false;
+        bool v3_in = false;
+        Vector3* vIn[3];
 
-                    //        std::cout << std::endl;
-                    //        std::cout << t.p1_.x() << ", " << t.p1_.y() << ", " << t.p1_.z() << std::endl;
-                    //        std::cout << t.p2_.x() << ", " << t.p2_.y() << ", " << t.p2_.z() << std::endl;
-                    //        std::cout << t.p3_.x() << ", " << t.p3_.y() << ", " << t.p3_.z() << std::endl;
-                    //        std::cout << "---" << std::endl;
+        if (p1_3d.z() < near_clip_z) {
+            ++n_verts_in;
+            v1_in = true;
+        }
 
-                    //        std::cout << p1_3d.x() << ", " << p1_3d.y() << ", " << p1_3d.z() << std::endl;
-                    //        std::cout << p2_3d.x() << ", " << p2_3d.y() << ", " << p2_3d.z() << std::endl;
-                    //        std::cout << p3_3d.x() << ", " << p3_3d.y() << ", " << p3_3d.z() << std::endl;
-                    //        std::cout << "---" << std::endl;
+        if (p2_3d.z() < near_clip_z) {
+            ++n_verts_in;
+            v2_in = true;
+        }
 
-                    //        std::cout << p1_2d << std::endl;
-                    //        std::cout << p2_2d << std::endl;
-                    //        std::cout << p3_2d << std::endl;
-                    //        std::cout << "---" << std::endl;
+        if (p3_3d.z() < near_clip_z) {
+            ++n_verts_in;
+            v3_in = true;
+        }
 
-                    //        if (p1_2d.x >= -1000 && p1_2d.x < 6400 && p1_2d.y >= -1000 && p1_2d.y < 4800
-                    //                && p2_2d.x >= -1000 && p2_2d.x < 6400 && p2_2d.y >= -1000 && p2_2d.y < 4800
-                    //                && p3_2d.x >= -1000 && p3_2d.x < 6400 && p3_2d.y >= -1000 && p3_2d.y < 4800) {
+        if (n_verts_in == 1) {
+            if (v1_in) { vIn[0] = &(p1_3d); vIn[1] = &(p2_3d); vIn[2] = &(p3_3d); }
+            if (v2_in) { vIn[0] = &(p2_3d); vIn[1] = &(p1_3d); vIn[2] = &(p3_3d); }
+            if (v3_in) { vIn[0] = &(p3_3d); vIn[1] = &(p2_3d); vIn[2] = &(p1_3d); }
 
-                    //            std::cout << "DRAW!" << std::endl;
+            //Parametric line stuff
+            // p = v0 + v01*t
+            Vector3 v01 = *vIn[1] - *vIn[0];
 
-                    if ((p1_2d.x >= 0 && p1_2d.x < image.cols && p1_2d.y >= 0 && p1_2d.y < image.rows)
-                            || (p2_2d.x >= 0 && p2_2d.x < image.cols && p2_2d.y >= 0 && p2_2d.y < image.rows)
-                            || (p3_2d.x >= 0 && p3_2d.x < image.cols && p3_2d.y >= 0 && p3_2d.y < image.rows)) {
+            float t1 = ((near_clip_z - (*vIn[0]).z()) / v01.z() );
 
-                        res.min_x = std::max(0, std::min<int>(res.min_x, std::min<int>(p1_2d.x, std::min<int>(p2_2d.x, p3_2d.x))));
-                        res.min_y = std::max(0, std::min<int>(res.min_y, std::min<int>(p1_2d.y, std::min<int>(p2_2d.y, p3_2d.y))));
-                        res.max_x = std::min(image.cols - 1, std::max<int>(res.max_x, std::max<int>(p1_2d.x, std::max<int>(p2_2d.x, p3_2d.x))));
-                        res.max_y = std::min(image.rows - 1, std::max<int>(res.max_y, std::max<int>(p1_2d.y, std::max<int>(p2_2d.y, p3_2d.y))));
+            Vector3 new2(vIn[0]->x() + v01.x() * t1, vIn[0]->y() + v01.y() * t1, near_clip_z);
 
-                        drawTriangle(p1_2d.x, p1_2d.y, -p1_3d.z(),
-                                     p2_2d.x, p2_2d.y, -p2_3d.z(),
-                                     p3_2d.x, p3_2d.y, -p3_3d.z(), image);
-                    }
-                }
-            }
+            // Second vert point
+            Vector3 v02 = *vIn[2] - *vIn[0];
+
+            float t2 = ((near_clip_z - (*vIn[0]).z()) / v02.z());
+
+            Vector3 new3(vIn[0]->x() + v02.x() * t2, vIn[0]->y() + v02.y() * t2, near_clip_z);
+
+            drawTriangle(*vIn[0], new2, new3, image, res);
+        } else if (n_verts_in == 3) {
+            drawTriangle(p1_3d, p2_3d, p3_3d, image, res);
         }
     }
 
@@ -162,6 +164,27 @@ RasterizeResult DepthCamera::rasterize(const Shape& shape, const Pose3D& pose, c
 
     return res;
 }
+
+void DepthCamera::drawTriangle(const Vector3& p1_3d, const Vector3& p2_3d, const Vector3& p3_3d, cv::Mat& image, RasterizeResult& res) const {
+    cv::Point2d p1_2d = project3Dto2D(p1_3d, image.cols, image.rows);
+    cv::Point2d p2_2d = project3Dto2D(p2_3d, image.cols, image.rows);
+    cv::Point2d p3_2d = project3Dto2D(p3_3d, image.cols, image.rows);
+
+    if ((p1_2d.x >= 0 && p1_2d.x < image.cols && p1_2d.y >= 0 && p1_2d.y < image.rows)
+            || (p2_2d.x >= 0 && p2_2d.x < image.cols && p2_2d.y >= 0 && p2_2d.y < image.rows)
+            || (p3_2d.x >= 0 && p3_2d.x < image.cols && p3_2d.y >= 0 && p3_2d.y < image.rows)) {
+
+        res.min_x = std::max(0, std::min<int>(res.min_x, std::min<int>(p1_2d.x, std::min<int>(p2_2d.x, p3_2d.x))));
+        res.min_y = std::max(0, std::min<int>(res.min_y, std::min<int>(p1_2d.y, std::min<int>(p2_2d.y, p3_2d.y))));
+        res.max_x = std::min(image.cols - 1, std::max<int>(res.max_x, std::max<int>(p1_2d.x, std::max<int>(p2_2d.x, p3_2d.x))));
+        res.max_y = std::min(image.rows - 1, std::max<int>(res.max_y, std::max<int>(p1_2d.y, std::max<int>(p2_2d.y, p3_2d.y))));
+
+        drawTriangle(p1_2d.x, p1_2d.y, -p1_3d.z(),
+                     p2_2d.x, p2_2d.y, -p2_3d.z(),
+                     p3_2d.x, p3_2d.y, -p3_3d.z(), image);
+    }
+}
+
 
 void DepthCamera::drawTriangle(float x1, float y1, float depth1,
                                   float x2, float y2, float depth2,
