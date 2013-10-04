@@ -100,50 +100,53 @@ RasterizeResult DepthCamera::rasterize(const Shape& shape, const Pose3D& pose, c
         const Triangle& t = *it_tri;
 
         Vector3 p1_3d = pose_in * t.p1_;
-        Vector3 p2_3d = pose_in * t.p2_;
-        Vector3 p3_3d = pose_in * t.p3_;
+        if (p1_3d.z() < 0) {
+            Vector3 p2_3d = pose_in * t.p2_;
+            if (p2_3d.z() < 0) {
+                Vector3 p3_3d = pose_in * t.p3_;
+                if (p3_3d.z() < 0) {
 
-        cv::Point2d p1_2d = project3Dto2D(p1_3d, image.cols, image.rows);
-        cv::Point2d p2_2d = project3Dto2D(p2_3d, image.cols, image.rows);
-        cv::Point2d p3_2d = project3Dto2D(p3_3d, image.cols, image.rows);
+                    cv::Point2d p1_2d = project3Dto2D(p1_3d, image.cols, image.rows);
+                    cv::Point2d p2_2d = project3Dto2D(p2_3d, image.cols, image.rows);
+                    cv::Point2d p3_2d = project3Dto2D(p3_3d, image.cols, image.rows);
 
-//        std::cout << std::endl;
-//        std::cout << t.p1_.x() << ", " << t.p1_.y() << ", " << t.p1_.z() << std::endl;
-//        std::cout << t.p2_.x() << ", " << t.p2_.y() << ", " << t.p2_.z() << std::endl;
-//        std::cout << t.p3_.x() << ", " << t.p3_.y() << ", " << t.p3_.z() << std::endl;
-//        std::cout << "---" << std::endl;
+                    //        std::cout << std::endl;
+                    //        std::cout << t.p1_.x() << ", " << t.p1_.y() << ", " << t.p1_.z() << std::endl;
+                    //        std::cout << t.p2_.x() << ", " << t.p2_.y() << ", " << t.p2_.z() << std::endl;
+                    //        std::cout << t.p3_.x() << ", " << t.p3_.y() << ", " << t.p3_.z() << std::endl;
+                    //        std::cout << "---" << std::endl;
 
-//        std::cout << p1_3d.x() << ", " << p1_3d.y() << ", " << p1_3d.z() << std::endl;
-//        std::cout << p2_3d.x() << ", " << p2_3d.y() << ", " << p2_3d.z() << std::endl;
-//        std::cout << p3_3d.x() << ", " << p3_3d.y() << ", " << p3_3d.z() << std::endl;
-//        std::cout << "---" << std::endl;
+                    //        std::cout << p1_3d.x() << ", " << p1_3d.y() << ", " << p1_3d.z() << std::endl;
+                    //        std::cout << p2_3d.x() << ", " << p2_3d.y() << ", " << p2_3d.z() << std::endl;
+                    //        std::cout << p3_3d.x() << ", " << p3_3d.y() << ", " << p3_3d.z() << std::endl;
+                    //        std::cout << "---" << std::endl;
 
-//        std::cout << p1_2d << std::endl;
-//        std::cout << p2_2d << std::endl;
-//        std::cout << p3_2d << std::endl;
-//        std::cout << "---" << std::endl;
+                    //        std::cout << p1_2d << std::endl;
+                    //        std::cout << p2_2d << std::endl;
+                    //        std::cout << p3_2d << std::endl;
+                    //        std::cout << "---" << std::endl;
 
-//        if (p1_2d.x >= -1000 && p1_2d.x < 6400 && p1_2d.y >= -1000 && p1_2d.y < 4800
-//                && p2_2d.x >= -1000 && p2_2d.x < 6400 && p2_2d.y >= -1000 && p2_2d.y < 4800
-//                && p3_2d.x >= -1000 && p3_2d.x < 6400 && p3_2d.y >= -1000 && p3_2d.y < 4800) {
+                    //        if (p1_2d.x >= -1000 && p1_2d.x < 6400 && p1_2d.y >= -1000 && p1_2d.y < 4800
+                    //                && p2_2d.x >= -1000 && p2_2d.x < 6400 && p2_2d.y >= -1000 && p2_2d.y < 4800
+                    //                && p3_2d.x >= -1000 && p3_2d.x < 6400 && p3_2d.y >= -1000 && p3_2d.y < 4800) {
 
-//            std::cout << "DRAW!" << std::endl;
+                    //            std::cout << "DRAW!" << std::endl;
 
-        if ((p1_2d.x >= 0 && p1_2d.x < image.cols && p1_2d.y >= 0 && p1_2d.y < image.rows)
-            || (p2_2d.x >= 0 && p2_2d.x < image.cols && p2_2d.y >= 0 && p2_2d.y < image.rows)
-            || (p3_2d.x >= 0 && p3_2d.x < image.cols && p3_2d.y >= 0 && p3_2d.y < image.rows)) {
+                    if ((p1_2d.x >= 0 && p1_2d.x < image.cols && p1_2d.y >= 0 && p1_2d.y < image.rows)
+                            || (p2_2d.x >= 0 && p2_2d.x < image.cols && p2_2d.y >= 0 && p2_2d.y < image.rows)
+                            || (p3_2d.x >= 0 && p3_2d.x < image.cols && p3_2d.y >= 0 && p3_2d.y < image.rows)) {
 
-            res.min_x = std::max(0, std::min<int>(res.min_x, std::min<int>(p1_2d.x, std::min<int>(p2_2d.x, p3_2d.x))));
-            res.min_y = std::max(0, std::min<int>(res.min_y, std::min<int>(p1_2d.y, std::min<int>(p2_2d.y, p3_2d.y))));
-            res.max_x = std::min(image.cols - 1, std::max<int>(res.max_x, std::max<int>(p1_2d.x, std::max<int>(p2_2d.x, p3_2d.x))));
-            res.max_y = std::min(image.rows - 1, std::max<int>(res.max_y, std::max<int>(p1_2d.y, std::max<int>(p2_2d.y, p3_2d.y))));
+                        res.min_x = std::max(0, std::min<int>(res.min_x, std::min<int>(p1_2d.x, std::min<int>(p2_2d.x, p3_2d.x))));
+                        res.min_y = std::max(0, std::min<int>(res.min_y, std::min<int>(p1_2d.y, std::min<int>(p2_2d.y, p3_2d.y))));
+                        res.max_x = std::min(image.cols - 1, std::max<int>(res.max_x, std::max<int>(p1_2d.x, std::max<int>(p2_2d.x, p3_2d.x))));
+                        res.max_y = std::min(image.rows - 1, std::max<int>(res.max_y, std::max<int>(p1_2d.y, std::max<int>(p2_2d.y, p3_2d.y))));
 
-            drawTriangle(p1_2d.x, p1_2d.y, -p1_3d.z(),
-                         p2_2d.x, p2_2d.y, -p2_3d.z(),
-                         p3_2d.x, p3_2d.y, -p3_3d.z(), image);
-
-
-
+                        drawTriangle(p1_2d.x, p1_2d.y, -p1_3d.z(),
+                                     p2_2d.x, p2_2d.y, -p2_3d.z(),
+                                     p3_2d.x, p3_2d.y, -p3_3d.z(), image);
+                    }
+                }
+            }
         }
     }
 

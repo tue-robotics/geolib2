@@ -211,8 +211,6 @@ int main(int argc, char **argv) {
     //cam.render(Box(Vector3(-2, -5, -5), Vector3(2, 5, 5)), Pose3D(-2.82, 0, 1.82, 0, 0.5, 0), image);
     Box shape(Vector3(-0.3, -0.5, -0.5), Vector3(0.3, 0.5, 0.5));
 
-    std::string render_type = "raytrace";
-
 //    std::cout << "DepthCamera::raytrace(box):\t" << render(image, shape, false, false) << " ms" << std::endl;
 
     // Create height map
@@ -238,7 +236,7 @@ int main(int argc, char **argv) {
     //std::cout << "DepthCamera::rasterize(abstract_shape):\t" << render(image, tree, true, false) << " ms" << std::endl;
 
     while(true) {
-        render(image, axis, true, true);
+        render(image, hmap, true, true);
 
 
 
