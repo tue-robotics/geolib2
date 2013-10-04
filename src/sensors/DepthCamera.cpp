@@ -147,6 +147,30 @@ RasterizeResult DepthCamera::rasterize(const Shape& shape, const Pose3D& pose, c
             Vector3 new3(vIn[0]->x() + v02.x() * t2, vIn[0]->y() + v02.y() * t2, near_clip_z);
 
             drawTriangle(*vIn[0], new2, new3, image, res);
+        } else if (n_verts_in == 2) {
+            if (!v1_in) { vIn[0]=&(p2_3d); vIn[1]=&(p3_3d); vIn[2]=&(p1_3d); }
+            if (!v2_in) { vIn[0]=&(p1_3d); vIn[1]=&(p3_3d); vIn[2]=&(p2_3d); }
+            if (!v3_in) { vIn[0]=&(p1_3d); vIn[1]=&(p2_3d); vIn[2]=&(p3_3d); }
+
+            //Parametric line stuff
+            // p = v0 + v01*t
+            Vector3 v01 = *vIn[2] - *vIn[0];
+
+            float t1 = ((near_clip_z - (*vIn[0]).z())/v01.z() );
+
+            Vector3 new2((*vIn[0]).x() + v01.x() * t1,(*vIn[0]).y() + v01.y() * t1, near_clip_z);
+
+            // Second point
+            Vector3 v02 = *vIn[2] - *vIn[1];
+
+            float t2 = ((near_clip_z - (*vIn[1]).z())/v02.z());
+
+            Vector3 new3((*vIn[1]).x() + v02.x() * t2, (*vIn[1]).y() + v02.y() * t2, near_clip_z);
+
+            drawTriangle(*vIn[0], *vIn[1], new2, image, res);
+
+            drawTriangle(new2, new3, *vIn[1], image, res);
+
         } else if (n_verts_in == 3) {
             drawTriangle(p1_3d, p2_3d, p3_3d, image, res);
         }
