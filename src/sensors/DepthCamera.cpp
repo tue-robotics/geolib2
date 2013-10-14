@@ -194,21 +194,25 @@ void DepthCamera::drawTriangle(const Vector3& p1_3d, const Vector3& p2_3d, const
     cv::Point2d p2_2d = project3Dto2D(p2_3d, image.cols, image.rows);
     cv::Point2d p3_2d = project3Dto2D(p3_3d, image.cols, image.rows);
 
-    int min_x = std::min<int>(p1_2d.x, std::min<int>(p2_2d.x, p3_2d.x));
-    int min_y = std::min<int>(p1_2d.y, std::min<int>(p2_2d.y, p3_2d.y));
-    int max_x = std::max<int>(p1_2d.x, std::max<int>(p2_2d.x, p3_2d.x));
-    int max_y = std::max<int>(p1_2d.y, std::max<int>(p2_2d.y, p3_2d.y));
+//    if ((p2_2d.x - p1_2d.x) * (p3_2d.y - p1_2d.y) - (p3_2d.x - p1_2d.x) * (p2_2d.y - p1_2d.y) < 0) {
 
-    if (min_x < image.cols && max_x > 0 && min_y < image.rows && max_y > 0) {
-        res.min_x = std::max(0, std::min<int>(res.min_x, min_x));
-        res.min_y = std::max(0, std::min<int>(res.min_y, min_y));
-        res.max_x = std::min(image.cols - 1, std::max<int>(res.max_x, max_x));
-        res.max_y = std::min(image.rows - 1, std::max<int>(res.max_y, max_y));
+        int min_x = std::min<int>(p1_2d.x, std::min<int>(p2_2d.x, p3_2d.x));
+        int min_y = std::min<int>(p1_2d.y, std::min<int>(p2_2d.y, p3_2d.y));
+        int max_x = std::max<int>(p1_2d.x, std::max<int>(p2_2d.x, p3_2d.x));
+        int max_y = std::max<int>(p1_2d.y, std::max<int>(p2_2d.y, p3_2d.y));
 
-        drawTriangle(p1_2d.x, p1_2d.y, -p1_3d.z(),
-                     p2_2d.x, p2_2d.y, -p2_3d.z(),
-                     p3_2d.x, p3_2d.y, -p3_3d.z(), image);
-    }
+        if (min_x < image.cols && max_x > 0 && min_y < image.rows && max_y > 0) {
+            res.min_x = std::max(0, std::min<int>(res.min_x, min_x));
+            res.min_y = std::max(0, std::min<int>(res.min_y, min_y));
+            res.max_x = std::min(image.cols - 1, std::max<int>(res.max_x, max_x));
+            res.max_y = std::min(image.rows - 1, std::max<int>(res.max_y, max_y));
+
+            drawTriangle(p1_2d.x, p1_2d.y, -p1_3d.z(),
+                         p2_2d.x, p2_2d.y, -p2_3d.z(),
+                         p3_2d.x, p3_2d.y, -p3_3d.z(), image);
+        }
+
+//    }
 }
 
 

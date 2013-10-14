@@ -67,13 +67,13 @@ double render(cv::Mat& image, const Shape& shape, bool rasterize, bool show) {
     cam.setOpticalTranslation(0, 0);
 
     int N = 0;
-    for(double angle = 0; angle < 6.28; angle += 0.1) {
+    for(double angle = 0; angle < 6.283; angle += 0.05) {
         if (show) {
             image = cv::Mat(image.rows, image.cols, CV_32FC1, 0.0);
         }
 
 
-        Pose3D pose(0, -0.5, -3, 0, 0, angle);
+        Pose3D pose(0, -0.5, -5, -1.57, angle, 0);
         if (rasterize) {
             cam.rasterize(shape, pose, image);
         } else {
@@ -219,6 +219,7 @@ int main(int argc, char **argv) {
     for(int mx = 0; mx < hmap_size; ++mx) {
         map[mx].resize(hmap_size, 0);
     }
+
     for(int j = 0; j < hmap_size / 2; ++j) {
         for(int i = 0; i < hmap_size - j * 2; ++i) {
             map[i+j][j] = j * 0.1;
@@ -230,13 +231,15 @@ int main(int argc, char **argv) {
 
     HeightMap hmap = HeightMap::fromGrid(map, 0.1);
 
+    Box plane(Vector3(-10, -10, -0.1), Vector3(10, 10, 0));
+
     std::cout << "DepthCamera::rasterize(box):\t" << render(image, shape, true, false) << " ms" << std::endl;
     std::cout << "DepthCamera::rasterize(table):\t" << render(image, table, true, false) << " ms" << std::endl;
     std::cout << "DepthCamera::rasterize(heightmap):\t" << render(image, hmap, true, false) << " ms" << std::endl;
     //std::cout << "DepthCamera::rasterize(abstract_shape):\t" << render(image, tree, true, false) << " ms" << std::endl;
 
     while(true) {
-        render(image, hmap, true, true);
+        render(image, plane, true, true);
 
 
 

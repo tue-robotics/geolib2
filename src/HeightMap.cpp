@@ -72,18 +72,29 @@ HeightMap HeightMap::fromGrid(const std::vector<std::vector<double> >& grid, dou
                 hmap.mesh_.push_back(Triangle(Vector3(x2, y1, h), Vector3(x2, y2, h), Vector3(x1, y2, h)));
             }
 
-            // add side triangles
-            if (mx > 0 && grid[mx-1][my] != grid[mx][my]) {
+
+            if (mx > 0) {
                 double h2 = grid[mx-1][my];
-                hmap.mesh_.push_back(Triangle(Vector3(x1, y1, h2), Vector3(x1, y2, h), Vector3(x1, y1, h)));
-                hmap.mesh_.push_back(Triangle(Vector3(x1, y1, h2), Vector3(x1, y2, h), Vector3(x1, y2, h2)));
+                if (h < h2) {
+                    hmap.mesh_.push_back(Triangle(Vector3(x1, y2, h), Vector3(x1, y1, h2), Vector3(x1, y1, h)));
+                    hmap.mesh_.push_back(Triangle(Vector3(x1, y1, h2), Vector3(x1, y2, h), Vector3(x1, y2, h2)));
+                } else if (h > h2) {
+                    hmap.mesh_.push_back(Triangle(Vector3(x1, y2, h), Vector3(x1, y1, h2), Vector3(x1, y1, h)));
+                    hmap.mesh_.push_back(Triangle(Vector3(x1, y1, h2), Vector3(x1, y2, h), Vector3(x1, y2, h2)));
+                }
             }
 
-            if (my > 0 && grid[mx][my-1] != grid[mx][my]) {
+            if (my > 0) {
                 double h2 = grid[mx][my-1];
-                hmap.mesh_.push_back(Triangle(Vector3(x1, y1, h2), Vector3(x2, y1, h), Vector3(x1, y1, h)));
-                hmap.mesh_.push_back(Triangle(Vector3(x1, y1, h2), Vector3(x2, y1, h), Vector3(x2, y1, h2)));
+                if (h < h2) {
+                    hmap.mesh_.push_back(Triangle(Vector3(x1, y1, h2), Vector3(x2, y1, h), Vector3(x1, y1, h)));
+                    hmap.mesh_.push_back(Triangle(Vector3(x2, y1, h), Vector3(x1, y1, h2), Vector3(x2, y1, h2)));
+                } else if (h > h2) {
+                    hmap.mesh_.push_back(Triangle(Vector3(x1, y1, h2), Vector3(x2, y1, h), Vector3(x1, y1, h)));
+                    hmap.mesh_.push_back(Triangle(Vector3(x2, y1, h), Vector3(x1, y1, h2), Vector3(x2, y1, h2)));
+                }
             }
+
         }
     }
 

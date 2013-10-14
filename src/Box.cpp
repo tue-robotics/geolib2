@@ -8,8 +8,8 @@ Box::Box(const Vector3 &min, const Vector3 &max) {
 
     // back plane
 
-    mesh_.push_back(Triangle(Vector3(min.x(), min.y(), min.z()),
-                             Vector3(max.x(), min.y(), min.z()),
+    mesh_.push_back(Triangle(Vector3(max.x(), min.y(), min.z()),
+                             Vector3(min.x(), min.y(), min.z()),
                              Vector3(min.x(), max.y(), min.z())));
 
 
@@ -17,30 +17,30 @@ Box::Box(const Vector3 &min, const Vector3 &max) {
                              Vector3(min.x(), max.y(), min.z()),
                              Vector3(max.x(), max.y(), min.z())));
 
-    // front plane
+//    // front plane
 
     mesh_.push_back(Triangle(Vector3(min.x(), min.y(), max.z()),
                              Vector3(max.x(), min.y(), max.z()),
                              Vector3(min.x(), max.y(), max.z())));
 
-    mesh_.push_back(Triangle(Vector3(max.x(), min.y(), max.z()),
-                             Vector3(min.x(), max.y(), max.z()),
+    mesh_.push_back(Triangle(Vector3(min.x(), max.y(), max.z()),
+                             Vector3(max.x(), min.y(), max.z()),
                              Vector3(max.x(), max.y(), max.z())));
 
-    // left plane
+//    // left plane
 
     mesh_.push_back(Triangle(Vector3(min.x(), min.y(), min.z()),
                              Vector3(min.x(), min.y(), max.z()),
                              Vector3(min.x(), max.y(), min.z())));
 
-    mesh_.push_back(Triangle(Vector3(min.x(), min.y(), max.z()),
-                             Vector3(min.x(), max.y(), min.z()),
+    mesh_.push_back(Triangle(Vector3(min.x(), max.y(), min.z()),
+                             Vector3(min.x(), min.y(), max.z()),
                              Vector3(min.x(), max.y(), max.z())));
 
-    // right plane
+//    // right plane
 
-    mesh_.push_back(Triangle(Vector3(max.x(), min.y(), min.z()),
-                             Vector3(max.x(), min.y(), max.z()),
+    mesh_.push_back(Triangle(Vector3(max.x(), min.y(), max.z()),
+                             Vector3(max.x(), min.y(), min.z()),
                              Vector3(max.x(), max.y(), min.z())));
 
     mesh_.push_back(Triangle(Vector3(max.x(), min.y(), max.z()),
@@ -53,21 +53,22 @@ Box::Box(const Vector3 &min, const Vector3 &max) {
                              Vector3(max.x(), min.y(), min.z()),
                              Vector3(min.x(), min.y(), max.z())));
 
-    mesh_.push_back(Triangle(Vector3(max.x(), min.y(), min.z()),
-                             Vector3(min.x(), min.y(), max.z()),
+    mesh_.push_back(Triangle(Vector3(min.x(), min.y(), max.z()),
+                             Vector3(max.x(), min.y(), min.z()),
                              Vector3(max.x(), min.y(), max.z())));
 
 
 
     // bottom plane
 
-    mesh_.push_back(Triangle(Vector3(min.x(), max.y(), min.z()),
-                             Vector3(max.x(), max.y(), min.z()),
+    mesh_.push_back(Triangle(Vector3(max.x(), max.y(), min.z()),
+                             Vector3(min.x(), max.y(), min.z()),
                              Vector3(min.x(), max.y(), max.z())));
 
     mesh_.push_back(Triangle(Vector3(max.x(), max.y(), min.z()),
                              Vector3(min.x(), max.y(), max.z()),
                              Vector3(max.x(), max.y(), max.z())));
+
 
 
 }
