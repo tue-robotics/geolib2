@@ -128,8 +128,8 @@ RasterizeResult DepthCamera::rasterize(const Shape& shape, const Pose3D& pose, c
 
         if (n_verts_in == 1) {
             if (v1_in) { vIn[0] = &(p1_3d); vIn[1] = &(p2_3d); vIn[2] = &(p3_3d); }
-            if (v2_in) { vIn[0] = &(p2_3d); vIn[1] = &(p1_3d); vIn[2] = &(p3_3d); }
-            if (v3_in) { vIn[0] = &(p3_3d); vIn[1] = &(p2_3d); vIn[2] = &(p1_3d); }
+            if (v2_in) { vIn[0] = &(p2_3d); vIn[1] = &(p3_3d); vIn[2] = &(p1_3d); }
+            if (v3_in) { vIn[0] = &(p3_3d); vIn[1] = &(p1_3d); vIn[2] = &(p2_3d); }
 
             //Parametric line stuff
             // p = v0 + v01*t
@@ -149,7 +149,7 @@ RasterizeResult DepthCamera::rasterize(const Shape& shape, const Pose3D& pose, c
             drawTriangle(*vIn[0], new2, new3, image, res);
         } else if (n_verts_in == 2) {
             if (!v1_in) { vIn[0]=&(p2_3d); vIn[1]=&(p3_3d); vIn[2]=&(p1_3d); }
-            if (!v2_in) { vIn[0]=&(p1_3d); vIn[1]=&(p3_3d); vIn[2]=&(p2_3d); }
+            if (!v2_in) { vIn[0]=&(p3_3d); vIn[1]=&(p1_3d); vIn[2]=&(p2_3d); }
             if (!v3_in) { vIn[0]=&(p1_3d); vIn[1]=&(p2_3d); vIn[2]=&(p3_3d); }
 
             //Parametric line stuff
@@ -169,7 +169,7 @@ RasterizeResult DepthCamera::rasterize(const Shape& shape, const Pose3D& pose, c
 
             drawTriangle(*vIn[0], *vIn[1], new2, image, res);
 
-            drawTriangle(new2, new3, *vIn[1], image, res);
+            drawTriangle(new2, *vIn[1], new3, image, res);
 
         } else if (n_verts_in == 3) {
             drawTriangle(p1_3d, p2_3d, p3_3d, image, res);
@@ -194,7 +194,7 @@ void DepthCamera::drawTriangle(const Vector3& p1_3d, const Vector3& p2_3d, const
     cv::Point2d p2_2d = project3Dto2D(p2_3d, image.cols, image.rows);
     cv::Point2d p3_2d = project3Dto2D(p3_3d, image.cols, image.rows);
 
-//    if ((p2_2d.x - p1_2d.x) * (p3_2d.y - p1_2d.y) - (p3_2d.x - p1_2d.x) * (p2_2d.y - p1_2d.y) < 0) {
+    if ((p2_2d.x - p1_2d.x) * (p3_2d.y - p1_2d.y) - (p3_2d.x - p1_2d.x) * (p2_2d.y - p1_2d.y) < 0) {
 
         int min_x = std::min<int>(p1_2d.x, std::min<int>(p2_2d.x, p3_2d.x));
         int min_y = std::min<int>(p1_2d.y, std::min<int>(p2_2d.y, p3_2d.y));
@@ -212,7 +212,7 @@ void DepthCamera::drawTriangle(const Vector3& p1_3d, const Vector3& p2_3d, const
                          p3_2d.x, p3_2d.y, -p3_3d.z(), image);
         }
 
-//    }
+    }
 }
 
 

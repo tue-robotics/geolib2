@@ -9,54 +9,6 @@
 
 using namespace geo;
 
-cv::Mat depthToRGBImage(const cv::Mat& depth_image, double max_depth) {
-    cv::Mat rgb_image(depth_image.rows, depth_image.cols, CV_8UC3, cv::Scalar(0, 0, 0));
-    for(int y = 0;  y < depth_image.rows; ++y) {
-        for(int x = 0; x < depth_image.cols; ++x) {
-            float depth = depth_image.at<float>(y, x);
-
-            cv::Vec3b color;
-            if (depth == 0) {
-                color[0] = 0;
-                color[1] = 0;
-                color[2] = 0;
-            } else {
-//                float rel_depth = depth / max_depth;
-//                int i = rel_depth * 3;
-//                float rest = rel_depth * 3 - i;
-
-//                //std::cout << depth << ": " << i << ", " << rest << std::endl;
-
-//                if (i == 0) {
-//                    color[0] = 255 * (1 - rest);
-//                    color[1] = 255 * rest;
-//                    color[2] = 0;
-//                } else if (i == 1) {
-//                    color[0] = 0;
-//                    color[1] = 255 * (1 - rest);
-//                    color[2] = 255 * rest;
-//                } else if (i == 2) {
-//                    color[0] = 0;
-//                    color[1] = 0;
-//                    color[2] = 255;
-//                }
-                int c = depth / max_depth * 255;
-//                if (c % 10 == 0) {
-//                    c = 0;
-//                }
-
-                color[0] = c;
-                color[1] = c;
-                color[2] = c;
-            }
-
-            rgb_image.at<cv::Vec3b>(y, x) = color;
-        }
-    }
-
-    return rgb_image;
-}
-
 double render(cv::Mat& image, const Shape& shape, bool rasterize, bool show) {
     Timer timer;
     timer.start();
@@ -81,7 +33,7 @@ double render(cv::Mat& image, const Shape& shape, bool rasterize, bool show) {
         }
 
         if (show) {
-            cv::imshow("visualization", depthToRGBImage(image, 8));
+            cv::imshow("visualization", image /  10);
             cv::waitKey(30);
         }
 
@@ -239,7 +191,7 @@ int main(int argc, char **argv) {
     //std::cout << "DepthCamera::rasterize(abstract_shape):\t" << render(image, tree, true, false) << " ms" << std::endl;
 
     while(true) {
-        render(image, plane, true, true);
+        render(image, hmap, true, true);
 
 
 
