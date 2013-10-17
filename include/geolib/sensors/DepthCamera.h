@@ -81,6 +81,8 @@ public:
 
     cv::Point2d project3Dto2D(const Vector3 p, int width, int height) const;
 
+    Vector3 project2Dto3D(int x, int y) const;
+
     void setFocalLengths(double fx, double fy);
 
     void setOpticalCenter(double cx, double cy);

@@ -71,6 +71,10 @@ cv::Point2d DepthCamera::project3Dto2D(const Vector3 p, int width, int height) c
     return cv::Point2d((fx_ * p.x() + tx_) / -p.z() + cx_, (fy_ * -p.y() + ty_) / -p.z() + cy_);
 }
 
+Vector3 DepthCamera::project2Dto3D(int x, int y) const {
+    return Vector3((x - cx_ - tx_) / fx_, -(y - cy_ - ty_) / fy_, -1.0);
+}
+
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 //
 //                                        RASTERIZATION
