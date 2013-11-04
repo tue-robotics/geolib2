@@ -23,6 +23,7 @@ Octree* Octree::clone() const {
 void Octree::clear() {
     delete root_;
     root_ = new OctreeNode(size_, this);
+    mesh_.clear();
 }
 
 void Octree::add(const Vector3& p) {
