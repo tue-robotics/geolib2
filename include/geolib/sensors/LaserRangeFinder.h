@@ -27,6 +27,8 @@ public:
 
     double getAngleIncrement() const;
 
+    const std::vector<double>& getAngles() const;
+
     double getRangeMin() const;
 
     double getRangeMax() const;
@@ -43,7 +45,9 @@ protected:
 
     double range_min_, range_max_;
 
-    int num_beams_;
+    int num_beams_;    
+
+    std::vector<double> angles_;
 
     std::vector<geo::Vector3> ray_dirs_;
 

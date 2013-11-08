@@ -3,13 +3,15 @@
 #include <geolib/HeightMap.h>
 
 #include <geolib/sensors/DepthCamera.h>
+#include <geolib/sensors/LaserRangeFinder.h>
+
 #include <opencv2/highgui/highgui.hpp>
 
 #include <profiling/Timer.h>
 
 using namespace geo;
 
-double render(cv::Mat& image, const Shape& shape, bool rasterize, bool show) {
+double renderDepthCamera(cv::Mat& image, const Shape& shape, bool rasterize, bool show) {
     Timer timer;
     timer.start();
 
@@ -41,6 +43,43 @@ double render(cv::Mat& image, const Shape& shape, bool rasterize, bool show) {
     }
 
     return timer.getElapsedTimeInMilliSec() / N;
+}
+
+double renderLRF(cv::Mat& image, const Shape& shape, bool rasterize, bool show) {
+    LaserRangeFinder lrf;
+    lrf.setAngleLimits(-2, 2);
+    lrf.setNumBeams(1000);
+    lrf.setRangeLimits(0, 10);
+
+    for(double angle = 0; angle < 6.283; angle += 0.05) {
+        Pose3D pose(5, 0, -0.5, -1.57, 0, angle);
+
+        std::vector<double> ranges;
+        std::cout << "rendering..." << std::endl;
+        lrf.render(shape, Pose3D(0, 0, 0), pose, ranges);
+        std::cout << "..done" << std::endl;
+
+        if (show) {
+            image = cv::Mat(image.rows, image.cols, CV_32FC1, 0.0);
+
+            const std::vector<double>& angles = lrf.getAngles();
+            for(unsigned int i = 0; i < angles.size(); ++i) {
+                geo::Vector3 p = lrf.polarTo2D(angles[i], ranges[i]);
+                double x = (p.x() * 25) + image.cols / 2;
+                double y = (p.y() * 25) + image.rows / 2;
+
+
+                image.at<float>(y, x) = 1;
+                std::cout << ranges[i] << " ";
+            }
+            std::cout << std::endl;
+            cv::imshow("visualization", image);
+            cv::waitKey(30);
+        }
+
+    }
+
+    return 0;
 }
 
 int main(int argc, char **argv) {
@@ -159,7 +198,7 @@ int main(int argc, char **argv) {
 
     cv::Mat image = cv::Mat(480, 640, CV_32FC1, 0.0);
 
-    DepthCamera cam;
+//    DepthCamera cam;
     //cam.render(Box(Vector3(-2, -5, -5), Vector3(2, 5, 5)), Pose3D(-2.82, 0, 1.82, 0, 0.5, 0), image);
     Box shape(Vector3(-0.3, -0.5, -0.5), Vector3(0.3, 0.5, 0.5));
 
@@ -185,31 +224,52 @@ int main(int argc, char **argv) {
 
     Box plane(Vector3(-10, -10, -0.1), Vector3(10, 10, 0));
 
-    std::cout << "DepthCamera::rasterize(box):\t" << render(image, shape, true, false) << " ms" << std::endl;
-    std::cout << "DepthCamera::rasterize(table):\t" << render(image, table, true, false) << " ms" << std::endl;
-    std::cout << "DepthCamera::rasterize(heightmap):\t" << render(image, hmap, true, false) << " ms" << std::endl;
+    std::cout << "DepthCamera::rasterize(box):\t" << renderDepthCamera(image, shape, true, false) << " ms" << std::endl;
+    std::cout << "DepthCamera::rasterize(table):\t" << renderDepthCamera(image, table, true, false) << " ms" << std::endl;
+    std::cout << "DepthCamera::rasterize(heightmap):\t" << renderDepthCamera(image, hmap, true, false) << " ms" << std::endl;
     //std::cout << "DepthCamera::rasterize(abstract_shape):\t" << render(image, tree, true, false) << " ms" << std::endl;
 
-    while(true) {
-        render(image, hmap, true, true);
+    DepthCamera cam;
+    cam.setFocalLengths(554.2559327880068, 554.2559327880068);
+    cam.setOpticalCenter(320.5, 240.5);
+    cam.setOpticalTranslation(0, 0);
 
+    LaserRangeFinder lrf;
+    lrf.setAngleLimits(-2, 2);
+    lrf.setNumBeams(1000);
+    lrf.setRangeLimits(0, 10);
 
+    double angle = 0;
+    while (true) {
+        Pose3D pose(5, 0, -0.5, 0, 0, angle);
 
-//        std::cout << "Min depth = " << min_depth << std::endl;
+        // * * * * * * DEPTH CAMERA * * * * * *
+        cv::Mat depth_image = cv::Mat(480, 640, CV_32FC1, 0.0);
 
-//        if (render_type != "") {
-//            timer6.stop();
-//            std::cout << "DepthCamera::" << render_type << ":\t" << timer6.getElapsedTimeInMilliSec() / N << " ms" << std::endl;
-//            if (render_type == "raytrace") {
-//                render_type = "rasterize";
-//            } else {
-//                render_type = "";
-//            }
-//        }
+        cam.rasterize(table, Pose3D(0, 0, 0, 1.57, 0, -1.57), pose, depth_image);
+        cv::imshow("camera", depth_image / 8);
 
+        // * * * * * * LRF * * * * * *
+
+        std::vector<double> ranges;
+        lrf.render(table, Pose3D(0, 0, 0), pose, ranges);
+
+        cv::Mat lrf_image = cv::Mat(480, 640, CV_32FC1, 0.0);
+        const std::vector<double>& angles = lrf.getAngles();
+        for(unsigned int i = 0; i < angles.size(); ++i) {
+            geo::Vector3 p = lrf.polarTo2D(angles[i], ranges[i]);
+            double x = (p.x() * 25) + image.cols / 2;
+            double y = (p.y() * 25) + image.rows / 2;
+            lrf_image.at<float>(y, x) = 1;
+            std::cout << ranges[i] << " ";
+        }
+        std::cout << std::endl;
+        cv::imshow("lrf", lrf_image);
+
+        angle += 0.05;
+
+        cv::waitKey(30);
     }
-
-
 
     return 0;
 }

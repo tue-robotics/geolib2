@@ -16,7 +16,7 @@ LaserRangeFinder::~LaserRangeFinder() {
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 
 void LaserRangeFinder::render(const Shape& shape, const Pose3D& cam_pose, const Pose3D& obj_pose, std::vector<double>& ranges) const {
-    tf::Transform t = cam_pose.inverse() * obj_pose;
+    tf::Transform t = obj_pose.inverse() * cam_pose;
 
     ranges.resize(ray_dirs_.size());
     for(unsigned int i = 0; i < ray_dirs_.size(); ++i) {
@@ -31,6 +31,12 @@ void LaserRangeFinder::render(const Shape& shape, const Pose3D& cam_pose, const 
         }
     }
 }
+
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+//
+//                                        PARAMETERS
+//
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 
 void LaserRangeFinder::setAngleLimits(double min, double max) {
     a_min_ = min;
@@ -54,10 +60,12 @@ void LaserRangeFinder::setNumBeams(int num_beams) {
 
 void LaserRangeFinder::calculateRays() {
     ray_dirs_.clear();
+    angles_.clear();
     double a_incr = getAngleIncrement();
     double a = a_min_;
     for(int i = 0; i < num_beams_; ++i) {
         ray_dirs_.push_back(polarTo2D(a, 1));
+        angles_.push_back(a);
         a += a_incr;
     }
 }
@@ -74,6 +82,10 @@ double LaserRangeFinder::getAngleIncrement() const {
     return (a_max_ - a_min_) / num_beams_;
 }
 
+const std::vector<double>& LaserRangeFinder::getAngles() const {
+    return angles_;
+}
+
 double LaserRangeFinder::getRangeMin() const {
     return range_min_;
 }
@@ -85,6 +97,12 @@ double LaserRangeFinder::getRangeMax() const {
 int LaserRangeFinder::getNumBeams() const {
     return num_beams_;
 }
+
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+//
+//                                        CONVERSIONS
+//
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 
 geo::Vector3 LaserRangeFinder::polarTo2D(double angle, double range) {
     return geo::Vector3(sin(angle), cos(angle), 0) * range;
