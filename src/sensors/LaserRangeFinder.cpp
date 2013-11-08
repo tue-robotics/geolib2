@@ -105,7 +105,7 @@ int LaserRangeFinder::getNumBeams() const {
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 
 geo::Vector3 LaserRangeFinder::polarTo2D(double angle, double range) {
-    return geo::Vector3(sin(angle), cos(angle), 0) * range;
+    return geo::Vector3(cos(angle), sin(angle), 0) * range;
 }
 
 geo::Vector3 LaserRangeFinder::polarTo3D(const geo::Pose3D& laser_pose, double angle, double range) {
