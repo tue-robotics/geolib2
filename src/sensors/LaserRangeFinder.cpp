@@ -18,16 +18,19 @@ LaserRangeFinder::~LaserRangeFinder() {
 void LaserRangeFinder::render(const Shape& shape, const Pose3D& cam_pose, const Pose3D& obj_pose, std::vector<double>& ranges) const {
     tf::Transform t = obj_pose.inverse() * cam_pose;
 
-    ranges.resize(ray_dirs_.size());
+    if (ranges.size() != ray_dirs_.size()) {
+        ranges.resize(ray_dirs_.size(), 0);
+    }
+
     for(unsigned int i = 0; i < ray_dirs_.size(); ++i) {
         geo::Vector3 dir_t = t.getBasis() * ray_dirs_[i];
         Ray r_t(t.getOrigin(), dir_t);
 
         double distance = 0;
         if (shape.intersect(r_t, range_min_, range_max_, distance)) {
-            ranges[i] = distance;
-        } else {
-            ranges[i] = 0;
+            if (ranges[i] == 0 || distance < ranges[i]) {
+                ranges[i] = distance;
+            }
         }
     }
 }

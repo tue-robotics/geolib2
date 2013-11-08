@@ -248,12 +248,19 @@ int main(int argc, char **argv) {
     cv::Mat display_image(480, 1280, CV_32FC1, 0.0);
 
     double angle = 0;
+
     while (true) {
-        Pose3D pose(5, 0, -0.5, 0, 0, angle);
+        Shape& shape1 = table;
+        Pose3D pose1(5, 1, -0.5, 0, 0, angle);
+
+        Shape& shape2 = shape;
+        Pose3D pose2(5, 0, -0.5, 0, 0.3, angle);
 
         // * * * * * * DEPTH CAMERA * * * * * *
+
         cv::Mat depth_image = cv::Mat(480, 640, CV_32FC1, 0.0);
-        cam.rasterize(table, Pose3D(0, 0, 0, 1.57, 0, -1.57), pose, depth_image);
+        cam.rasterize(shape1, Pose3D(0, 0, 0, 1.57, 0, -1.57), pose1, depth_image);
+        cam.rasterize(shape2, Pose3D(0, 0, 0, 1.57, 0, -1.57), pose2, depth_image);
 
         cv::Mat depth_image2 = depth_image / 8;
         cv::Mat destinationROI = display_image(cv::Rect(cv::Point(0, 0), cv::Size(640, 480)));
@@ -262,7 +269,8 @@ int main(int argc, char **argv) {
         // * * * * * * LRF * * * * * *
 
         std::vector<double> ranges;
-        lrf.render(table, Pose3D(0, 0, 0), pose, ranges);
+        lrf.render(shape1, Pose3D(0, 0, 0), pose1, ranges);
+        lrf.render(shape2, Pose3D(0, 0, 0), pose2, ranges);
 
         cv::Mat lrf_image = cv::Mat(480, 640, CV_32FC1, 0.0);
         const std::vector<double>& angles = lrf.getAngles();
@@ -280,7 +288,7 @@ int main(int argc, char **argv) {
 
         angle += 0.05;
 
-        cv::waitKey(30);
+        cv::waitKey(3);
     }
 
     return 0;
