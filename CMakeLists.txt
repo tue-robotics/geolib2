@@ -45,6 +45,7 @@ rosbuild_add_library(geolib src/Box.cpp
                              src/HeightMapNode.cpp
 
                              src/sensors/DepthCamera.cpp
+                             src/sensors/LaserRangeFinder.cpp
                              
                               ${HEADER_FILES})
 
