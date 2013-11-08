@@ -61,6 +61,10 @@ bool Octree::intersect(const Ray& r, float t0, float t1, double& distance) const
     return root_->intersect(Ray(r.origin_ - offset_, r.direction_), t0 + dist + resolution_ * 0.1, t1, distance, offset_);
 }
 
+double Octree::getMaxRadius() const {
+    return size_;
+}
+
 void Octree::raytrace(const Ray& r, float t0, float t1) {
     double dist;
     if (!Box(offset_, max_).intersect(r, t0, t1, dist)) {

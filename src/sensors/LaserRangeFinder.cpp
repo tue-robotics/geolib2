@@ -25,7 +25,7 @@ void LaserRangeFinder::render(const Shape& shape, const Pose3D& cam_pose, const 
     tf::Transform t_inv = t.inverse();
 
     double a = atan(t_inv.getOrigin().y() / t_inv.getOrigin().x());
-    double a_limit = atan(10 / t_inv.getOrigin().length());
+    double a_limit = atan(shape.getMaxRadius() / t_inv.getOrigin().length());
     double a_min = a - a_limit;
     double a_max = a + a_limit;
 

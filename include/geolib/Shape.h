@@ -20,6 +20,8 @@ public:
 
     virtual bool intersect(const Ray &, float t0, float t1, double& distance) const = 0;
 
+    virtual double getMaxRadius() const;
+
     virtual const std::vector<Triangle>& getMesh() const;
 
 protected:

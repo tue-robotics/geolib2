@@ -15,6 +15,8 @@ public:
 
     bool intersect(const Ray &, float t0, float t1, double& distance) const;
 
+    double getMaxRadius() const;
+
     bool intersect(const Box& other) const;
 
     bool intersect(const Vector3& p) const;
@@ -28,6 +30,10 @@ public:
     Vector3 getCenter() const;
 
     Vector3 bounds[2];
+
+protected:
+
+    double max_radius_;
 
 };
 

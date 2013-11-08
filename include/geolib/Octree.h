@@ -33,6 +33,8 @@ public:
 
     bool intersect(const Ray& r, float t0, float t1, double& distance) const;
 
+    double getMaxRadius() const;
+
     void raytrace(const Ray& r, float t0, float t1);
 
     bool intersect(const Vector3& p) const;

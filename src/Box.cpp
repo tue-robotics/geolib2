@@ -104,6 +104,10 @@ bool Box::intersect(const Ray &r, float t0, float t1, double& distance) const {
     return t0 < tmax && tmin < t1;
 }
 
+double Box::getMaxRadius() const {
+    return std::max(bounds[0].length(), bounds[1].length());
+}
+
 bool Box::intersect(const Box& other) const {
     Vector3 c1 = (bounds[0] + bounds[1]) / 2;
     Vector3 c2 = (other.bounds[0] + other.bounds[1]) / 2;
