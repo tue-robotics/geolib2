@@ -64,7 +64,7 @@ void LaserRangeFinder::calculateRays() {
     double a_incr = getAngleIncrement();
     double a = a_min_;
     for(int i = 0; i < num_beams_; ++i) {
-        ray_dirs_.push_back(polarTo2D(a, 1));
+        ray_dirs_.push_back(polarTo2D(-a, 1));
         angles_.push_back(a);
         a += a_incr;
     }

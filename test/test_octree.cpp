@@ -12,13 +12,13 @@
 using namespace geo;
 
 double renderDepthCamera(cv::Mat& image, const Shape& shape, bool rasterize, bool show) {
-    Timer timer;
-    timer.start();
-
     DepthCamera cam;
     cam.setFocalLengths(554.2559327880068, 554.2559327880068);
     cam.setOpticalCenter(320.5, 240.5);
     cam.setOpticalTranslation(0, 0);
+
+    Timer timer;
+    timer.start();
 
     int N = 0;
     for(double angle = 0; angle < 6.283; angle += 0.05) {
@@ -51,13 +51,15 @@ double renderLRF(cv::Mat& image, const Shape& shape, bool rasterize, bool show) 
     lrf.setNumBeams(1000);
     lrf.setRangeLimits(0, 10);
 
+    Timer timer;
+    timer.start();
+
+    int N = 0;
     for(double angle = 0; angle < 6.283; angle += 0.05) {
         Pose3D pose(5, 0, -0.5, -1.57, 0, angle);
 
         std::vector<double> ranges;
-        std::cout << "rendering..." << std::endl;
         lrf.render(shape, Pose3D(0, 0, 0), pose, ranges);
-        std::cout << "..done" << std::endl;
 
         if (show) {
             image = cv::Mat(image.rows, image.cols, CV_32FC1, 0.0);
@@ -68,18 +70,17 @@ double renderLRF(cv::Mat& image, const Shape& shape, bool rasterize, bool show) 
                 double x = (p.x() * 25) + image.cols / 2;
                 double y = (p.y() * 25) + image.rows / 2;
 
-
                 image.at<float>(y, x) = 1;
-                std::cout << ranges[i] << " ";
             }
             std::cout << std::endl;
             cv::imshow("visualization", image);
             cv::waitKey(30);
         }
 
+        ++N;
     }
 
-    return 0;
+    return timer.getElapsedTimeInMilliSec() / N;
 }
 
 int main(int argc, char **argv) {
@@ -229,15 +230,22 @@ int main(int argc, char **argv) {
     std::cout << "DepthCamera::rasterize(heightmap):\t" << renderDepthCamera(image, hmap, true, false) << " ms" << std::endl;
     //std::cout << "DepthCamera::rasterize(abstract_shape):\t" << render(image, tree, true, false) << " ms" << std::endl;
 
+    std::cout << "LaserRangeFinder::render(box):\t" << renderLRF(image, shape, true, false) << " ms" << std::endl;
+    std::cout << "LaserRangeFinder::render(table):\t" << renderLRF(image, table, true, false) << " ms" << std::endl;
+    std::cout << "LaserRangeFinder::render(heightmap):\t" << renderLRF(image, hmap, true, false) << " ms" << std::endl;
+    //std::cout << "DepthCamera::rasterize(abstract_shape):\t" << render(image, tree, true, false) << " ms" << std::endl;
+
     DepthCamera cam;
     cam.setFocalLengths(554.2559327880068, 554.2559327880068);
     cam.setOpticalCenter(320.5, 240.5);
     cam.setOpticalTranslation(0, 0);
 
     LaserRangeFinder lrf;
-    lrf.setAngleLimits(-2, 2);
+    lrf.setAngleLimits(-2.3, 2.3);
     lrf.setNumBeams(1000);
     lrf.setRangeLimits(0, 10);
+
+    cv::Mat display_image(480, 1280, CV_32FC1, 0.0);
 
     double angle = 0;
     while (true) {
@@ -245,9 +253,11 @@ int main(int argc, char **argv) {
 
         // * * * * * * DEPTH CAMERA * * * * * *
         cv::Mat depth_image = cv::Mat(480, 640, CV_32FC1, 0.0);
-
         cam.rasterize(table, Pose3D(0, 0, 0, 1.57, 0, -1.57), pose, depth_image);
-        cv::imshow("camera", depth_image / 8);
+
+        cv::Mat depth_image2 = depth_image / 8;
+        cv::Mat destinationROI = display_image(cv::Rect(cv::Point(0, 0), cv::Size(640, 480)));
+        depth_image2.copyTo(destinationROI);
 
         // * * * * * * LRF * * * * * *
 
@@ -261,10 +271,12 @@ int main(int argc, char **argv) {
             double x = (p.x() * 25) + image.cols / 2;
             double y = (p.y() * 25) + image.rows / 2;
             lrf_image.at<float>(y, x) = 1;
-            std::cout << ranges[i] << " ";
         }
-        std::cout << std::endl;
-        cv::imshow("lrf", lrf_image);
+
+        cv::Mat destinationROI2 = display_image(cv::Rect(cv::Point(640, 0), cv::Size(640, 480)));
+        lrf_image.copyTo(destinationROI2);
+
+        cv::imshow("visualization", display_image);
 
         angle += 0.05;
 
