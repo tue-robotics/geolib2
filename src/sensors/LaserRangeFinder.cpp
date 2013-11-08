@@ -22,7 +22,20 @@ void LaserRangeFinder::render(const Shape& shape, const Pose3D& cam_pose, const 
         ranges.resize(ray_dirs_.size(), 0);
     }
 
-    for(unsigned int i = 0; i < ray_dirs_.size(); ++i) {
+    tf::Transform t_inv = t.inverse();
+
+    double a = atan(t_inv.getOrigin().y() / t_inv.getOrigin().x());
+    double a_limit = atan(10 / t_inv.getOrigin().length());
+    double a_min = a - a_limit;
+    double a_max = a + a_limit;
+
+    int i_min = std::max(0, (int)((a_min - a_min_) / getAngleIncrement()));
+    int i_max = std::min((int)ray_dirs_.size(), (int)((a_max - a_min_) / getAngleIncrement()));
+
+//    std::cout << a_min << ", " << a << ", " << a_max << std::endl;
+
+
+    for(int i = i_min; i < i_max; ++i) {
         geo::Vector3 dir_t = t.getBasis() * ray_dirs_[i];
         Ray r_t(t.getOrigin(), dir_t);
 

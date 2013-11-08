@@ -259,7 +259,7 @@ int main(int argc, char **argv) {
         // * * * * * * DEPTH CAMERA * * * * * *
 
         cv::Mat depth_image = cv::Mat(480, 640, CV_32FC1, 0.0);
-        cam.rasterize(shape1, Pose3D(0, 0, 0, 1.57, 0, -1.57), pose1, depth_image);
+//        cam.rasterize(shape1, Pose3D(0, 0, 0, 1.57, 0, -1.57), pose1, depth_image);
         cam.rasterize(shape2, Pose3D(0, 0, 0, 1.57, 0, -1.57), pose2, depth_image);
 
         cv::Mat depth_image2 = depth_image / 8;
@@ -269,7 +269,7 @@ int main(int argc, char **argv) {
         // * * * * * * LRF * * * * * *
 
         std::vector<double> ranges;
-        lrf.render(shape1, Pose3D(0, 0, 0), pose1, ranges);
+//        lrf.render(shape1, Pose3D(0, 0, 0), pose1, ranges);
         lrf.render(shape2, Pose3D(0, 0, 0), pose2, ranges);
 
         cv::Mat lrf_image = cv::Mat(480, 640, CV_32FC1, 0.0);
