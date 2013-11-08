@@ -22,15 +22,21 @@ void LaserRangeFinder::render(const Shape& shape, const Pose3D& cam_pose, const 
         ranges.resize(ray_dirs_.size(), 0);
     }
 
-    tf::Transform t_inv = t.inverse();
+    double max_radius = shape.getMaxRadius();
 
-    double a = atan(t_inv.getOrigin().y() / t_inv.getOrigin().x());
-    double a_limit = atan(shape.getMaxRadius() / t_inv.getOrigin().length());
-    double a_min = a - a_limit;
-    double a_max = a + a_limit;
+    int i_min = 0;
+    int i_max = (int)ray_dirs_.size();
+    if (max_radius > 0) {
+        tf::Transform t_inv = t.inverse();
 
-    int i_min = std::max(0, (int)((a_min - a_min_) / getAngleIncrement()));
-    int i_max = std::min((int)ray_dirs_.size(), (int)((a_max - a_min_) / getAngleIncrement()));
+        double a = atan(t_inv.getOrigin().y() / t_inv.getOrigin().x());
+        double a_limit = atan(max_radius / t_inv.getOrigin().length());
+        double a_min = a - a_limit;
+        double a_max = a + a_limit;
+
+        i_min = std::max(0, (int)((a_min - a_min_) / getAngleIncrement()));
+        i_max = std::min((int)ray_dirs_.size(), (int)((a_max - a_min_) / getAngleIncrement()));
+    }
 
 //    std::cout << a_min << ", " << a << ", " << a_max << std::endl;
 

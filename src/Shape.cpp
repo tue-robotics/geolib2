@@ -15,7 +15,7 @@ const std::vector<Triangle>& Shape::getMesh() const {
 }
 
 double Shape::getMaxRadius() const {
-    return 1000;
+    return 0;
 }
 
 }
