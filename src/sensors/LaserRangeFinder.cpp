@@ -22,23 +22,25 @@ void LaserRangeFinder::render(const Shape& shape, const Pose3D& cam_pose, const 
         ranges.resize(ray_dirs_.size(), 0);
     }
 
-    double max_radius = shape.getMaxRadius();
-
     int i_min = 0;
     int i_max = (int)ray_dirs_.size();
+
+    double max_radius = shape.getMaxRadius();
     if (max_radius > 0) {
         tf::Transform t_inv = t.inverse();
 
-        double a = atan(t_inv.getOrigin().y() / t_inv.getOrigin().x());
-        double a_limit = atan(max_radius / t_inv.getOrigin().length());
-        double a_min = a - a_limit;
-        double a_max = a + a_limit;
+        double dist = t_inv.getOrigin().length();
 
-        i_min = std::max(0, (int)((a_min - a_min_) / getAngleIncrement()));
-        i_max = std::min((int)ray_dirs_.size(), (int)((a_max - a_min_) / getAngleIncrement()));
+        if (dist > max_radius) {
+            double a = getAngle(t_inv.getOrigin().x(), t_inv.getOrigin().y());
+            double a_limit = asin(max_radius / dist);
+            double a_min = a - a_limit;
+            double a_max = a + a_limit;
+
+            i_min = std::max(0, (int)((a_min - a_min_) / getAngleIncrement()));
+            i_max = std::min((int)ray_dirs_.size(), (int)((a_max - a_min_) / getAngleIncrement()));
+        }
     }
-
-//    std::cout << a_min << ", " << a << ", " << a_max << std::endl;
 
 
     for(int i = i_min; i < i_max; ++i) {
@@ -86,7 +88,7 @@ void LaserRangeFinder::calculateRays() {
     double a_incr = getAngleIncrement();
     double a = a_min_;
     for(int i = 0; i < num_beams_; ++i) {
-        ray_dirs_.push_back(polarTo2D(-a, 1));
+        ray_dirs_.push_back(polarTo2D(a, 1));
         angles_.push_back(a);
         a += a_incr;
     }
@@ -126,12 +128,42 @@ int LaserRangeFinder::getNumBeams() const {
 //
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 
+bool LaserRangeFinder::rangesToPoints(const std::vector<double>& ranges, std::vector<geo::Vector3>& points) const {
+    if (ranges.size() != ray_dirs_.size()) {
+        return false;
+    }
+    points.resize(ray_dirs_.size());
+    for(unsigned int i = 0; i < ray_dirs_.size(); ++i) {
+        points[i] = ray_dirs_[i] * ranges[i];
+    }
+    return true;
+}
+
 geo::Vector3 LaserRangeFinder::polarTo2D(double angle, double range) {
-    return geo::Vector3(cos(angle), sin(angle), 0) * range;
+    return geo::Vector3(cos(angle), -sin(angle), 0) * range;
 }
 
 geo::Vector3 LaserRangeFinder::polarTo3D(const geo::Pose3D& laser_pose, double angle, double range) {
     return laser_pose.getBasis() * polarTo2D(angle, range);
+}
+
+double LaserRangeFinder::getAngle(double x, double y) {
+    double a = atan(-y / x);
+    if (x < 0) {
+        if (y < 0) {
+            a = -M_PI + a;
+        } else {
+            a = M_PI + a;
+        }
+    }
+
+    if (a > M_PI) {
+        a -= 2 * M_PI ;
+    } else if (a < -M_PI) {
+        a += 2 * M_PI;
+    }
+
+    return a;
 }
 
 }

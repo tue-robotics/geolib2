@@ -35,9 +35,13 @@ public:
 
     int getNumBeams() const;
 
+    bool rangesToPoints(const std::vector<double>& ranges, std::vector<geo::Vector3>& points) const;
+
     static geo::Vector3 polarTo2D(double angle, double range);
 
     static geo::Vector3 polarTo3D(const geo::Pose3D& laser_pose, double angle, double range);
+
+    static double getAngle(double x, double y);
 
 protected:
 

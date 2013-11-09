@@ -254,12 +254,12 @@ int main(int argc, char **argv) {
         Pose3D pose1(5, 1, -0.5, 0, 0, angle);
 
         Shape& shape2 = shape;
-        Pose3D pose2(5, 0, -0.5, 0, 0.3, angle);
+        Pose3D pose2(5, 2, -0.5, 0, 0.3, angle);
 
         // * * * * * * DEPTH CAMERA * * * * * *
 
         cv::Mat depth_image = cv::Mat(480, 640, CV_32FC1, 0.0);
-//        cam.rasterize(shape1, Pose3D(0, 0, 0, 1.57, 0, -1.57), pose1, depth_image);
+        cam.rasterize(shape1, Pose3D(0, 0, 0, 1.57, 0, -1.57), pose1, depth_image);
         cam.rasterize(shape2, Pose3D(0, 0, 0, 1.57, 0, -1.57), pose2, depth_image);
 
         cv::Mat depth_image2 = depth_image / 8;
@@ -269,16 +269,19 @@ int main(int argc, char **argv) {
         // * * * * * * LRF * * * * * *
 
         std::vector<double> ranges;
-//        lrf.render(shape1, Pose3D(0, 0, 0), pose1, ranges);
+        lrf.render(shape1, Pose3D(0, 0, 0), pose1, ranges);
         lrf.render(shape2, Pose3D(0, 0, 0), pose2, ranges);
 
         cv::Mat lrf_image = cv::Mat(480, 640, CV_32FC1, 0.0);
-        const std::vector<double>& angles = lrf.getAngles();
-        for(unsigned int i = 0; i < angles.size(); ++i) {
-            geo::Vector3 p = lrf.polarTo2D(angles[i], ranges[i]);
-            double x = (p.x() * 25) + image.cols / 2;
-            double y = (p.y() * 25) + image.rows / 2;
-            lrf_image.at<float>(y, x) = 1;
+
+        std::vector<geo::Vector3> points;
+        if (lrf.rangesToPoints(ranges, points)) {
+            for(unsigned int i = 0; i < points.size(); ++i) {
+                const geo::Vector3& p = points[i];
+                double x = (p.x() * 25) + image.cols / 2;
+                double y = (-p.y() * 25) + image.rows / 2;
+                lrf_image.at<float>(y, x) = 1;
+            }
         }
 
         cv::Mat destinationROI2 = display_image(cv::Rect(cv::Point(640, 0), cv::Size(640, 480)));

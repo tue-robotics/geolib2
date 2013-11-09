@@ -13,7 +13,7 @@ CompositeShape* CompositeShape::clone() const {
 }
 
 bool CompositeShape::intersect(const Ray &, float t0, float t1, double& distance) const {
-    std::cout << "CompositeShape::intersect NOT YET IMPLEMENTED!" << std::endl;
+//    std::cout << "CompositeShape::intersect NOT YET IMPLEMENTED!" << std::endl;
     return false;
 }
 
