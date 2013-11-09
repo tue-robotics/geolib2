@@ -29,9 +29,19 @@ void LaserRangeFinder::render(const Shape& shape, const Pose3D& cam_pose, const 
     if (max_radius > 0) {
         tf::Transform t_inv = t.inverse();
 
+        // If object is to far above or below the laser plane, do not render
+        if (std::abs(t_inv.getOrigin().getZ()) > max_radius) {
+            return;
+        }
+
         double dist = t_inv.getOrigin().length();
 
         if (dist > max_radius) {
+            // If nearest object point is certainly further away than max_range, do not render
+            if (dist - max_radius > range_max_) {
+                return;
+            }
+
             double a = getAngle(t_inv.getOrigin().x(), t_inv.getOrigin().y());
             double a_limit = asin(max_radius / dist);
             double a_min = a - a_limit;
@@ -47,8 +57,13 @@ void LaserRangeFinder::render(const Shape& shape, const Pose3D& cam_pose, const 
         geo::Vector3 dir_t = t.getBasis() * ray_dirs_[i];
         Ray r_t(t.getOrigin(), dir_t);
 
+        double t1 = range_max_;
+        if (ranges[i] > 0 && ranges[i] < range_max_) {
+            t1 = ranges[i];
+        }
+
         double distance = 0;
-        if (shape.intersect(r_t, range_min_, range_max_, distance)) {
+        if (shape.intersect(r_t, range_min_, t1, distance)) {
             if (ranges[i] == 0 || distance < ranges[i]) {
                 ranges[i] = distance;
             }

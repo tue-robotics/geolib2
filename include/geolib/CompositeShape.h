@@ -21,6 +21,10 @@ public:
 
     void addShape(const Shape& shape, const Pose3D& pose);
 
+protected:
+
+    std::vector<std::pair<ShapePtr, tf::Transform> > shapes_;
+
 };
 
 }

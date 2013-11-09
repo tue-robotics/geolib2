@@ -278,8 +278,8 @@ int main(int argc, char **argv) {
         if (lrf.rangesToPoints(ranges, points)) {
             for(unsigned int i = 0; i < points.size(); ++i) {
                 const geo::Vector3& p = points[i];
-                double x = (p.x() * 25) + image.cols / 2;
-                double y = (-p.y() * 25) + image.rows / 2;
+                double x = (-p.y() * 25) + image.cols / 2;
+                double y = (-p.x() * 25) + image.rows / 2;
                 lrf_image.at<float>(y, x) = 1;
             }
         }
