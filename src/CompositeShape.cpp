@@ -2,7 +2,7 @@
 
 namespace geo {
 
-CompositeShape::CompositeShape() {
+CompositeShape::CompositeShape() : max_radius_(0), min_(1e10, 1e10, 1e10), max_(-1e10, -1e10, -1e10), bb_(-min_, -max_) {
 }
 
 CompositeShape::~CompositeShape() {
@@ -13,6 +13,9 @@ CompositeShape* CompositeShape::clone() const {
 }
 
 bool CompositeShape::intersect(const Ray& r, float t0, float t1, double& distance) const {
+    if (!bb_.intersect(r, t0, t1, distance)) {
+        return false;
+    }
 
     bool hit = false;
     double min_distance = t1;
@@ -37,6 +40,10 @@ bool CompositeShape::intersect(const Ray& r, float t0, float t1, double& distanc
     return false;
 }
 
+double CompositeShape::getMaxRadius() const {
+    return max_radius_;
+}
+
 void CompositeShape::addShape(const Shape& shape, const Pose3D& pose) {
     // add to shapes
     shapes_.push_back(std::pair<ShapePtr, tf::Transform>(ShapePtr(shape.clone()), pose.inverse()));
@@ -44,8 +51,25 @@ void CompositeShape::addShape(const Shape& shape, const Pose3D& pose) {
     // add to mesh
     const std::vector<Triangle>& triangles = shape.getMesh();
     for(std::vector<Triangle>::const_iterator it = triangles.begin(); it != triangles.end(); ++it) {
-        mesh_.push_back(geo::Triangle(pose * it->p1_, pose * it->p2_, pose * it->p3_));
+        Vector3 p1 = pose * it->p1_;
+        Vector3 p2 = pose * it->p2_;
+        Vector3 p3 = pose * it->p3_;
+        mesh_.push_back(geo::Triangle(p1, p2, p3));
+
+        max_radius_ = std::max(max_radius_, p1.length());
+        max_radius_ = std::max(max_radius_, p2.length());
+        max_radius_ = std::max(max_radius_, p3.length());
+
+        min_.setX(std::min(min_.getX(), std::min(p1.x(), std::min(p2.x(), p3.x()))));
+        min_.setY(std::min(min_.getY(), std::min(p1.y(), std::min(p2.y(), p3.y()))));
+        min_.setZ(std::min(min_.getZ(), std::min(p1.z(), std::min(p2.z(), p3.z()))));
+
+        max_.setX(std::max(max_.getX(), std::max(p1.x(), std::max(p2.x(), p3.x()))));
+        max_.setY(std::max(max_.getY(), std::max(p1.y(), std::max(p2.y(), p3.y()))));
+        max_.setZ(std::max(max_.getZ(), std::max(p1.z(), std::max(p2.z(), p3.z()))));
     }
+
+    bb_ = Box(min_, max_);
 }
 
 }
