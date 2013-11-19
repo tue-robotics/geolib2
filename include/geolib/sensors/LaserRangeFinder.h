@@ -5,15 +5,20 @@
 
 namespace geo {
 
-class LaserRangeFinder {
+class LaserRangeFinder {    
 
 public:
+
+    struct RenderResult {
+        int min_i;
+        int max_i;
+    };
 
     LaserRangeFinder();
 
     virtual ~LaserRangeFinder();
 
-    void render(const Shape& shape, const Pose3D& cam_pose, const Pose3D& obj_pose, std::vector<double>& ranges) const;
+    RenderResult render(const Shape& shape, const Pose3D& cam_pose, const Pose3D& obj_pose, std::vector<double>& ranges) const;
 
     void setAngleLimits(double min, double max);
 
@@ -34,6 +39,8 @@ public:
     double getRangeMax() const;
 
     int getNumBeams() const;
+
+    geo::Vector3 rangeToPoint(double range, int i);
 
     bool rangesToPoints(const std::vector<double>& ranges, std::vector<geo::Vector3>& points) const;
 

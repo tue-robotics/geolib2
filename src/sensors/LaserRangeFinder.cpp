@@ -15,7 +15,11 @@ LaserRangeFinder::~LaserRangeFinder() {
 //
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 
-void LaserRangeFinder::render(const Shape& shape, const Pose3D& cam_pose, const Pose3D& obj_pose, std::vector<double>& ranges) const {
+LaserRangeFinder::RenderResult LaserRangeFinder::render(const Shape& shape, const Pose3D& cam_pose, const Pose3D& obj_pose, std::vector<double>& ranges) const {
+    LaserRangeFinder::RenderResult res;
+    res.min_i = 0;
+    res.max_i = 0;
+
     tf::Transform t = obj_pose.inverse() * cam_pose;
 
     if (ranges.size() != ray_dirs_.size()) {
@@ -31,7 +35,7 @@ void LaserRangeFinder::render(const Shape& shape, const Pose3D& cam_pose, const 
 
         // If object is to far above or below the laser plane, do not render
         if (std::abs(t_inv.getOrigin().getZ()) > max_radius) {
-            return;
+            return res;
         }
 
         double dist = t_inv.getOrigin().length();
@@ -39,7 +43,7 @@ void LaserRangeFinder::render(const Shape& shape, const Pose3D& cam_pose, const 
         if (dist > max_radius) {
             // If nearest object point is certainly further away than max_range, do not render
             if (dist - max_radius > range_max_) {
-                return;
+                return res;
             }
 
             double a = getAngle(t_inv.getOrigin().x(), t_inv.getOrigin().y());
@@ -52,6 +56,7 @@ void LaserRangeFinder::render(const Shape& shape, const Pose3D& cam_pose, const 
         }
     }
 
+    res.min_i = -1;
 
     for(int i = i_min; i < i_max; ++i) {
         geo::Vector3 dir_t = t.getBasis() * ray_dirs_[i];
@@ -66,9 +71,19 @@ void LaserRangeFinder::render(const Shape& shape, const Pose3D& cam_pose, const 
         if (shape.intersect(r_t, range_min_, t1, distance)) {
             if (ranges[i] == 0 || distance < ranges[i]) {
                 ranges[i] = distance;
+                if (res.min_i < 0) {
+                    res.min_i = i;
+                }
+                res.max_i = i;
             }
         }
     }
+
+    if (res.min_i < 0) {
+        res.min_i = 0;
+    }
+
+    return res;
 }
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -142,6 +157,10 @@ int LaserRangeFinder::getNumBeams() const {
 //                                        CONVERSIONS
 //
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+
+geo::Vector3 LaserRangeFinder::rangeToPoint(double range, int i) {
+    return ray_dirs_[i] * range;
+}
 
 bool LaserRangeFinder::rangesToPoints(const std::vector<double>& ranges, std::vector<geo::Vector3>& points) const {
     if (ranges.size() != ray_dirs_.size()) {
