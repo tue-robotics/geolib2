@@ -3,6 +3,7 @@
 
 #include "Ray.h"
 #include "Triangle.h"
+#include "Mesh.h"
 
 namespace geo {
 
@@ -22,11 +23,12 @@ public:
 
     virtual double getMaxRadius() const;
 
-    virtual const std::vector<Triangle>& getMesh() const;
+    virtual const Mesh& getMesh() const;
 
 protected:
 
-    std::vector<Triangle> mesh_;
+    Mesh mesh_;
+
 };
 
 }

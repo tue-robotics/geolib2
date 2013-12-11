@@ -41,7 +41,7 @@ public:
 
     bool intersect(const Box& b) const;
 
-    const std::vector<Triangle>& getMesh() const;
+    const Mesh& getMesh() const;
 
 protected:
 
@@ -55,7 +55,7 @@ protected:
 
     OctreeNode* root_;
 
-    mutable std::vector<Triangle> mesh_;
+    mutable Mesh mesh_;
 
 };
 

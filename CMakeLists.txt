@@ -39,6 +39,7 @@ rosbuild_add_library(geolib src/Box.cpp
                              src/OctreeNode.cpp
                              src/Ray.cpp
                              src/Shape.cpp
+                             src/Mesh.cpp
                              src/CompositeShape.cpp
                              src/Triangle.cpp
                              src/HeightMap.cpp

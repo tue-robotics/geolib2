@@ -100,20 +100,19 @@ RasterizeResult DepthCamera::rasterize(const Shape& shape, const Pose3D& pose, c
 
     double near_clip_z = -0.1;
 
-    std::vector<Triangle> triangles = shape.getMesh();
-
+    std::vector<Triangle> triangles = shape.getMesh().getTransformed(pose_in).getTriangles();
     for(std::vector<Triangle>::const_iterator it_tri = triangles.begin(); it_tri != triangles.end(); ++it_tri) {
         const Triangle& t = *it_tri;
 
-        Vector3 p1_3d = pose_in * t.p1_;
-        Vector3 p2_3d = pose_in * t.p2_;
-        Vector3 p3_3d = pose_in * t.p3_;
+        const Vector3& p1_3d = t.p1_;
+        const Vector3& p2_3d = t.p2_;
+        const Vector3& p3_3d = t.p3_;
 
         int n_verts_in = 0;
         bool v1_in = false;
         bool v2_in = false;
         bool v3_in = false;
-        Vector3* vIn[3];
+        const Vector3* vIn[3];
 
         if (p1_3d.z() < near_clip_z) {
             ++n_verts_in;

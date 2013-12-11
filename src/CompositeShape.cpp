@@ -49,12 +49,11 @@ void CompositeShape::addShape(const Shape& shape, const Pose3D& pose) {
     shapes_.push_back(std::pair<ShapePtr, tf::Transform>(ShapePtr(shape.clone()), pose.inverse()));
 
     // add to mesh
-    const std::vector<Triangle>& triangles = shape.getMesh();
+    const std::vector<Triangle>& triangles = shape.getMesh().getTriangles();
     for(std::vector<Triangle>::const_iterator it = triangles.begin(); it != triangles.end(); ++it) {
         Vector3 p1 = pose * it->p1_;
         Vector3 p2 = pose * it->p2_;
         Vector3 p3 = pose * it->p3_;
-        mesh_.push_back(geo::Triangle(p1, p2, p3));
 
         max_radius_ = std::max(max_radius_, p1.length());
         max_radius_ = std::max(max_radius_, p2.length());
@@ -68,6 +67,8 @@ void CompositeShape::addShape(const Shape& shape, const Pose3D& pose) {
         max_.setY(std::max(max_.getY(), std::max(p1.y(), std::max(p2.y(), p3.y()))));
         max_.setZ(std::max(max_.getZ(), std::max(p1.z(), std::max(p2.z(), p3.z()))));
     }
+
+    mesh_.add(shape.getMesh().getTransformed(pose));
 
     bb_ = Box(min_, max_);
 }

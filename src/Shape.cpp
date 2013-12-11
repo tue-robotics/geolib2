@@ -10,7 +10,7 @@ Shape::~Shape() {
 
 }
 
-const std::vector<Triangle>& Shape::getMesh() const {
+const Mesh& Shape::getMesh() const {
     return mesh_;
 }
 

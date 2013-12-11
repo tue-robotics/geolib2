@@ -65,33 +65,42 @@ HeightMap HeightMap::fromGrid(const std::vector<std::vector<double> >& grid, dou
             double y1 = resolution * my;
             double y2 = resolution * (my + 1);
 
+            int p0 = hmap.mesh_.addPoint(x1, y1, h);
+            int p1 = hmap.mesh_.addPoint(x2, y1, h);
+            int p2 = hmap.mesh_.addPoint(x1, y2, h);
+            int p3 = hmap.mesh_.addPoint(x2, y2, h);
 
             if (h > 0) {
                 // add top triangles
-                hmap.mesh_.push_back(Triangle(Vector3(x1, y1, h), Vector3(x2, y1, h), Vector3(x1, y2, h)));
-                hmap.mesh_.push_back(Triangle(Vector3(x2, y1, h), Vector3(x2, y2, h), Vector3(x1, y2, h)));
+                hmap.mesh_.addTriangle(p0, p1, p2);
+                hmap.mesh_.addTriangle(p1, p3, p2);
             }
-
 
             if (mx > 0) {
                 double h2 = grid[mx-1][my];
-                if (h < h2) {
-                    hmap.mesh_.push_back(Triangle(Vector3(x1, y2, h), Vector3(x1, y1, h2), Vector3(x1, y1, h)));
-                    hmap.mesh_.push_back(Triangle(Vector3(x1, y1, h2), Vector3(x1, y2, h), Vector3(x1, y2, h2)));
-                } else if (h > h2) {
-                    hmap.mesh_.push_back(Triangle(Vector3(x1, y2, h), Vector3(x1, y1, h2), Vector3(x1, y1, h)));
-                    hmap.mesh_.push_back(Triangle(Vector3(x1, y1, h2), Vector3(x1, y2, h), Vector3(x1, y2, h2)));
-                }
+                int p4 = hmap.mesh_.addPoint(x1, y1, h2);
+                int p6 = hmap.mesh_.addPoint(x1, y2, h2);
+
+//                if (h < h2) {
+                    hmap.mesh_.addTriangle(p2, p4, p0);
+                    hmap.mesh_.addTriangle(p4, p2, p6);
+//                } else if (h > h2) {
+//                    hmap.mesh_.addTriangle(p2, p4, p0);
+//                    hmap.mesh_.addTriangle(p4, p2, p6);
+//                }
             }
 
             if (my > 0) {
                 double h2 = grid[mx][my-1];
+                int p4 = hmap.mesh_.addPoint(x1, y1, h2);
+                int p5 = hmap.mesh_.addPoint(x2, y1, h2);
+
                 if (h < h2) {
-                    hmap.mesh_.push_back(Triangle(Vector3(x1, y1, h2), Vector3(x2, y1, h), Vector3(x1, y1, h)));
-                    hmap.mesh_.push_back(Triangle(Vector3(x2, y1, h), Vector3(x1, y1, h2), Vector3(x2, y1, h2)));
+                    hmap.mesh_.addTriangle(p4, p1, p0);
+                    hmap.mesh_.addTriangle(p1, p4, p5);
                 } else if (h > h2) {
-                    hmap.mesh_.push_back(Triangle(Vector3(x1, y1, h2), Vector3(x2, y1, h), Vector3(x1, y1, h)));
-                    hmap.mesh_.push_back(Triangle(Vector3(x2, y1, h), Vector3(x1, y1, h2), Vector3(x2, y1, h2)));
+                    hmap.mesh_.addTriangle(p4, p1, p0);
+                    hmap.mesh_.addTriangle(p1, p4, p5);
                 }
             }
 
