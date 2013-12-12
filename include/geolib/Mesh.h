@@ -5,9 +5,9 @@
 
 namespace geo {
 
-struct Index3 {
+struct TriangleI {
 
-    Index3(int i1, int i2, int i3) : i1_(i1), i2_(i2), i3_(i3) {}
+    TriangleI(int i1, int i2, int i3) : i1_(i1), i2_(i2), i3_(i3) {}
 
     int i1_, i2_, i3_;
 };
@@ -39,11 +39,15 @@ public:
 
     const std::vector<Triangle>& getTriangles() const;
 
+    const std::vector<tf::Vector3>& getPoints() const;
+
+    const std::vector<TriangleI>& getTriangleIs() const;
+
 protected:
 
     std::vector<tf::Vector3> points_;
 
-    std::vector<Index3> triangles_i_;
+    std::vector<TriangleI> triangles_i_;
 
     mutable std::vector<Triangle> triangles_;
 

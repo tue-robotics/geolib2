@@ -79,9 +79,13 @@ public:
 
     RasterizeResult rasterize(const Shape& shape, const Pose3D& cam_pose, const Pose3D& obj_pose, cv::Mat& image) const;
 
-    cv::Point2d project3Dto2D(const Vector3 p, int width, int height) const;
+    inline cv::Point2d project3Dto2D(const Vector3 p, int width, int height) const {
+        return cv::Point2d((fx_ * p.x() + tx_) / -p.z() + cx_, (fy_ * -p.y() + ty_) / -p.z() + cy_);
+    }
 
-    Vector3 project2Dto3D(int x, int y) const;
+    inline Vector3 project2Dto3D(int x, int y) const {
+        return Vector3((x - cx_ - tx_) / fx_, -(y - cy_ - ty_) / fy_, -1.0);
+    }
 
     void setFocalLengths(double fx, double fy);
 
@@ -99,7 +103,7 @@ protected:
 
     void drawTriangle(float x1, float y1, float depth1,
                                       float x2, float y2, float depth2,
-                                      float x3, float y3, float depth3, cv::Mat& image) const;
+                                      float x3, float y3, float depth3, cv::Mat& image, RasterizeResult& res) const;
 
     void drawSpansBetweenEdges(const Edge& e1, const Edge& e2, cv::Mat& image) const;
 

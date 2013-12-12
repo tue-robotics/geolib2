@@ -59,22 +59,6 @@ void DepthCamera::setOpticalTranslation(double tx, double ty) {
     ty_ = ty;
 }
 
-cv::Point2d DepthCamera::project3Dto2D(const Vector3 p, int width, int height) const {
-    //std::cout << -p.z() << std::endl;
-    //return cv::Point2d((p.x() / -p.z() + 0.5) * width, (-p.y() / -p.z() + 0.5) * height);
-
-//    cv::Point2d uv_rect;
-//    uv_rect.x = (fx()*xyz.x + Tx()) / xyz.z + cx();
-//    uv_rect.y = (fy()*xyz.y + Ty()) / xyz.z + cy();
-//    return uv_rect;
-
-    return cv::Point2d((fx_ * p.x() + tx_) / -p.z() + cx_, (fy_ * -p.y() + ty_) / -p.z() + cy_);
-}
-
-Vector3 DepthCamera::project2Dto3D(int x, int y) const {
-    return Vector3((x - cx_ - tx_) / fx_, -(y - cy_ - ty_) / fy_, -1.0);
-}
-
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 //
 //                                        RASTERIZATION
@@ -100,13 +84,19 @@ RasterizeResult DepthCamera::rasterize(const Shape& shape, const Pose3D& pose, c
 
     double near_clip_z = -0.1;
 
-    std::vector<Triangle> triangles = shape.getMesh().getTransformed(pose_in).getTriangles();
-    for(std::vector<Triangle>::const_iterator it_tri = triangles.begin(); it_tri != triangles.end(); ++it_tri) {
-        const Triangle& t = *it_tri;
+    const std::vector<TriangleI>& triangles = shape.getMesh().getTriangleIs();
+    const std::vector<Vector3>& points = shape.getMesh().getPoints();
 
-        const Vector3& p1_3d = t.p1_;
-        const Vector3& p2_3d = t.p2_;
-        const Vector3& p3_3d = t.p3_;
+    // transform points
+    std::vector<Vector3> points_t(points.size());
+    for(unsigned int i = 0; i < points.size(); ++i) {
+        points_t[i] = pose_in * points[i];
+    }
+
+    for(std::vector<TriangleI>::const_iterator it_tri = triangles.begin(); it_tri != triangles.end(); ++it_tri) {
+        const Vector3& p1_3d = points_t[it_tri->i1_];
+        const Vector3& p2_3d = points_t[it_tri->i2_];
+        const Vector3& p3_3d = points_t[it_tri->i3_];
 
         int n_verts_in = 0;
         bool v1_in = false;
@@ -197,12 +187,21 @@ void DepthCamera::drawTriangle(const Vector3& p1_3d, const Vector3& p2_3d, const
     cv::Point2d p2_2d = project3Dto2D(p2_3d, image.cols, image.rows);
     cv::Point2d p3_2d = project3Dto2D(p3_3d, image.cols, image.rows);
 
-    if ((p2_2d.x - p1_2d.x) * (p3_2d.y - p1_2d.y) - (p3_2d.x - p1_2d.x) * (p2_2d.y - p1_2d.y) < 0) {
+    drawTriangle(p1_2d.x, p1_2d.y, -p1_3d.z(),
+                 p2_2d.x, p2_2d.y, -p2_3d.z(),
+                 p3_2d.x, p3_2d.y, -p3_3d.z(), image, res);
+}
 
-        int min_x = std::min<int>(p1_2d.x, std::min<int>(p2_2d.x, p3_2d.x));
-        int min_y = std::min<int>(p1_2d.y, std::min<int>(p2_2d.y, p3_2d.y));
-        int max_x = std::max<int>(p1_2d.x, std::max<int>(p2_2d.x, p3_2d.x));
-        int max_y = std::max<int>(p1_2d.y, std::max<int>(p2_2d.y, p3_2d.y));
+
+void DepthCamera::drawTriangle(float x1, float y1, float depth1,
+                                  float x2, float y2, float depth2,
+                                  float x3, float y3, float depth3, cv::Mat& image, RasterizeResult& res) const {
+
+    if ((x2 - x1) * (y3 - y1) - (x3 - x1) * (y2 - y1) < 0) {
+        int min_x = std::min<int>(x1, std::min<int>(x2, x3));
+        int min_y = std::min<int>(y1, std::min<int>(y2, y3));
+        int max_x = std::max<int>(x1, std::max<int>(x2, x3));
+        int max_y = std::max<int>(y1, std::max<int>(y2, y3));
 
         if (min_x < image.cols && max_x > 0 && min_y < image.rows && max_y > 0) {
             res.min_x = std::max(0, std::min<int>(res.min_x, min_x));
@@ -210,51 +209,40 @@ void DepthCamera::drawTriangle(const Vector3& p1_3d, const Vector3& p2_3d, const
             res.max_x = std::min(image.cols - 1, std::max<int>(res.max_x, max_x));
             res.max_y = std::min(image.rows - 1, std::max<int>(res.max_y, max_y));
 
-            drawTriangle(p1_2d.x, p1_2d.y, -p1_3d.z(),
-                         p2_2d.x, p2_2d.y, -p2_3d.z(),
-                         p3_2d.x, p3_2d.y, -p3_3d.z(), image);
-        }
+            float depth1_inv = 1 / depth1;
+            float depth2_inv = 1 / depth2;
+            float depth3_inv = 1 / depth3;
 
-    }
-}
+            // create edges for the triangle
+            Edge edges[3] = {
+                Edge((int)x1, (int)y1, depth1_inv, (int)x2, (int)y2, depth2_inv),
+                Edge((int)x2, (int)y2, depth2_inv, (int)x3, (int)y3, depth3_inv),
+                Edge((int)x3, (int)y3, depth3_inv, (int)x1, (int)y1, depth1_inv)
+            };
 
+            int maxLength = 0;
+            int longEdge = 0;
 
-void DepthCamera::drawTriangle(float x1, float y1, float depth1,
-                                  float x2, float y2, float depth2,
-                                  float x3, float y3, float depth3, cv::Mat& image) const {
+            // find edge with the greatest length in the y axis
+            for(int i = 0; i < 3; i++) {
+        //        std::cout << "Edge: " << edges[i].X1 << ", " << edges[i].Y1 << " - " << edges[i].X2 << ", " << edges[i].Y2 << std::endl;
 
-    float depth1_inv = 1 / depth1;
-    float depth2_inv = 1 / depth2;
-    float depth3_inv = 1 / depth3;
+                int length = edges[i].Y2 - edges[i].Y1;
+                if(length > maxLength) {
+                    maxLength = length;
+                    longEdge = i;
+                }
+            }
 
-    // create edges for the triangle
-    Edge edges[3] = {
-        Edge((int)x1, (int)y1, depth1_inv, (int)x2, (int)y2, depth2_inv),
-        Edge((int)x2, (int)y2, depth2_inv, (int)x3, (int)y3, depth3_inv),
-        Edge((int)x3, (int)y3, depth3_inv, (int)x1, (int)y1, depth1_inv)
-    };
+            int shortEdge1 = (longEdge + 1) % 3;
+            int shortEdge2 = (longEdge + 2) % 3;
 
-    int maxLength = 0;
-    int longEdge = 0;
-
-    // find edge with the greatest length in the y axis
-    for(int i = 0; i < 3; i++) {
-//        std::cout << "Edge: " << edges[i].X1 << ", " << edges[i].Y1 << " - " << edges[i].X2 << ", " << edges[i].Y2 << std::endl;
-
-        int length = edges[i].Y2 - edges[i].Y1;
-        if(length > maxLength) {
-            maxLength = length;
-            longEdge = i;
+            // draw spans between edges; the long edge can be drawn
+            // with the shorter edges to draw the full triangle
+            drawSpansBetweenEdges(edges[longEdge], edges[shortEdge1], image);
+            drawSpansBetweenEdges(edges[longEdge], edges[shortEdge2], image);
         }
     }
-
-    int shortEdge1 = (longEdge + 1) % 3;
-    int shortEdge2 = (longEdge + 2) % 3;
-
-    // draw spans between edges; the long edge can be drawn
-    // with the shorter edges to draw the full triangle
-    drawSpansBetweenEdges(edges[longEdge], edges[shortEdge1], image);
-    drawSpansBetweenEdges(edges[longEdge], edges[shortEdge2], image);
 }
 
 void DepthCamera::drawSpansBetweenEdges(const Edge& e1, const Edge& e2, cv::Mat& image) const {

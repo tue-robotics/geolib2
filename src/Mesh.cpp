@@ -19,7 +19,7 @@ int Mesh::addPoint(double x, double y, double z) {
 }
 
 void Mesh::addTriangle(int i1, int i2, int i3) {
-    triangles_i_.push_back(Index3(i1, i2, i3));
+    triangles_i_.push_back(TriangleI(i1, i2, i3));
     triangles_.clear();
 }
 
@@ -27,16 +27,24 @@ void Mesh::add(const Mesh& mesh) {
     int i_start = points_.size();
     points_.insert(points_.end(), mesh.points_.begin(), mesh.points_.end());
 
-    for(std::vector<Index3>::const_iterator it = mesh.triangles_i_.begin(); it != mesh.triangles_i_.end(); ++it) {
-        triangles_i_.push_back(Index3(it->i1_ + i_start, it->i2_ + i_start, it->i3_ + i_start));
+    for(std::vector<TriangleI>::const_iterator it = mesh.triangles_i_.begin(); it != mesh.triangles_i_.end(); ++it) {
+        triangles_i_.push_back(TriangleI(it->i1_ + i_start, it->i2_ + i_start, it->i3_ + i_start));
     }
 
     triangles_.clear();
 }
 
+const std::vector<tf::Vector3>& Mesh::getPoints() const {
+    return points_;
+}
+
+const std::vector<TriangleI>& Mesh::getTriangleIs() const {
+    return triangles_i_;
+}
+
 const std::vector<Triangle>& Mesh::getTriangles() const {
     if (triangles_.empty()) {
-        for(std::vector<Index3>::const_iterator it = triangles_i_.begin(); it != triangles_i_.end(); ++it) {
+        for(std::vector<TriangleI>::const_iterator it = triangles_i_.begin(); it != triangles_i_.end(); ++it) {
             triangles_.push_back(Triangle(points_[it->i1_], points_[it->i2_], points_[it->i3_]));
         }
     }
