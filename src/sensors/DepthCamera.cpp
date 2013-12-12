@@ -89,8 +89,11 @@ RasterizeResult DepthCamera::rasterize(const Shape& shape, const Pose3D& pose, c
 
     // transform points
     std::vector<Vector3> points_t(points.size());
+    std::vector<cv::Point2d> points_proj(points.size());
+
     for(unsigned int i = 0; i < points.size(); ++i) {
         points_t[i] = pose_in * points[i];
+        points_proj[i] = project3Dto2D(points_t[i], image.cols, image.rows);
     }
 
     for(std::vector<TriangleI>::const_iterator it_tri = triangles.begin(); it_tri != triangles.end(); ++it_tri) {
@@ -165,7 +168,14 @@ RasterizeResult DepthCamera::rasterize(const Shape& shape, const Pose3D& pose, c
             drawTriangle(new2, *vIn[1], new3, image, res);
 
         } else if (n_verts_in == 3) {
-            drawTriangle(p1_3d, p2_3d, p3_3d, image, res);
+            const cv::Point2d& p1_2d = points_proj[it_tri->i1_];
+            const cv::Point2d& p2_2d = points_proj[it_tri->i2_];
+            const cv::Point2d& p3_2d = points_proj[it_tri->i3_];
+
+            drawTriangle(p1_2d.x, p1_2d.y, -p1_3d.z(),
+                         p2_2d.x, p2_2d.y, -p2_3d.z(),
+                         p3_2d.x, p3_2d.y, -p3_3d.z(),
+                         image, res);
         }
     }
 

@@ -228,7 +228,7 @@ int main(int argc, char **argv) {
     std::cout << "DepthCamera::rasterize(box):\t" << renderDepthCamera(image, shape, true, false) << " ms" << std::endl;
     std::cout << "DepthCamera::rasterize(table):\t" << renderDepthCamera(image, table, true, false) << " ms" << std::endl;
     std::cout << "DepthCamera::rasterize(heightmap):\t" << renderDepthCamera(image, hmap, true, false) << " ms" << std::endl;
-    //std::cout << "DepthCamera::rasterize(abstract_shape):\t" << render(image, tree, true, false) << " ms" << std::endl;
+//    std::cout << "DepthCamera::rasterize(abstract_shape):\t" << renderDepthCamera(image, tree, true, false) << " ms" << std::endl;
 
     std::cout << "LaserRangeFinder::render(box):\t" << renderLRF(image, shape, true, false) << " ms" << std::endl;
     std::cout << "LaserRangeFinder::render(table):\t" << renderLRF(image, table, true, false) << " ms" << std::endl;
