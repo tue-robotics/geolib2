@@ -11,12 +11,15 @@
 
 #include <geolib/Importer.h>
 
+double CANVAS_WIDTH = 640;
+double CANVAS_HEIGHT = 480;
+
 using namespace geo;
 
 double renderDepthCamera(cv::Mat& image, const Shape& shape, bool rasterize, bool show) {
     DepthCamera cam;
-    cam.setFocalLengths(554.2559327880068, 554.2559327880068);
-    cam.setOpticalCenter(320.5, 240.5);
+    cam.setFocalLengths(554.2559327880068 * CANVAS_WIDTH / 640, 554.2559327880068 * CANVAS_HEIGHT / 480);
+    cam.setOpticalCenter(320.5 * CANVAS_WIDTH / 640, 240.5 * CANVAS_HEIGHT / 480);
     cam.setOpticalTranslation(0, 0);
 
     Timer timer;
@@ -208,7 +211,7 @@ int main(int argc, char **argv) {
 
     // * * * * * * * * * * * * * * * * * * * *
 
-    cv::Mat image = cv::Mat(480, 640, CV_32FC1, 0.0);
+    cv::Mat image = cv::Mat(CANVAS_HEIGHT, CANVAS_WIDTH, CV_32FC1, 0.0);
 
 //    DepthCamera cam;
     //cam.render(Box(Vector3(-2, -5, -5), Vector3(2, 5, 5)), Pose3D(-2.82, 0, 1.82, 0, 0.5, 0), image);
@@ -251,8 +254,8 @@ int main(int argc, char **argv) {
     //std::cout << "DepthCamera::rasterize(abstract_shape):\t" << render(image, tree, true, false) << " ms" << std::endl;
 
     DepthCamera cam;
-    cam.setFocalLengths(554.2559327880068, 554.2559327880068);
-    cam.setOpticalCenter(320.5, 240.5);
+    cam.setFocalLengths(554.2559327880068 * CANVAS_WIDTH / 640, 554.2559327880068 * CANVAS_HEIGHT / 480);
+    cam.setOpticalCenter(320.5 * CANVAS_WIDTH / 640, 240.5 * CANVAS_HEIGHT / 480);
     cam.setOpticalTranslation(0, 0);
 
     LaserRangeFinder lrf;
@@ -260,7 +263,7 @@ int main(int argc, char **argv) {
     lrf.setNumBeams(1000);
     lrf.setRangeLimits(0, 10);
 
-    cv::Mat display_image(480, 1280, CV_32FC1, 0.0);
+    cv::Mat display_image(CANVAS_HEIGHT, CANVAS_WIDTH * 2, CV_32FC1, 0.0);
 
     double angle = 0;
 
@@ -276,12 +279,12 @@ int main(int argc, char **argv) {
 
         // * * * * * * DEPTH CAMERA * * * * * *
 
-        cv::Mat depth_image = cv::Mat(480, 640, CV_32FC1, 0.0);
+        cv::Mat depth_image = cv::Mat(CANVAS_HEIGHT, CANVAS_WIDTH, CV_32FC1, 0.0);
         cam.rasterize(*shape1, Pose3D(0, 0, 0, 1.57, 0, -1.57), pose1, depth_image);
         cam.rasterize(shape2, Pose3D(0, 0, 0, 1.57, 0, -1.57), pose2, depth_image);
 
         cv::Mat depth_image2 = depth_image / 8;
-        cv::Mat destinationROI = display_image(cv::Rect(cv::Point(0, 0), cv::Size(640, 480)));
+        cv::Mat destinationROI = display_image(cv::Rect(cv::Point(0, 0), cv::Size(CANVAS_WIDTH, CANVAS_HEIGHT)));
         depth_image2.copyTo(destinationROI);
 
         // * * * * * * LRF * * * * * *
@@ -290,7 +293,7 @@ int main(int argc, char **argv) {
         lrf.render(*shape1, Pose3D(0, 0, 0), pose1, ranges);
         lrf.render(shape2, Pose3D(0, 0, 0), pose2, ranges);
 
-        cv::Mat lrf_image = cv::Mat(480, 640, CV_32FC1, 0.0);
+        cv::Mat lrf_image = cv::Mat(CANVAS_HEIGHT, CANVAS_WIDTH, CV_32FC1, 0.0);
 
         std::vector<geo::Vector3> points;
         if (lrf.rangesToPoints(ranges, points)) {
@@ -302,7 +305,7 @@ int main(int argc, char **argv) {
             }
         }
 
-        cv::Mat destinationROI2 = display_image(cv::Rect(cv::Point(640, 0), cv::Size(640, 480)));
+        cv::Mat destinationROI2 = display_image(cv::Rect(cv::Point(CANVAS_WIDTH, 0), cv::Size(CANVAS_WIDTH, CANVAS_HEIGHT)));
         lrf_image.copyTo(destinationROI2);
 
         cv::imshow("visualization", display_image);
