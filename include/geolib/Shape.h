@@ -11,15 +11,17 @@ class Box;
 
 class Shape {
 
+    friend class Importer;
+
 public:
 
     Shape();
 
     virtual ~Shape();
 
-    virtual Shape* clone() const = 0;
+    virtual Shape* clone() const;
 
-    virtual bool intersect(const Ray &, float t0, float t1, double& distance) const = 0;
+    virtual bool intersect(const Ray &, float t0, float t1, double& distance) const;
 
     virtual double getMaxRadius() const;
 

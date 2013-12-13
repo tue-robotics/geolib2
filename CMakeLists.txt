@@ -47,10 +47,14 @@ rosbuild_add_library(geolib src/Box.cpp
 
                              src/sensors/DepthCamera.cpp
                              src/sensors/LaserRangeFinder.cpp
+
+                             src/Importer.cpp
                              
                               ${HEADER_FILES})
+target_link_libraries(geolib assimp)
+
 
 # Tests
 rosbuild_add_executable(test_octree test/test_octree.cpp)
-target_link_libraries(test_octree geolib)
+target_link_libraries(test_octree geolib assimp)
 

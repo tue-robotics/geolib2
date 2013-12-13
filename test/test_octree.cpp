@@ -9,6 +9,8 @@
 
 #include <profiling/Timer.h>
 
+#include <geolib/Importer.h>
+
 using namespace geo;
 
 double renderDepthCamera(cv::Mat& image, const Shape& shape, bool rasterize, bool show) {
@@ -84,6 +86,15 @@ double renderLRF(cv::Mat& image, const Shape& shape, bool rasterize, bool show) 
 }
 
 int main(int argc, char **argv) {
+    ShapePtr mesh;
+    if (argc > 1) {
+        double scale = 1;
+        if (argc > 2) {
+            scale = atof(argv[2]);
+        }
+
+        mesh = geo::Importer::readMeshFile(std::string(argv[1]), scale);
+    }
 
     Octree tree(10);
 
@@ -228,6 +239,10 @@ int main(int argc, char **argv) {
     std::cout << "DepthCamera::rasterize(box):\t" << renderDepthCamera(image, shape, true, false) << " ms" << std::endl;
     std::cout << "DepthCamera::rasterize(table):\t" << renderDepthCamera(image, table, true, false) << " ms" << std::endl;
     std::cout << "DepthCamera::rasterize(heightmap):\t" << renderDepthCamera(image, hmap, true, false) << " ms" << std::endl;
+
+    if (mesh) {
+        std::cout << "DepthCamera::rasterize(input_mesh):\t" << renderDepthCamera(image, *mesh, true, false) << " ms" << std::endl;
+    }
 //    std::cout << "DepthCamera::rasterize(abstract_shape):\t" << renderDepthCamera(image, tree, true, false) << " ms" << std::endl;
 
     std::cout << "LaserRangeFinder::render(box):\t" << renderLRF(image, shape, true, false) << " ms" << std::endl;
@@ -250,7 +265,10 @@ int main(int argc, char **argv) {
     double angle = 0;
 
     while (true) {
-        Shape& shape1 = table;
+        Shape* shape1 = &table;
+        if (mesh) {
+            shape1 = mesh.get();
+        }
         Pose3D pose1(5, 1, -0.5, 0, 0, angle);
 
         Shape& shape2 = shape;
@@ -259,7 +277,7 @@ int main(int argc, char **argv) {
         // * * * * * * DEPTH CAMERA * * * * * *
 
         cv::Mat depth_image = cv::Mat(480, 640, CV_32FC1, 0.0);
-        cam.rasterize(shape1, Pose3D(0, 0, 0, 1.57, 0, -1.57), pose1, depth_image);
+        cam.rasterize(*shape1, Pose3D(0, 0, 0, 1.57, 0, -1.57), pose1, depth_image);
         cam.rasterize(shape2, Pose3D(0, 0, 0, 1.57, 0, -1.57), pose2, depth_image);
 
         cv::Mat depth_image2 = depth_image / 8;
@@ -269,7 +287,7 @@ int main(int argc, char **argv) {
         // * * * * * * LRF * * * * * *
 
         std::vector<double> ranges;
-        lrf.render(shape1, Pose3D(0, 0, 0), pose1, ranges);
+        lrf.render(*shape1, Pose3D(0, 0, 0), pose1, ranges);
         lrf.render(shape2, Pose3D(0, 0, 0), pose2, ranges);
 
         cv::Mat lrf_image = cv::Mat(480, 640, CV_32FC1, 0.0);
