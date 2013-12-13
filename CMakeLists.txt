@@ -55,6 +55,6 @@ target_link_libraries(geolib assimp)
 
 
 # Tests
-rosbuild_add_executable(test_octree test/test_octree.cpp)
-target_link_libraries(test_octree geolib assimp)
+rosbuild_add_executable(test_geolib test/test_geolib.cpp)
+target_link_libraries(test_geolib geolib assimp)
 
