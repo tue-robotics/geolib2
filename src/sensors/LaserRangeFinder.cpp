@@ -88,6 +88,117 @@ LaserRangeFinder::RenderResult LaserRangeFinder::render(const Shape& shape, cons
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 //
+//                                        RENDERING
+//
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+
+LaserRangeFinder::RenderResult LaserRangeFinder::render2(const Shape& shape, const Pose3D& cam_pose, const Pose3D& obj_pose, std::vector<double>& ranges) const {
+    LaserRangeFinder::RenderResult res;
+    res.min_i = 0;
+    res.max_i = ray_dirs_.size();
+
+    tf::Transform t = obj_pose.inverse() * cam_pose;
+    tf::Transform t_inv = t.inverse();
+
+    if (ranges.size() != ray_dirs_.size()) {
+        ranges.resize(ray_dirs_.size(), 0);
+    }
+
+    double max_radius = shape.getMaxRadius();
+    if (max_radius > 0) {
+
+        // If object is to far above or below the laser plane, do not render
+        if (std::abs(t_inv.getOrigin().getZ()) > max_radius) {
+            return res;
+        }
+
+        double dist = t_inv.getOrigin().length();
+
+        if (dist > max_radius) {
+            // If nearest object point is certainly further away than max_range, do not render
+            if (dist - max_radius > range_max_) {
+                return res;
+            }
+        }
+    }
+
+    const std::vector<TriangleI>& triangles = shape.getMesh().getTriangleIs();
+    const std::vector<Vector3>& points = shape.getMesh().getPoints();
+
+    // transform points
+    std::vector<Vector3> points_t(points.size());
+
+    for(unsigned int i = 0; i < points.size(); ++i) {
+        points_t[i] = t_inv * points[i];
+    }
+
+    for(std::vector<TriangleI>::const_iterator it_tri = triangles.begin(); it_tri != triangles.end(); ++it_tri) {
+        const Vector3& p1_3d = points_t[it_tri->i1_];
+        const Vector3& p2_3d = points_t[it_tri->i2_];
+        const Vector3& p3_3d = points_t[it_tri->i3_];
+
+        bool p1_under_plane = p1_3d.getZ() < 0;
+        bool p2_under_plane = p2_3d.getZ() < 0;
+        bool p3_under_plane = p3_3d.getZ() < 0;
+
+        if (p1_under_plane != p2_under_plane || p2_under_plane != p3_under_plane) {
+            double z1 = std::abs(p1_3d.getZ());
+            double z2 = std::abs(p2_3d.getZ());
+            double z3 = std::abs(p3_3d.getZ());
+
+            Vector3 q1, q2;
+            if (p2_under_plane == p3_under_plane) {
+                q1 = (p1_3d * z2 + p2_3d * z1) / (z1 + z2);
+                q2 = (p1_3d * z3 + p1_3d * z1) / (z1 + z3);
+            } else if (p1_under_plane == p3_under_plane) {
+                q1 = (p2_3d * z1 + p1_3d * z2) / (z2 + z1);
+                q2 = (p2_3d * z3 + p3_3d * z2) / (z2 + z3);
+            } if (p1_under_plane == p2_under_plane) {
+                q1 = (p3_3d * z1 + p1_3d * z3) / (z3 + z1);
+                q2 = (p3_3d * z2 + p2_3d * z3) / (z3 + z2);
+            }
+
+            double a1 = getAngle(q1.getX(), q1.getY());
+            double a2 = getAngle(q2.getX(), q2.getY());
+
+            double a_min = std::min(a1, a2);
+            double a_max = std::max(a1, a2);
+
+            Vector3 s = q2 - q1;
+
+            for(unsigned int i = 0; i < angles_.size(); ++i) {
+                double a = angles_[i];
+                if (a > a_min && a < a_max) {
+                    const Vector3& r = ray_dirs_[i];
+
+                    // v x w = v.x * w.y - v.y * w.x
+
+
+
+                    // t = (q1 - p) x s / (r x s)
+                    //   = (q1 x s) / (r x s)
+                    //   = (
+
+
+                    double d = (q1.getX() * s.getY() - q1.getY() * s.getX()) / (r.getX() * s.getY() - r.getY() * s.getX());
+                    if (ranges[i] == 0 || d < ranges[i]) {
+                        ranges[i] = d;
+                        res.min_i = std::min(res.min_i, (int)i);
+                        res.max_i = std::max(res.max_i, (int)i);
+                    }
+
+//                    std::cout << d << " ";
+                }
+            }
+//            std::cout << std::endl;
+        }
+    }
+
+    return res;
+}
+
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+//
 //                                        PARAMETERS
 //
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *

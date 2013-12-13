@@ -64,7 +64,7 @@ double renderLRF(cv::Mat& image, const Shape& shape, bool rasterize, bool show) 
         Pose3D pose(5, 0, -0.5, -1.57, 0, angle);
 
         std::vector<double> ranges;
-        lrf.render(shape, Pose3D(0, 0, 0), pose, ranges);
+        lrf.render2(shape, Pose3D(0, 0, 0), pose, ranges);
 
         if (show) {
             image = cv::Mat(image.rows, image.cols, CV_32FC1, 0.0);
@@ -290,8 +290,8 @@ int main(int argc, char **argv) {
         // * * * * * * LRF * * * * * *
 
         std::vector<double> ranges;
-        lrf.render(*shape1, Pose3D(0, 0, 0), pose1, ranges);
-        lrf.render(shape2, Pose3D(0, 0, 0), pose2, ranges);
+        lrf.render2(*shape1, Pose3D(0, 0, 0), pose1, ranges);
+        lrf.render2(shape2, Pose3D(0, 0, 0), pose2, ranges);
 
         cv::Mat lrf_image = cv::Mat(CANVAS_HEIGHT, CANVAS_WIDTH, CV_32FC1, 0.0);
 

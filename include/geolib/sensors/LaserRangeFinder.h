@@ -20,6 +20,8 @@ public:
 
     RenderResult render(const Shape& shape, const Pose3D& cam_pose, const Pose3D& obj_pose, std::vector<double>& ranges) const;
 
+    RenderResult render2(const Shape& shape, const Pose3D& cam_pose, const Pose3D& obj_pose, std::vector<double>& ranges) const;
+
     void setAngleLimits(double min, double max);
 
     void setRangeLimits(double min, double max);
