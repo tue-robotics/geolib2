@@ -15,7 +15,7 @@ LaserRangeFinder::~LaserRangeFinder() {
 //
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 
-LaserRangeFinder::RenderResult LaserRangeFinder::render(const Shape& shape, const Pose3D& cam_pose, const Pose3D& obj_pose, std::vector<double>& ranges) const {
+LaserRangeFinder::RenderResult LaserRangeFinder::raytrace(const Shape& shape, const Pose3D& cam_pose, const Pose3D& obj_pose, std::vector<double>& ranges) const {
     LaserRangeFinder::RenderResult res;
     res.min_i = 0;
     res.max_i = 0;
@@ -92,7 +92,7 @@ LaserRangeFinder::RenderResult LaserRangeFinder::render(const Shape& shape, cons
 //
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 
-LaserRangeFinder::RenderResult LaserRangeFinder::render2(const Shape& shape, const Pose3D& cam_pose, const Pose3D& obj_pose, std::vector<double>& ranges) const {
+LaserRangeFinder::RenderResult LaserRangeFinder::render(const Shape& shape, const Pose3D& cam_pose, const Pose3D& obj_pose, std::vector<double>& ranges) const {
     LaserRangeFinder::RenderResult res;
     res.min_i = 0;
     res.max_i = ray_dirs_.size();
@@ -149,14 +149,14 @@ LaserRangeFinder::RenderResult LaserRangeFinder::render2(const Shape& shape, con
             Vector3 q1, q2;
             if (p2_under_plane == p3_under_plane) {
                 q1 = (p1_3d * z2 + p2_3d * z1) / (z1 + z2);
-                q2 = (p1_3d * z3 + p1_3d * z1) / (z1 + z3);
+                q2 = (p1_3d * z3 + p3_3d * z1) / (z1 + z3);
             } else if (p1_under_plane == p3_under_plane) {
                 q1 = (p2_3d * z1 + p1_3d * z2) / (z2 + z1);
                 q2 = (p2_3d * z3 + p3_3d * z2) / (z2 + z3);
             } if (p1_under_plane == p2_under_plane) {
                 q1 = (p3_3d * z1 + p1_3d * z3) / (z3 + z1);
                 q2 = (p3_3d * z2 + p2_3d * z3) / (z3 + z2);
-            }
+            }            
 
             double a1 = getAngle(q1.getX(), q1.getY());
             double a2 = getAngle(q2.getX(), q2.getY());
@@ -164,33 +164,26 @@ LaserRangeFinder::RenderResult LaserRangeFinder::render2(const Shape& shape, con
             double a_min = std::min(a1, a2);
             double a_max = std::max(a1, a2);
 
+            int i_min = getAngleUpperIndex(a_min);
+            int i_max = getAngleUpperIndex(a_max);
+
+            res.min_i = std::min(res.min_i, (int)i_min);
+            res.max_i = std::max(res.max_i, (int)i_max);
+
             Vector3 s = q2 - q1;
 
-            for(unsigned int i = 0; i < angles_.size(); ++i) {
-                double a = angles_[i];
-                if (a > a_min && a < a_max) {
-                    const Vector3& r = ray_dirs_[i];
+            for(unsigned int i = i_min; (int)i < i_max; ++i) {
+                const Vector3& r = ray_dirs_[i];
 
-                    // v x w = v.x * w.y - v.y * w.x
+                // d = (q1 - ray_start) x s / (r x s)
+                //   = (q1 x s) / (r x s)
 
+                double d = (q1.getX() * s.getY() - q1.getY() * s.getX()) / (r.getX() * s.getY() - r.getY() * s.getX());
+                if (ranges[i] == 0 || d < ranges[i]) {
+                    ranges[i] = d;
 
-
-                    // t = (q1 - p) x s / (r x s)
-                    //   = (q1 x s) / (r x s)
-                    //   = (
-
-
-                    double d = (q1.getX() * s.getY() - q1.getY() * s.getX()) / (r.getX() * s.getY() - r.getY() * s.getX());
-                    if (ranges[i] == 0 || d < ranges[i]) {
-                        ranges[i] = d;
-                        res.min_i = std::min(res.min_i, (int)i);
-                        res.max_i = std::max(res.max_i, (int)i);
-                    }
-
-//                    std::cout << d << " ";
                 }
             }
-//            std::cout << std::endl;
         }
     }
 
@@ -249,6 +242,11 @@ double LaserRangeFinder::getAngleIncrement() const {
 
 const std::vector<double>& LaserRangeFinder::getAngles() const {
     return angles_;
+}
+
+int LaserRangeFinder::getAngleUpperIndex(double angle) const {
+    int i = (angle - a_min_) / (a_max_ - a_min_) * num_beams_ + 1;
+    return std::min(num_beams_, std::max(0, i));
 }
 
 double LaserRangeFinder::getRangeMin() const {
