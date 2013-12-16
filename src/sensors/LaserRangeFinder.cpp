@@ -283,7 +283,7 @@ bool LaserRangeFinder::rangesToPoints(const std::vector<double>& ranges, std::ve
 }
 
 geo::Vector3 LaserRangeFinder::polarTo2D(double angle, double range) {
-    return geo::Vector3(cos(angle), -sin(angle), 0) * range;
+    return geo::Vector3(cos(angle), sin(angle), 0) * range;
 }
 
 geo::Vector3 LaserRangeFinder::polarTo3D(const geo::Pose3D& laser_pose, double angle, double range) {
@@ -291,7 +291,7 @@ geo::Vector3 LaserRangeFinder::polarTo3D(const geo::Pose3D& laser_pose, double a
 }
 
 double LaserRangeFinder::getAngle(double x, double y) {
-    double a = atan(-y / x);
+    double a = atan(y / x);
     if (x < 0) {
         if (y < 0) {
             a = -M_PI + a;
