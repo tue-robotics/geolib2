@@ -103,9 +103,10 @@ HeightMap HeightMap::fromGrid(const std::vector<std::vector<double> >& grid, dou
                     hmap.mesh_.addTriangle(p1, p4, p5);
                 }
             }
-
         }
     }
+
+    hmap.mesh_.filterOverlappingVertices();
 
     return hmap;
 }

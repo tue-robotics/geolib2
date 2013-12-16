@@ -114,6 +114,8 @@ const Mesh& Octree::getMesh() const {
             Box& b = *it;
             mesh_.add(b.getMesh());
         }
+
+        mesh_.filterOverlappingVertices();
     }
 
     return mesh_;

@@ -43,6 +43,8 @@ public:
 
     const std::vector<TriangleI>& getTriangleIs() const;
 
+    void filterOverlappingVertices();
+
 protected:
 
     std::vector<tf::Vector3> points_;
