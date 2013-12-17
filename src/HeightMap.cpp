@@ -99,15 +99,19 @@ HeightMap HeightMap::fromGrid(const std::vector<std::vector<double> >& grid, dou
     }
 
     // side triangles x-axis
-    for(unsigned int mx = 0; mx < mx_max; ++mx) {
+    for(unsigned int mx = 0; mx <= mx_max; ++mx) {
 
         double h_last = 0;
         double h2_last = 0;
         int my_start = -1;
-        for(unsigned int my = 0; my < my_max; ++my) {
-            double h = grid[mx][my];
+        for(unsigned int my = 0; my <= my_max; ++my) {
+            double h = 0;
+            if (mx < mx_max && my < my_max) {
+                h = grid[mx][my];
+            }
+
             double h2 = 0;
-            if (mx > 0) {
+            if (mx > 0 && my < my_max) {
                 h2 = grid[mx - 1][my];
             }
 
@@ -128,7 +132,6 @@ HeightMap HeightMap::fromGrid(const std::vector<std::vector<double> >& grid, dou
                         my_start = -1;
                     }
                 }
-
             } else if (std::abs(h - h2) > 1e-10) {
                 my_start = my;
             }
@@ -139,14 +142,18 @@ HeightMap HeightMap::fromGrid(const std::vector<std::vector<double> >& grid, dou
     }
 
     // side triangles y-axis
-    for(unsigned int my = 0; my < my_max; ++my) {
+    for(unsigned int my = 0; my <= my_max; ++my) {
         double h_last = 0;
         double h2_last = 0;
         int mx_start = -1;
-        for(unsigned int mx = 0; mx < mx_max; ++mx) {
-            double h = grid[mx][my];
+        for(unsigned int mx = 0; mx <= mx_max; ++mx) {
+            double h = 0;
+            if (mx < mx_max && my < my_max) {
+                h = grid[mx][my];
+            }
+
             double h2 = 0;
-            if (my > 0) {
+            if (my > 0 && mx < mx_max) {
                 h2 = grid[mx][my - 1];
             }
 
@@ -167,7 +174,6 @@ HeightMap HeightMap::fromGrid(const std::vector<std::vector<double> >& grid, dou
                         mx_start = -1;
                     }
                 }
-
             } else if (std::abs(h - h2) > 1e-10) {
                 mx_start = mx;
             }
