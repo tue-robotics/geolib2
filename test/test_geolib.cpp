@@ -228,10 +228,15 @@ int main(int argc, char **argv) {
 
     for(int j = 0; j < hmap_size / 2; ++j) {
         for(int i = 0; i < hmap_size - j * 2; ++i) {
-            map[i+j][j] = j * 0.1;
-            map[i+j][hmap_size-j-1] = j * 0.1;
-            map[j][i+j] = j * 0.1;
-            map[hmap_size-j-1][i+j] = j * 0.1;
+            double h = 0.1 * j;
+//            if (j > 0) {
+//                h = 0;
+//            }
+
+            map[i+j][j] = h;
+            map[i+j][hmap_size-j-1] = h;
+            map[j][i+j] = h;
+            map[hmap_size-j-1][i+j] = h;
         }
     }
 
@@ -273,7 +278,7 @@ int main(int argc, char **argv) {
     double angle = 0;
 
     while (true) {
-        Shape* shape1 = &table;
+        Shape* shape1 = &hmap;
         if (mesh) {
             shape1 = mesh.get();
         }

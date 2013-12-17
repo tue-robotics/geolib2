@@ -179,7 +179,7 @@ LaserRangeFinder::RenderResult LaserRangeFinder::render(const Shape& shape, cons
                 //   = (q1 x s) / (r x s)
 
                 double d = (q1.getX() * s.getY() - q1.getY() * s.getX()) / (r.getX() * s.getY() - r.getY() * s.getX());
-                if (ranges[i] == 0 || d < ranges[i]) {
+                if (d > 0 && (ranges[i] == 0 || d < ranges[i])) {
                     ranges[i] = d;
 
                 }
