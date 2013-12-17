@@ -56,55 +56,127 @@ HeightMap HeightMap::fromGrid(const std::vector<std::vector<double> >& grid, dou
     HeightMap hmap;
     hmap.root_ = createQuadTree(pow_grid, 0, 0, pow_size, pow_size, resolution);
 
-    // calculate mesh for rasterization
+    // * * * * * * calculate mesh for rasterization * * * * * * * *
+
+    std::vector<std::vector<bool> > visited_grid(grid.size());
+    for(unsigned int mx = 0; mx < mx_max; ++mx) {
+        visited_grid[mx].resize(my_max, false);
+    }
+
+    // top triangles
     for(unsigned int mx = 0; mx < mx_max; ++mx) {
         for(unsigned int my = 0; my < my_max; ++my) {
             double h = grid[mx][my];
-            double x1 = resolution * mx;
-            double x2 = resolution * (mx + 1);
-            double y1 = resolution * my;
-            double y2 = resolution * (my + 1);
 
-            int p0 = hmap.mesh_.addPoint(x1, y1, h);
-            int p1 = hmap.mesh_.addPoint(x2, y1, h);
-            int p2 = hmap.mesh_.addPoint(x1, y2, h);
-            int p3 = hmap.mesh_.addPoint(x2, y2, h);
+            if (!visited_grid[mx][my] && h > 0) {
+                unsigned int max_x = mx_max;
+                unsigned int max_y = my;
+                for(unsigned int y2 = my; y2 < my_max && std::abs(grid[mx][y2] - h) < 1e-10; ++y2) {
+                    for(unsigned int x2 = mx; x2 < max_x; ++x2) {
+                        if (std::abs(grid[x2][y2] - h) > 1e-10) {
+                            max_x = x2;
+                            break;
+                        }
+                    }
+                    ++max_y;
+                }
 
-            if (h > 0) {
-                // add top triangles
+                for(unsigned int y2 = my; y2 < max_y; ++y2) {
+                    for(unsigned int x2 = mx; x2 < max_x; ++x2) {
+                        visited_grid[x2][y2] = true;
+                    }
+                }
+
+                int p0 = hmap.mesh_.addPoint(resolution * mx, resolution * my, h);
+                int p1 = hmap.mesh_.addPoint(resolution * max_x, resolution * my, h);
+                int p2 = hmap.mesh_.addPoint(resolution * mx, resolution * max_y, h);
+                int p3 = hmap.mesh_.addPoint(resolution * max_x, resolution * max_y, h);
+
                 hmap.mesh_.addTriangle(p0, p1, p2);
                 hmap.mesh_.addTriangle(p1, p3, p2);
             }
-
-            if (mx > 0) {
-                double h2 = grid[mx-1][my];
-                int p4 = hmap.mesh_.addPoint(x1, y1, h2);
-                int p6 = hmap.mesh_.addPoint(x1, y2, h2);
-
-//                if (h < h2) {
-                    hmap.mesh_.addTriangle(p2, p4, p0);
-                    hmap.mesh_.addTriangle(p4, p2, p6);
-//                } else if (h > h2) {
-//                    hmap.mesh_.addTriangle(p2, p4, p0);
-//                    hmap.mesh_.addTriangle(p4, p2, p6);
-//                }
-            }
-
-            if (my > 0) {
-                double h2 = grid[mx][my-1];
-                int p4 = hmap.mesh_.addPoint(x1, y1, h2);
-                int p5 = hmap.mesh_.addPoint(x2, y1, h2);
-
-                if (h < h2) {
-                    hmap.mesh_.addTriangle(p4, p1, p0);
-                    hmap.mesh_.addTriangle(p1, p4, p5);
-                } else if (h > h2) {
-                    hmap.mesh_.addTriangle(p4, p1, p0);
-                    hmap.mesh_.addTriangle(p1, p4, p5);
-                }
-            }
         }
     }
+
+    // side triangles x-axis
+    for(unsigned int mx = 0; mx < mx_max; ++mx) {
+
+        double h_last = 0;
+        double h2_last = 0;
+        int my_start = -1;
+        for(unsigned int my = 0; my < my_max; ++my) {
+            double h = grid[mx][my];
+            double h2 = 0;
+            if (mx > 0) {
+                h2 = grid[mx - 1][my];
+            }
+
+            if (my_start >= 0) {
+                if (std::abs(h - h_last) + std::abs(h2 - h2_last) > 1e-10) {
+                    // create triangles
+                    int p0 = hmap.mesh_.addPoint(resolution * mx, resolution * my_start, h_last);
+                    int p1 = hmap.mesh_.addPoint(resolution * mx, resolution * my, h_last);
+                    int p2 = hmap.mesh_.addPoint(resolution * mx, resolution * my_start, h2_last);
+                    int p3 = hmap.mesh_.addPoint(resolution * mx, resolution * my, h2_last);
+
+                    hmap.mesh_.addTriangle(p1, p2, p0);
+                    hmap.mesh_.addTriangle(p2, p1, p3);
+
+                    if (std::abs(h - h2) > 1e-10) {
+                        my_start = my;
+                    } else {
+                        my_start = -1;
+                    }
+                }
+
+            } else if (std::abs(h - h2) > 1e-10) {
+                my_start = my;
+            }
+
+            h_last = h;
+            h2_last = h2;
+        }
+    }
+
+    // side triangles y-axis
+    for(unsigned int my = 0; my < my_max; ++my) {
+        double h_last = 0;
+        double h2_last = 0;
+        int mx_start = -1;
+        for(unsigned int mx = 0; mx < mx_max; ++mx) {
+            double h = grid[mx][my];
+            double h2 = 0;
+            if (my > 0) {
+                h2 = grid[mx][my - 1];
+            }
+
+            if (mx_start >= 0) {
+                if (std::abs(h - h_last) + std::abs(h2 - h2_last) > 1e-10) {
+                    // create triangles
+                    int p0 = hmap.mesh_.addPoint(resolution * mx_start, resolution * my, h_last);
+                    int p1 = hmap.mesh_.addPoint(resolution * mx, resolution * my, h_last);
+                    int p2 = hmap.mesh_.addPoint(resolution * mx_start, resolution * my, h2_last);
+                    int p3 = hmap.mesh_.addPoint(resolution * mx, resolution * my, h2_last);
+
+                    hmap.mesh_.addTriangle(p2, p1, p0);
+                    hmap.mesh_.addTriangle(p1, p2, p3);
+
+                    if (std::abs(h - h2) > 1e-10) {
+                        mx_start = mx;
+                    } else {
+                        mx_start = -1;
+                    }
+                }
+
+            } else if (std::abs(h - h2) > 1e-10) {
+                mx_start = mx;
+            }
+
+            h_last = h;
+            h2_last = h2;
+        }
+    }
+
 
     hmap.mesh_.filterOverlappingVertices();
 
