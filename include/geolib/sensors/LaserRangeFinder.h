@@ -42,7 +42,9 @@ public:
 
     int getNumBeams() const;
 
-    geo::Vector3 rangeToPoint(double range, int i);
+    geo::Vector3 rangeToPoint(double range, int i) const;
+
+    const geo::Vector3 getRayDirection(int i) const;
 
     bool rangesToPoints(const std::vector<double>& ranges, std::vector<geo::Vector3>& points) const;
 

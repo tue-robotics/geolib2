@@ -267,8 +267,12 @@ int LaserRangeFinder::getNumBeams() const {
 //
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 
-geo::Vector3 LaserRangeFinder::rangeToPoint(double range, int i) {
+geo::Vector3 LaserRangeFinder::rangeToPoint(double range, int i) const {
     return ray_dirs_[i] * range;
+}
+
+const geo::Vector3 LaserRangeFinder::getRayDirection(int i) const {
+    return ray_dirs_[i];
 }
 
 bool LaserRangeFinder::rangesToPoints(const std::vector<double>& ranges, std::vector<geo::Vector3>& points) const {
