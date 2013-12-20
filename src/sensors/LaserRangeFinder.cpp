@@ -172,16 +172,35 @@ LaserRangeFinder::RenderResult LaserRangeFinder::render(const Shape& shape, cons
 
             Vector3 s = q2 - q1;
 
-            for(unsigned int i = i_min; (int)i < i_max; ++i) {
-                const Vector3& r = ray_dirs_[i];
+            // d = (q1 - ray_start) x s / (r x s)
+            //   = (q1 x s) / (r x s)
 
-                // d = (q1 - ray_start) x s / (r x s)
-                //   = (q1 x s) / (r x s)
 
-                double d = (q1.getX() * s.getY() - q1.getY() * s.getX()) / (r.getX() * s.getY() - r.getY() * s.getX());
-                if (d > 0 && (ranges[i] == 0 || d < ranges[i])) {
-                    ranges[i] = d;
+            if (a_max - a_min < M_PI) {
+                // line is in front of sensor
+                for(unsigned int i = i_min; (int)i < i_max; ++i) {
+                    const Vector3& r = ray_dirs_[i];
+                    double d = (q1.getX() * s.getY() - q1.getY() * s.getX()) / (r.getX() * s.getY() - r.getY() * s.getX());
+                    if (d > 0 && (ranges[i] == 0 || d < ranges[i])) {
+                        ranges[i] = d;
+                    }
+                }
+            } else {
+                // line is behind sensor
+                for(unsigned int i = 0; (int)i < i_min; ++i) {
+                    const Vector3& r = ray_dirs_[i];
+                    double d = (q1.getX() * s.getY() - q1.getY() * s.getX()) / (r.getX() * s.getY() - r.getY() * s.getX());
+                    if (d > 0 && (ranges[i] == 0 || d < ranges[i])) {
+                        ranges[i] = d;
+                    }
+                }
 
+                for(unsigned int i = i_max; i < ray_dirs_.size(); ++i) {
+                    const Vector3& r = ray_dirs_[i];
+                    double d = (q1.getX() * s.getY() - q1.getY() * s.getX()) / (r.getX() * s.getY() - r.getY() * s.getX());
+                    if (d > 0 && (ranges[i] == 0 || d < ranges[i])) {
+                        ranges[i] = d;
+                    }
                 }
             }
         }
