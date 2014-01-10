@@ -50,6 +50,8 @@ public:
 
     int getAngleUpperIndex(double angle) const;
 
+    int getAngleUpperIndex(double x, double y) const;
+
     static geo::Vector3 polarTo2D(double angle, double range);
 
     static geo::Vector3 polarTo3D(const geo::Pose3D& laser_pose, double angle, double range);
@@ -67,6 +69,9 @@ protected:
     std::vector<double> angles_;
 
     std::vector<geo::Vector3> ray_dirs_;
+
+    std::map<double, int> xyratio_to_index_pos_;
+    std::map<double, int> xyratio_to_index_neg_;
 
     void calculateRays();
 

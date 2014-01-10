@@ -125,23 +125,25 @@ LaserRangeFinder::RenderResult LaserRangeFinder::render(const Shape& shape, cons
     const std::vector<TriangleI>& triangles = shape.getMesh().getTriangleIs();
     const std::vector<Vector3>& points = shape.getMesh().getPoints();
 
-    // transform points
-    std::vector<Vector3> points_t(points.size());
-
+    // transform Z-coordinates
+    std::vector<double> zs_t(points.size());
+    const Vector3& Rz = t_inv.getBasis().getRow(2);
+    double z_offset = t_inv.getOrigin().getZ();
     for(unsigned int i = 0; i < points.size(); ++i) {
-        points_t[i] = t_inv * points[i];
+        zs_t[i] = Rz.dot(points[i]) + z_offset;
     }
 
     for(std::vector<TriangleI>::const_iterator it_tri = triangles.begin(); it_tri != triangles.end(); ++it_tri) {
-        const Vector3& p1_3d = points_t[it_tri->i1_];
-        const Vector3& p2_3d = points_t[it_tri->i2_];
-        const Vector3& p3_3d = points_t[it_tri->i3_];
-
-        bool p1_under_plane = p1_3d.getZ() < 0;
-        bool p2_under_plane = p2_3d.getZ() < 0;
-        bool p3_under_plane = p3_3d.getZ() < 0;
+        bool p1_under_plane = zs_t[it_tri->i1_] < 0;
+        bool p2_under_plane = zs_t[it_tri->i2_] < 0;
+        bool p3_under_plane = zs_t[it_tri->i3_] < 0;
 
         if (p1_under_plane != p2_under_plane || p2_under_plane != p3_under_plane) {
+
+            Vector3 p1_3d = t_inv * points[it_tri->i1_];
+            Vector3 p2_3d = t_inv * points[it_tri->i2_];
+            Vector3 p3_3d = t_inv * points[it_tri->i3_];
+
             double z1 = std::abs(p1_3d.getZ());
             double z2 = std::abs(p2_3d.getZ());
             double z3 = std::abs(p3_3d.getZ());
@@ -156,7 +158,13 @@ LaserRangeFinder::RenderResult LaserRangeFinder::render(const Shape& shape, cons
             } if (p1_under_plane == p2_under_plane) {
                 q1 = (p3_3d * z1 + p1_3d * z3) / (z3 + z1);
                 q2 = (p3_3d * z2 + p2_3d * z3) / (z3 + z2);
-            }            
+            }
+
+//            int i1 = getAngleUpperIndex(q1.getX(), q1.getY());
+//            int i2 = getAngleUpperIndex(q2.getX(), q2.getY());
+
+//            int i_min = std::min(i1, i2);
+//            int i_max = std::max(i1, i2);
 
             double a1 = getAngle(q1.getX(), q1.getY());
             double a2 = getAngle(q2.getX(), q2.getY());
@@ -238,11 +246,20 @@ void LaserRangeFinder::setNumBeams(int num_beams) {
 void LaserRangeFinder::calculateRays() {
     ray_dirs_.clear();
     angles_.clear();
+    xyratio_to_index_pos_.clear();
+    xyratio_to_index_neg_.clear();
+
     double a_incr = getAngleIncrement();
     double a = a_min_;
     for(int i = 0; i < num_beams_; ++i) {
-        ray_dirs_.push_back(polarTo2D(a, 1));
+        Vector3 dir = polarTo2D(a, 1);
+        ray_dirs_.push_back(dir);
         angles_.push_back(a);
+        if (dir.y() >= 0) {
+            xyratio_to_index_pos_[dir.x() / dir.y()] = i;
+        } else {
+            xyratio_to_index_neg_[dir.x() / dir.y()] = i;
+        }
         a += a_incr;
     }
 }
@@ -266,6 +283,22 @@ const std::vector<double>& LaserRangeFinder::getAngles() const {
 int LaserRangeFinder::getAngleUpperIndex(double angle) const {
     int i = (angle - a_min_) / (a_max_ - a_min_) * num_beams_ + 1;
     return std::min(num_beams_, std::max(0, i));
+}
+
+int LaserRangeFinder::getAngleUpperIndex(double x, double y) const {
+    if (y >= 0) {
+        std::map<double, int>::const_iterator it = xyratio_to_index_pos_.lower_bound(x / y);
+        if (it == xyratio_to_index_pos_.end()) {
+            return num_beams_ / 2 + 1;
+        }
+        return it->second + 1;
+    } else {
+        std::map<double, int>::const_iterator it = xyratio_to_index_neg_.lower_bound(x / y);
+        if (it == xyratio_to_index_neg_.end()) {
+            return num_beams_ / 2 + 1;
+        }
+        return it->second + 1;
+    }
 }
 
 double LaserRangeFinder::getRangeMin() const {
@@ -315,6 +348,9 @@ geo::Vector3 LaserRangeFinder::polarTo3D(const geo::Pose3D& laser_pose, double a
 
 double LaserRangeFinder::getAngle(double x, double y) {
     double a = atan(y / x);
+//    double v = y / x;
+//    double a = M_PI_4*v - v*(fabs(v) - 1)*(0.2447 + 0.0663*fabs(v));
+
     if (x < 0) {
         if (y < 0) {
             a = -M_PI + a;
