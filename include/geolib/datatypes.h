@@ -80,6 +80,18 @@ public:
         this->frame_id_ = frame_id;
     }
 
+    void operator=(const tf::Stamped<tf::Pose>& tf) {
+        this->setOrigin(tf.getOrigin());
+        this->setRotation(tf.getRotation());
+        this->frame_id_ = tf.frame_id_;
+    }
+
+    void operator=(const tf::Pose& tf) {
+        this->setOrigin(tf.getOrigin());
+        this->setRotation(tf.getRotation());
+        this->frame_id_ = "";
+    }
+
     /*
     Pose3D operator*(const Pose3D& other) const {
         tf::Transform t = (*this) * other;
