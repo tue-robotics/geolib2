@@ -28,6 +28,8 @@ typedef boost::shared_ptr<const Object> ObjectConstPtr;
 
 class Shape;
 typedef boost::shared_ptr<Shape> ShapePtr;
+typedef boost::shared_ptr<const Shape> ShapeConstPtr;
+
 
 class Box;
 typedef boost::shared_ptr<Box> BoxPtr;

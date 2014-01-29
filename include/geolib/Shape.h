@@ -5,6 +5,8 @@
 #include "Triangle.h"
 #include "Mesh.h"
 
+#include <boost/archive/basic_binary_iarchive.hpp>
+
 namespace geo {
 
 class Box;
@@ -26,6 +28,10 @@ public:
     virtual double getMaxRadius() const;
 
     virtual const Mesh& getMesh() const;
+
+    bool write(std::ostream& output) const;
+
+    static ShapePtr read(std::istream& input);
 
 protected:
 

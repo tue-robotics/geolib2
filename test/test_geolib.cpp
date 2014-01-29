@@ -88,7 +88,11 @@ double renderLRF(cv::Mat& image, const Shape& shape, bool rasterize, bool show) 
     return timer.getElapsedTimeInMilliSec() / N;
 }
 
+#include <geolib/serialization.h>
+#include <fstream>
+
 int main(int argc, char **argv) {
+
     ShapePtr mesh;
     if (argc > 1) {
         double scale = 1;
@@ -98,6 +102,19 @@ int main(int argc, char **argv) {
 
         mesh = geo::Importer::readMeshFile(std::string(argv[1]), scale);
     }
+
+    if (mesh) {
+        std::ofstream out;
+        out.open("test.geo", std::ifstream::binary);
+        geo::serialization::serialize(mesh, out);
+        out.close();
+
+        std::ifstream in;
+        in.open("test.geo", std::ifstream::binary);
+        mesh = geo::serialization::deserialize(in);
+        in.close();
+    }
+
 
     Octree tree(10);
 
@@ -311,7 +328,10 @@ int main(int argc, char **argv) {
                 const geo::Vector3& p = points[i];
                 double x = (-p.y() * 25) + image.cols / 2;
                 double y = (-p.x() * 25) + image.rows / 2;
-                lrf_image.at<float>(y, x) = 1;
+
+                if (x >= 0 && y >= 0 && x < image.cols && y < image.rows) {
+                    lrf_image.at<float>(y, x) = 1;
+                }
             }
         }
 
