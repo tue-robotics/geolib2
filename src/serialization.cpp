@@ -2,13 +2,14 @@
 
 #include "geolib/Shape.h"
 
-//#include
+#include <bzlib.h>
 
 namespace geo {
 
 serialization::deserializer_map serialization::deserializers_;
 
 serialization::serialization() {
+
 }
 
 serialization::~serialization() {
@@ -22,8 +23,6 @@ ShapePtr serialization::deserialize(std::istream& input) {
     char shape_type[8];
     input.read(shape_type, 8);
 
-    std::cout << "Shape type = " << shape_type << std::endl;
-
     deserializer_map::const_iterator s = deserializers_.find( shape_type );
     if ( s == deserializers_.end() ) {
         // input error: don't know how to deserialize the class
@@ -33,7 +32,11 @@ ShapePtr serialization::deserialize(std::istream& input) {
 }
 
 void serialization::registerDeserializer(const std::string& shape_type, deserialization_method method ) {
-    deserializers_[shape_type] = method;
+    std::string shape_type8 = "        ";
+    for(unsigned int i = 0; i < std::min(shape_type.size(), shape_type8.size()); ++i) {
+        shape_type8[i] = shape_type[i];
+    }
+    deserializers_[shape_type8] = method;
 }
 
 }

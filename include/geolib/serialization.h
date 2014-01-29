@@ -21,6 +21,11 @@ public:
 
     static void registerDeserializer(const std::string& shape_type, deserialization_method method);
 
+    template<typename T>
+    static void registerDeserializer() {
+        registerDeserializer(T::TYPE, &T::read);
+    }
+
 protected:
 
     enum ShapeType {

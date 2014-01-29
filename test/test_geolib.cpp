@@ -93,6 +93,8 @@ double renderLRF(cv::Mat& image, const Shape& shape, bool rasterize, bool show) 
 
 int main(int argc, char **argv) {
 
+    serialization::registerDeserializer<Shape>();
+
     ShapePtr mesh;
     if (argc > 1) {
         double scale = 1;

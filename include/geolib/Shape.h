@@ -29,9 +29,11 @@ public:
 
     virtual const Mesh& getMesh() const;
 
-    bool write(std::ostream& output) const;
+    virtual bool write(std::ostream& output) const;
 
     static ShapePtr read(std::istream& input);
+
+    static const std::string TYPE;
 
 protected:
 

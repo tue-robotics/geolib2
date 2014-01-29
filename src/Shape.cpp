@@ -4,8 +4,9 @@
 
 namespace geo {
 
+const std::string Shape::TYPE = "mesh";
+
 Shape::Shape() {
-    serialization::registerDeserializer("mesh    ", &Shape::read);
 }
 
 Shape::~Shape() {
