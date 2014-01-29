@@ -51,6 +51,7 @@ rosbuild_add_library(geolib src/Box.cpp
                              src/Importer.cpp
                              
                              src/serialization.cpp
+                             src/visualization.cpp
                              
                               ${HEADER_FILES})
 target_link_libraries(geolib assimp)
