@@ -19,7 +19,9 @@ public:
 
     static ShapePtr deserialize(std::istream& input);
 
-    static void registerDeserializer(const std::string& shape_type, deserialization_method method);
+    static ShapePtr fromFile(const std::string& filename);
+
+    static void toFile(ShapeConstPtr shape, const std::string& filename);
 
     template<typename T>
     static void registerDeserializer() {
@@ -28,16 +30,13 @@ public:
 
 protected:
 
-    enum ShapeType {
-        MESH = 0,
-        OCTOMAP = 1
-    };
-
     serialization();
 
     virtual ~serialization();
 
     static deserializer_map deserializers_;
+
+    static void registerDeserializer(const std::string& shape_type, deserialization_method method);
 
 };
 

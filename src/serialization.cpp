@@ -2,7 +2,7 @@
 
 #include "geolib/Shape.h"
 
-#include <bzlib.h>
+#include <fstream>
 
 namespace geo {
 
@@ -37,6 +37,21 @@ void serialization::registerDeserializer(const std::string& shape_type, deserial
         shape_type8[i] = shape_type[i];
     }
     deserializers_[shape_type8] = method;
+}
+
+ShapePtr serialization::fromFile(const std::string& filename) {
+    std::ifstream in;
+    in.open(filename.c_str(), std::ifstream::binary);
+    ShapePtr shape = geo::serialization::deserialize(in);
+    in.close();
+    return shape;
+}
+
+void serialization::toFile(ShapeConstPtr shape, const std::string& filename) {
+    std::ofstream out;
+    out.open(filename.c_str(), std::ifstream::binary);
+    geo::serialization::serialize(shape, out);
+    out.close();
 }
 
 }

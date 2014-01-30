@@ -106,17 +106,9 @@ int main(int argc, char **argv) {
     }
 
     if (mesh) {
-        std::ofstream out;
-        out.open("test.geo", std::ifstream::binary);
-        geo::serialization::serialize(mesh, out);
-        out.close();
-
-        std::ifstream in;
-        in.open("test.geo", std::ifstream::binary);
-        mesh = geo::serialization::deserialize(in);
-        in.close();
+        geo::serialization::toFile(mesh, "/tmp/test_geolib.geo");
+        mesh = geo::serialization::fromFile("/tmp/test_geolib.geo");
     }
-
 
     Octree tree(10);
 

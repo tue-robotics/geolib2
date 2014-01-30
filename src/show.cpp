@@ -4,8 +4,6 @@
 
 #include <opencv2/highgui/highgui.hpp>
 
-#include <fstream>
-
 double CANVAS_WIDTH = 640;
 double CANVAS_HEIGHT = 480;
 
@@ -21,10 +19,7 @@ int main(int argc, char **argv) {
     std::string filename = argv[1];
 
     // first try own file format
-    std::ifstream in;
-    in.open(filename.c_str(), std::ifstream::binary);
-    geo::ShapePtr shape = geo::serialization::deserialize(in);
-    in.close();
+    geo::ShapePtr shape = geo::serialization::fromFile(filename);
 
     if (!shape) {
         // If fails, try using assimp
