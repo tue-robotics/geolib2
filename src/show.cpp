@@ -1,7 +1,10 @@
 #include <geolib/Importer.h>
+#include <geolib/serialization.h>
 #include <geolib/sensors/DepthCamera.h>
 
 #include <opencv2/highgui/highgui.hpp>
+
+#include <fstream>
 
 double CANVAS_WIDTH = 640;
 double CANVAS_HEIGHT = 480;
@@ -13,10 +16,24 @@ int main(int argc, char **argv) {
         return 1;
     }
 
-    geo::ShapePtr shape = geo::Importer::readMeshFile(std::string(argv[1]));
+    geo::serialization::registerDeserializer<geo::Shape>();
+
+    std::string filename = argv[1];
+
+    // first try own file format
+    std::ifstream in;
+    in.open(filename.c_str(), std::ifstream::binary);
+    geo::ShapePtr shape = geo::serialization::deserialize(in);
+    in.close();
+
     if (!shape) {
-        std::cout << "Could not load " << argv[1] << std::endl;
-        return 1;
+        // If fails, try using assimp
+        shape = geo::Importer::readMeshFile(filename);
+
+        if (!shape) {
+            std::cout << "Could not load " << argv[1] << std::endl;
+            return 1;
+        }
     }
 
     geo::DepthCamera cam;

@@ -16,6 +16,10 @@ ShapePtr Importer::readMeshFile(const std::string& filename, double scale) {
     Assimp::Importer I;
     const aiScene* scene = I.ReadFile(filename, 0);
 
+    if (!scene) {
+        return ShapePtr();
+    }
+
     ShapePtr shape(new Shape());
     if (scene) {
         for(unsigned int i = 0; i < scene->mNumMeshes; ++i) {
