@@ -26,7 +26,7 @@ const Mesh& Shape::getMesh() const {
 }
 
 double Shape::getMaxRadius() const {
-    return 0;
+    return mesh_.getMaxRadius();
 }
 
 bool Shape::write(std::ostream& output) const {

@@ -13,7 +13,7 @@ public:
 
     virtual ~Importer();
 
-    static ShapePtr readMeshFile(const std::string& filename, double scale = 1);
+    static ShapePtr readMeshFile(const std::string& filename, double scale = 1.0);
 
 };
 

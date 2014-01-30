@@ -45,7 +45,11 @@ public:
 
     void filterOverlappingVertices();
 
+    double getMaxRadius() const;
+
 protected:
+
+    mutable double max_radius_;
 
     std::vector<tf::Vector3> points_;
 

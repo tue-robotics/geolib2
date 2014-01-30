@@ -2,7 +2,7 @@
 
 namespace geo {
 
-Mesh::Mesh() {
+Mesh::Mesh() : max_radius_(0) {
 }
 
 Mesh::~Mesh() {
@@ -98,6 +98,17 @@ void Mesh::filterOverlappingVertices() {
         it->i2_ = i_map[it->i2_];
         it->i3_ = i_map[it->i3_];
     }
+}
+
+double Mesh::getMaxRadius() const {
+    if (max_radius_ == 0) {
+        double max_radius_sq = 0;
+        for(std::vector<Vector3>::const_iterator it = points_.begin(); it != points_.end(); ++it) {
+            max_radius_sq = std::max(max_radius_sq, it->length2());
+        }
+        max_radius_ = sqrt(max_radius_sq);
+    }
+    return max_radius_;
 }
 
 }

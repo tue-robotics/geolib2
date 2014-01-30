@@ -56,6 +56,8 @@ rosbuild_add_library(geolib src/Box.cpp
                               ${HEADER_FILES})
 target_link_libraries(geolib assimp)
 
+rosbuild_add_executable(show src/show.cpp)
+target_link_libraries(show geolib)
 
 # Tests
 rosbuild_add_executable(test_geolib test/test_geolib.cpp)
