@@ -65,12 +65,22 @@ void DepthCamera::setOpticalTranslation(double tx, double ty) {
 //
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 
-RasterizeResult DepthCamera::rasterize(const Shape& shape, const Pose3D& cam_pose, const Pose3D& obj_pose, cv::Mat& image) const {
+RasterizeResult DepthCamera::rasterize(const Shape& shape, const Pose3D& cam_pose, const Pose3D& obj_pose, cv::Mat& image,
+                                       PointerMap& pointer_map, void* pointer) const {
     tf::Transform t = cam_pose.inverse() * obj_pose;
-    return rasterize(shape, geo::Pose3D(t.getOrigin(), t.getRotation()), image);
+    return rasterize(shape, geo::Pose3D(t.getOrigin(), t.getRotation()), image, pointer_map, pointer);
 }
 
-RasterizeResult DepthCamera::rasterize(const Shape& shape, const Pose3D& pose, cv::Mat& image) const {
+RasterizeResult DepthCamera::rasterize(const Shape& shape, const Pose3D& pose, cv::Mat& image,
+                                       PointerMap& pointer_map, void* pointer) const {
+
+    // reserve pointer map
+    if (pointer && ((int)pointer_map.size() != image.cols || (int)pointer_map[0].size() != image.rows)) {
+        pointer_map.resize(image.cols);
+        for(int x = 0; x < image.cols; ++x) {
+            pointer_map[x].resize(image.rows, 0);
+        }
+    }
 
     RasterizeResult res;
     res.min_x = image.cols;
@@ -142,7 +152,7 @@ RasterizeResult DepthCamera::rasterize(const Shape& shape, const Pose3D& pose, c
 
             Vector3 new3(vIn[0]->x() + v02.x() * t2, vIn[0]->y() + v02.y() * t2, near_clip_z);
 
-            drawTriangle(*vIn[0], new2, new3, image, res);
+            drawTriangle(*vIn[0], new2, new3, image, pointer_map, pointer, res);
         } else if (n_verts_in == 2) {
             if (!v1_in) { vIn[0]=&(p2_3d); vIn[1]=&(p3_3d); vIn[2]=&(p1_3d); }
             if (!v2_in) { vIn[0]=&(p3_3d); vIn[1]=&(p1_3d); vIn[2]=&(p2_3d); }
@@ -163,9 +173,9 @@ RasterizeResult DepthCamera::rasterize(const Shape& shape, const Pose3D& pose, c
 
             Vector3 new3((*vIn[1]).x() + v02.x() * t2, (*vIn[1]).y() + v02.y() * t2, near_clip_z);
 
-            drawTriangle(*vIn[0], *vIn[1], new2, image, res);
+            drawTriangle(*vIn[0], *vIn[1], new2, image, pointer_map, pointer, res);
 
-            drawTriangle(new2, *vIn[1], new3, image, res);
+            drawTriangle(new2, *vIn[1], new3, image, pointer_map, pointer, res);
 
         } else if (n_verts_in == 3) {
             const cv::Point2d& p1_2d = points_proj[it_tri->i1_];
@@ -175,7 +185,7 @@ RasterizeResult DepthCamera::rasterize(const Shape& shape, const Pose3D& pose, c
             drawTriangle(p1_2d.x, p1_2d.y, -p1_3d.z(),
                          p2_2d.x, p2_2d.y, -p2_3d.z(),
                          p3_2d.x, p3_2d.y, -p3_3d.z(),
-                         image, res);
+                         image, pointer_map, pointer, res);
         }
     }
 
@@ -192,20 +202,22 @@ RasterizeResult DepthCamera::rasterize(const Shape& shape, const Pose3D& pose, c
     return res;
 }
 
-void DepthCamera::drawTriangle(const Vector3& p1_3d, const Vector3& p2_3d, const Vector3& p3_3d, cv::Mat& image, RasterizeResult& res) const {
+void DepthCamera::drawTriangle(const Vector3& p1_3d, const Vector3& p2_3d, const Vector3& p3_3d, cv::Mat& image,
+                               PointerMap& pointer_map, void* pointer, RasterizeResult& res) const {
     cv::Point2d p1_2d = project3Dto2D(p1_3d, image.cols, image.rows);
     cv::Point2d p2_2d = project3Dto2D(p2_3d, image.cols, image.rows);
     cv::Point2d p3_2d = project3Dto2D(p3_3d, image.cols, image.rows);
 
     drawTriangle(p1_2d.x, p1_2d.y, -p1_3d.z(),
                  p2_2d.x, p2_2d.y, -p2_3d.z(),
-                 p3_2d.x, p3_2d.y, -p3_3d.z(), image, res);
+                 p3_2d.x, p3_2d.y, -p3_3d.z(), image, pointer_map, pointer, res);
 }
 
 
 void DepthCamera::drawTriangle(float x1, float y1, float depth1,
-                                  float x2, float y2, float depth2,
-                                  float x3, float y3, float depth3, cv::Mat& image, RasterizeResult& res) const {
+                               float x2, float y2, float depth2,
+                               float x3, float y3, float depth3, cv::Mat& image,
+                               PointerMap& pointer_map, void* pointer, RasterizeResult& res) const {
 
     if ((x2 - x1) * (y3 - y1) - (x3 - x1) * (y2 - y1) < 0) {
         int min_x = std::min<int>(x1, std::min<int>(x2, x3));
@@ -249,13 +261,14 @@ void DepthCamera::drawTriangle(float x1, float y1, float depth1,
 
             // draw spans between edges; the long edge can be drawn
             // with the shorter edges to draw the full triangle
-            drawSpansBetweenEdges(edges[longEdge], edges[shortEdge1], image);
-            drawSpansBetweenEdges(edges[longEdge], edges[shortEdge2], image);
+            drawSpansBetweenEdges(edges[longEdge], edges[shortEdge1], image, pointer_map, pointer);
+            drawSpansBetweenEdges(edges[longEdge], edges[shortEdge2], image, pointer_map, pointer);
         }
     }
 }
 
-void DepthCamera::drawSpansBetweenEdges(const Edge& e1, const Edge& e2, cv::Mat& image) const {
+void DepthCamera::drawSpansBetweenEdges(const Edge& e1, const Edge& e2, cv::Mat& image,
+                                        PointerMap& pointer_map, void* pointer) const {
     // calculate difference between the y coordinates
     // of the first edge and return if 0
     float e1ydiff = (float)(e1.Y2 - e1.Y1);
@@ -298,7 +311,7 @@ void DepthCamera::drawSpansBetweenEdges(const Edge& e1, const Edge& e2, cv::Mat&
                       e1.X1 + (int)(e1xdiff * factor1),
                       e2.Color1 + (e2colordiff * factor2),
                       e2.X1 + (int)(e2xdiff * factor2));
-            drawSpan(span, y, image);
+            drawSpan(span, y, image, pointer_map, pointer);
         }
 
         // increase factors
@@ -307,7 +320,8 @@ void DepthCamera::drawSpansBetweenEdges(const Edge& e1, const Edge& e2, cv::Mat&
     }
 }
 
-void DepthCamera::drawSpan(const Span &span, int y, cv::Mat& image) const {
+void DepthCamera::drawSpan(const Span &span, int y, cv::Mat& image,
+                           PointerMap& pointer_map, void* pointer) const {
 
 //    std::cout << "    Span: " << span.X1 << " - " << span.X2 << std::endl;
 
@@ -331,6 +345,9 @@ void DepthCamera::drawSpan(const Span &span, int y, cv::Mat& image) const {
             float old_depth = image.at<float>(y, x);
             if (old_depth == 0 || old_depth > depth) {
                 image.at<float>(y, x) = depth;
+                if (pointer) {
+                    pointer_map[x][y] = pointer;
+                }
             }
 
 //            std::cout << "        Pixel: " << x << " , " << y << ": " << depth << std::endl;

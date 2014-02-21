@@ -65,6 +65,10 @@ struct RasterizeResult {
     int max_y;
 };
 
+typedef std::vector<std::vector<void*> > PointerMap;
+
+static PointerMap EMPTY_POINTER_MAP;
+
 class DepthCamera {
 
 public:
@@ -75,9 +79,13 @@ public:
 
     void render(const Shape& shape, const Pose3D& pose, cv::Mat& image);   
 
-    RasterizeResult rasterize(const Shape& shape, const Pose3D& pose, cv::Mat& image) const;
+    RasterizeResult rasterize(const Shape& shape, const Pose3D& pose, cv::Mat& image,
+                              PointerMap& pointer_map = EMPTY_POINTER_MAP,
+                              void* pointer = 0) const;
 
-    RasterizeResult rasterize(const Shape& shape, const Pose3D& cam_pose, const Pose3D& obj_pose, cv::Mat& image) const;
+    RasterizeResult rasterize(const Shape& shape, const Pose3D& cam_pose, const Pose3D& obj_pose, cv::Mat& image,
+                              PointerMap& pointer_map = EMPTY_POINTER_MAP,
+                              void* pointer = 0) const;
 
     inline cv::Point2d project3Dto2D(const Vector3 p, int width, int height) const {
         return cv::Point2d((fx_ * p.x() + tx_) / -p.z() + cx_, (fy_ * -p.y() + ty_) / -p.z() + cy_);
@@ -99,15 +107,17 @@ protected:
     double cx_, cy_;
     double tx_, ty_;
 
-    void drawTriangle(const Vector3& p1, const Vector3& p2, const Vector3& p3, cv::Mat& image, RasterizeResult& res) const;
+    void drawTriangle(const Vector3& p1, const Vector3& p2, const Vector3& p3, cv::Mat& image,
+                      PointerMap& pointer_map, void* pointer, RasterizeResult& res) const;
 
     void drawTriangle(float x1, float y1, float depth1,
-                                      float x2, float y2, float depth2,
-                                      float x3, float y3, float depth3, cv::Mat& image, RasterizeResult& res) const;
+                      float x2, float y2, float depth2,
+                      float x3, float y3, float depth3, cv::Mat& image,
+                      PointerMap& pointer_map, void* pointer, RasterizeResult& res) const;
 
-    void drawSpansBetweenEdges(const Edge& e1, const Edge& e2, cv::Mat& image) const;
+    void drawSpansBetweenEdges(const Edge& e1, const Edge& e2, cv::Mat& image, PointerMap& pointer_map, void* pointer) const;
 
-    void drawSpan(const Span &span, int y, cv::Mat& image) const;
+    void drawSpan(const Span &span, int y, cv::Mat& image, PointerMap& pointer_map, void* pointer) const;
 
 };
 
