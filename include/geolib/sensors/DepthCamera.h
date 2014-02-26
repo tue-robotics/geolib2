@@ -87,25 +87,60 @@ public:
                               PointerMap& pointer_map = EMPTY_POINTER_MAP,
                               void* pointer = 0) const;
 
-    inline cv::Point2d project3Dto2D(const Vector3 p, int width, int height) const {
+    inline cv::Point2d project3Dto2D(const Vector3 p, int width = 0, int height = 0) const {
         return cv::Point2d((fx_ * p.x() + tx_) / -p.z() + cx_, (fy_ * -p.y() + ty_) / -p.z() + cy_);
     }
 
-    inline Vector3 project2Dto3D(int x, int y) const {
-        return Vector3((x - cx_ - tx_) / fx_, -(y - cy_ - ty_) / fy_, -1.0);
+    inline double project2Dto3DX(int x) const {
+        return (x - cx_plus_tx_) / fx_;
     }
 
-    void setFocalLengths(double fx, double fy);
+    inline double project2Dto3DY(int y) const {
+        return -(y - cy_plus_ty_) / fy_;
+    }
 
-    void setOpticalCenter(double cx, double cy);
+    inline Vector3 project2Dto3D(int x, int y) const {
+        return Vector3(project2Dto3DX(x), project2Dto3DY(y), -1.0);
+    }
 
-    void setOpticalTranslation(double tx, double ty);
+    inline void setFocalLengths(double fx, double fy) {
+        fx_ = fx;
+        fy_ = fy;
+    }
+
+    inline void setOpticalCenter(double cx, double cy) {
+        cx_ = cx;
+        cy_ = cy;
+        cx_plus_tx_ = cx_ + tx_;
+        cy_plus_ty_ = cy_ + ty_;
+    }
+
+    inline void setOpticalTranslation(double tx, double ty) {
+        tx_ = tx;
+        ty_ = ty;
+        cx_plus_tx_ = cx_ + tx_;
+        cy_plus_ty_ = cy_ + ty_;
+    }
+
+    inline double getFocalLengthX() const { return fx_; }
+
+    inline double getFocalLengthY() const { return fy_; }
+
+    inline double getOpticalCenterX() const { return cx_; }
+
+    inline double getOpticalCenterY() const { return cy_; }
+
+    inline double getOpticalTranslationX() const { return tx_; }
+
+    inline double getOpticalTranslationY() const { return ty_; }
 
 protected:
 
     double fx_, fy_;
     double cx_, cy_;
     double tx_, ty_;
+    double cx_plus_tx_;
+    double cy_plus_ty_;
 
     void drawTriangle(const Vector3& p1, const Vector3& p2, const Vector3& p3, cv::Mat& image,
                       PointerMap& pointer_map, void* pointer, RasterizeResult& res) const;

@@ -44,21 +44,6 @@ void DepthCamera::render(const Shape& shape, const Pose3D& pose, cv::Mat& image)
     }
 }
 
-void DepthCamera::setFocalLengths(double fx, double fy) {
-    fx_ = fx;
-    fy_ = fy;
-}
-
-void DepthCamera::setOpticalCenter(double cx, double cy) {
-    cx_ = cx;
-    cy_ = cy;
-}
-
-void DepthCamera::setOpticalTranslation(double tx, double ty) {
-    tx_ = tx;
-    ty_ = ty;
-}
-
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 //
 //                                        RASTERIZATION
