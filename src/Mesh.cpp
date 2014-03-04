@@ -15,6 +15,13 @@ int Mesh::addPoint(double x, double y, double z) {
     return i;
 }
 
+int Mesh::addPoint(const geo::Vector3& p) {
+    int i = points_.size();
+    points_.push_back(p);
+    triangles_.clear();
+    return i;
+}
+
 void Mesh::addTriangle(int i1, int i2, int i3) {
     triangles_i_.push_back(TriangleI(i1, i2, i3));
     triangles_.clear();

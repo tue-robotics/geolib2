@@ -29,6 +29,8 @@ public:
 
     virtual const Mesh& getMesh() const;
 
+    void setMesh(const Mesh& mesh);
+
     virtual bool write(std::ostream& output) const;
 
     static ShapePtr read(std::istream& input);

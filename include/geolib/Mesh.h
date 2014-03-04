@@ -22,6 +22,8 @@ public:
 
     int addPoint(double x, double y, double z);
 
+    int addPoint(const geo::Vector3& p);
+
     void addTriangle(int i1, int i2, int i3);
 
     void add(const Mesh& mesh);

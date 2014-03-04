@@ -97,12 +97,25 @@ int main(int argc, char **argv) {
 
     ShapePtr mesh;
     if (argc > 1) {
+        std::string filename = argv[1];
+
         double scale = 1;
         if (argc > 2) {
             scale = atof(argv[2]);
         }
 
-        mesh = geo::Importer::readMeshFile(std::string(argv[1]), scale);
+        // first try own file format
+        mesh = geo::serialization::fromFile(filename);
+
+        if (!mesh) {
+            // If fails, try using assimp
+            mesh = geo::Importer::readMeshFile(filename, scale);
+
+            if (!mesh) {
+                std::cout << "Could not load " << filename << std::endl;
+                return 1;
+            }
+        }
     }
 
     if (mesh) {

@@ -25,6 +25,10 @@ const Mesh& Shape::getMesh() const {
     return mesh_;
 }
 
+void Shape::setMesh(const Mesh& mesh) {
+    mesh_ = mesh;
+}
+
 double Shape::getMaxRadius() const {
     return mesh_.getMaxRadius();
 }
