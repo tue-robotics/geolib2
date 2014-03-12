@@ -3,6 +3,7 @@
 
 #include <ostream>
 #include <cstring>
+#include <cmath>
 
 namespace geo {
 
@@ -19,6 +20,42 @@ public:
         v_[0] = x;
         v_[1] = y;
         v_[2] = z;
+    }
+
+    inline float x() const { return v_[0]; }
+    inline float y() const { return v_[1]; }
+    inline float z() const { return v_[2]; }
+
+    inline float getX() const { return v_[0]; }
+    inline float getY() const { return v_[1]; }
+    inline float getZ() const { return v_[2]; }
+
+    inline void setX(float x) { v_[0] = x; }
+    inline void setY(float y) { v_[1] = y; }
+    inline void setZ(float z) { v_[2] = z; }
+
+    inline float length() const {
+        return sqrt(v_[0]*v_[0] + v_[1]*v_[1] + v_[2]*v_[2]);
+    }
+
+    inline float length2() const {
+        return v_[0]*v_[0] + v_[1]*v_[1] + v_[2]*v_[2];
+    }
+
+    inline Vector3 operator+(const Vector3& v) const {
+        return Vector3(v_[0]+v.v_[0], v_[1]+v.v_[1], v_[2]+v.v_[2]);
+    }
+
+    inline Vector3 operator-(const Vector3& v) const {
+        return Vector3(v_[0]-v.v_[0], v_[1]-v.v_[1], v_[2]-v.v_[2]);
+    }
+
+    inline Vector3 operator*(float f) const {
+        return Vector3(v_[0] * f, v_[1] * f, v_[2] * f);
+    }
+
+    inline Vector3 operator/(float f) const {
+        return Vector3(v_[0] / f, v_[1] / f, v_[2] / f);
     }
 
     friend std::ostream& operator<< (std::ostream& out, const Vector3& v) {
@@ -55,13 +92,13 @@ public:
         m_[8]= m33;
     }
 
-    Matrix3x3 operator*(const Matrix3x3& n) {
+    Matrix3x3 operator*(const Matrix3x3& n) const {
         return Matrix3x3(m_[0]*n.m_[0]+m_[1]*n.m_[3]+m_[2]*n.m_[6], m_[0]*n.m_[1]+m_[1]*n.m_[4]+m_[2]*n.m_[7], m_[0]*n.m_[2]+m_[1]*n.m_[5]+m_[2]*n.m_[8],
                          m_[3]*n.m_[0]+m_[4]*n.m_[3]+m_[5]*n.m_[6], m_[3]*n.m_[1]+m_[4]*n.m_[4]+m_[5]*n.m_[7], m_[3]*n.m_[2]+m_[4]*n.m_[5]+m_[5]*n.m_[8],
                          m_[6]*n.m_[0]+m_[7]*n.m_[3]+m_[8]*n.m_[6], m_[6]*n.m_[1]+m_[7]*n.m_[4]+m_[8]*n.m_[7], m_[6]*n.m_[2]+m_[7]*n.m_[5]+m_[8]*n.m_[8]);
     }
 
-    Vector3 operator*(const Vector3& v) {
+    Vector3 operator*(const Vector3& v) const {
         return Vector3(m_[0]*v.v_[0]+m_[1]*v.v_[1]+m_[2]*v.v_[2],
                        m_[3]*v.v_[0]+m_[4]*v.v_[1]+m_[5]*v.v_[2],
                        m_[6]*v.v_[0]+m_[7]*v.v_[1]+m_[8]*v.v_[2]);
@@ -91,7 +128,7 @@ public:
         memcpy(r_, r.m_, 9 * sizeof(float));
     }
 
-    Vector3 operator*(const Vector3& v) {
+    Vector3 operator*(const Vector3& v) const {
         return Vector3(r_[0]*v.v_[0]+r_[1]*v.v_[1]+r_[2]*v.v_[2]+t_[0],
                        r_[3]*v.v_[0]+r_[4]*v.v_[1]+r_[5]*v.v_[2]+t_[1],
                        r_[6]*v.v_[0]+r_[7]*v.v_[1]+r_[8]*v.v_[2]+t_[2]);

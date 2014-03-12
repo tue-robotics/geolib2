@@ -1,12 +1,19 @@
 #ifndef GEOLIB_DATATYPES_H_
 #define GEOLIB_DATATYPES_H_
 
+#define GEOLIB_USE_TF
+
 #include <string>
 #include <map>
 #include <vector>
 #include <set>
 
-#include <tf/transform_datatypes.h>
+#ifdef GEOLIB_USE_TF
+    #include <tf/transform_datatypes.h>
+#else
+    #include "geolib/matrix.h"
+    #include <boost/shared_ptr.hpp>
+#endif
 
 namespace geo {
 
@@ -16,10 +23,6 @@ namespace geo {
 
 //#define PI 3.1415
 
-typedef tf::StampedTransform Transform;
-typedef tf::Vector3 Vector3;
-typedef tf::Point Point;
-typedef tf::Quaternion Quaternion;
 typedef double Time;
 
 class Object;
@@ -46,6 +49,13 @@ typedef boost::shared_ptr<Octree> OctreePtr;
 typedef boost::shared_ptr<const Octree> OctreeConstPtr;
 
 class Ray;
+
+#ifdef GEOLIB_USE_TF
+
+typedef tf::StampedTransform Transform;
+typedef tf::Vector3 Vector3;
+typedef tf::Point Point;
+typedef tf::Quaternion Quaternion;
 
 std::ostream& operator<< (std::ostream& out, const Vector3& v);
 
@@ -111,6 +121,10 @@ public:
     }
 
 };
+
+#else
+    typedef Transform Pose3D;
+#endif
 
 }
 

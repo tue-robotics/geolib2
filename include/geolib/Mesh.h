@@ -37,11 +37,11 @@ public:
         points_.clear();
     }
 
-    Mesh getTransformed(const tf::Transform t) const;
+    Mesh getTransformed(const geo::Transform t) const;
 
     const std::vector<Triangle>& getTriangles() const;
 
-    const std::vector<tf::Vector3>& getPoints() const;
+    const std::vector<geo::Vector3>& getPoints() const;
 
     const std::vector<TriangleI>& getTriangleIs() const;
 
@@ -53,7 +53,7 @@ protected:
 
     mutable double max_radius_;
 
-    std::vector<tf::Vector3> points_;
+    std::vector<geo::Vector3> points_;
 
     std::vector<TriangleI> triangles_i_;
 

@@ -68,7 +68,11 @@ void CompositeShape::addShape(const Shape& shape, const Pose3D& pose) {
         max_.setZ(std::max(max_.getZ(), std::max(p1.z(), std::max(p2.z(), p3.z()))));
     }
 
-    mesh_.add(shape.getMesh().getTransformed(pose));
+    geo::Transform t;
+    t.setOrigin(pose.getOrigin());
+    t.setRotation(pose.getRotation());
+
+    mesh_.add(shape.getMesh().getTransformed(t));
 
     bb_ = Box(min_, max_);
 }

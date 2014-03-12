@@ -127,7 +127,7 @@ void Box::enclose(const Box& box, const Pose3D& pose) {
 }
 
 Vector3 Box::getSize() const {
-    return tf::Vector3(bounds[1].x() - bounds[0].x(), bounds[1].y() - bounds[0].y(), bounds[1].z() - bounds[0].z());
+    return Vector3(bounds[1].x() - bounds[0].x(), bounds[1].y() - bounds[0].y(), bounds[1].z() - bounds[0].z());
 }
 
 Vector3 Box::getCenter() const {

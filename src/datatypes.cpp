@@ -1,5 +1,7 @@
 #include "geolib/datatypes.h"
 
+#ifdef GEOLIB_USE_TF
+
 namespace geo {
 
 std::ostream& operator<< (std::ostream& out, const Vector3& v) {
@@ -16,3 +18,5 @@ std::ostream& operator<< (std::ostream& out, const Quaternion& q) {
 }
 
 }
+
+#endif

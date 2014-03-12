@@ -55,7 +55,7 @@ const std::vector<Triangle>& Mesh::getTriangles() const {
     return triangles_;
 }
 
-Mesh Mesh::getTransformed(const tf::Transform t) const {
+Mesh Mesh::getTransformed(const geo::Transform t) const {
     Mesh m;
     m.triangles_i_ = this->triangles_i_;
     m.points_.resize(this->points_.size());
