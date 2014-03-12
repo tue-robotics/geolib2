@@ -7,7 +7,7 @@ include($ENV{ROS_ROOT}/core/rosbuild/rosbuild.cmake)
 #  Release        : w/o debug symbols, w/ optimization
 #  RelWithDebInfo : w/ debug symbols, w/ optimization
 #  MinSizeRel     : w/o debug symbols, w/ optimization, stripped binaries
-#set(ROS_BUILD_TYPE RelWithDebInfo)
+set(ROS_BUILD_TYPE RelWithDebInfo)
 
 rosbuild_init()
 
@@ -62,4 +62,6 @@ target_link_libraries(show geolib)
 # Tests
 rosbuild_add_executable(test_geolib test/test_geolib.cpp)
 target_link_libraries(test_geolib geolib assimp)
+
+rosbuild_add_executable(test_matrix test/test_matrix.cpp)
 
