@@ -2,12 +2,14 @@
 #define GEOLIB_MATRIX_H_
 
 #include <ostream>
+#include <cstring>
 
 namespace geo {
 
 class Vector3 {
 
     friend class Matrix3x3;
+    friend class Transform;
 
 public:
 
@@ -30,6 +32,8 @@ protected:
 };
 
 class Matrix3x3 {
+
+    friend class Transform;
 
 public:
 
@@ -73,6 +77,37 @@ public:
 protected:
 
     float m_[9];
+
+};
+
+class Transform {
+
+public:
+
+    Transform() {}
+
+    Transform(const Vector3& v, const Matrix3x3& r) {
+        memcpy(t_, v.v_, 3 * sizeof(float));
+        memcpy(r_, r.m_, 9 * sizeof(float));
+    }
+
+    Vector3 operator*(const Vector3& v) {
+        return Vector3(r_[0]*v.v_[0]+r_[1]*v.v_[1]+r_[2]*v.v_[2]+t_[0],
+                       r_[3]*v.v_[0]+r_[4]*v.v_[1]+r_[5]*v.v_[2]+t_[1],
+                       r_[6]*v.v_[0]+r_[7]*v.v_[1]+r_[8]*v.v_[2]+t_[2]);
+    }
+
+    friend std::ostream& operator<< (std::ostream& out, const Transform& t) {
+        out << "[ " << t.r_[0] << " " << t.r_[1] << " " << t.r_[2] << "   [ " << t.t_[0] << " ]" << std::endl
+                    << t.r_[3] << " " << t.r_[4] << " " << t.r_[5] << "   [ " << t.t_[1] << " ]" << std::endl
+                    << t.r_[6] << " " << t.r_[7] << " " << t.r_[8] << " ] [ " << t.t_[2] << " ]";
+        return out;
+    }
+
+protected:
+
+    float t_[3];
+    float r_[9];
 
 };
 
