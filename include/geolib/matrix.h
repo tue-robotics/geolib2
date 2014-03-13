@@ -7,6 +7,8 @@
 
 namespace geo {
 
+typedef double real;
+
 class Vector3 {
 
     friend class Matrix3x3;
@@ -16,42 +18,42 @@ public:
 
     Vector3() {}
 
-    Vector3(float x, float y, float z) {
+    Vector3(real x, real y, real z) {
         v_[0] = x;
         v_[1] = y;
         v_[2] = z;
     }
 
-    Vector3(const float* v) {
-        memcpy(v_, v, 3 * sizeof(float));
+    Vector3(const real* v) {
+        memcpy(v_, v, 3 * sizeof(real));
     }
 
-    inline const float& x() const { return v_[0]; }
-    inline const float& y() const { return v_[1]; }
-    inline const float& z() const { return v_[2]; }
+    inline const real& x() const { return v_[0]; }
+    inline const real& y() const { return v_[1]; }
+    inline const real& z() const { return v_[2]; }
 
-    inline const float& getX() const { return v_[0]; }
-    inline const float& getY() const { return v_[1]; }
-    inline const float& getZ() const { return v_[2]; }
+    inline const real& getX() const { return v_[0]; }
+    inline const real& getY() const { return v_[1]; }
+    inline const real& getZ() const { return v_[2]; }
 
-    inline void setX(float x) { v_[0] = x; }
-    inline void setY(float y) { v_[1] = y; }
-    inline void setZ(float z) { v_[2] = z; }
+    inline void setX(real x) { v_[0] = x; }
+    inline void setY(real y) { v_[1] = y; }
+    inline void setZ(real z) { v_[2] = z; }
 
-    inline float length() const {
+    inline real length() const {
         return sqrt(v_[0]*v_[0] + v_[1]*v_[1] + v_[2]*v_[2]);
     }
 
-    inline float length2() const {
+    inline real length2() const {
         return v_[0]*v_[0] + v_[1]*v_[1] + v_[2]*v_[2];
     }
 
     inline void normalize() {
-        float l = length();
+        real l = length();
         v_[0] /= l; v_[1] /= l; v_[2] /= l;
     }
 
-    inline float dot(const Vector3& v) const {
+    inline real dot(const Vector3& v) const {
         return v_[0]*v.v_[0] + v_[1]*v.v_[1] + v_[2]*v.v_[2];
     }
 
@@ -63,11 +65,11 @@ public:
         return Vector3(v_[0]-v.v_[0], v_[1]-v.v_[1], v_[2]-v.v_[2]);
     }
 
-    inline Vector3 operator*(float f) const {
+    inline Vector3 operator*(real f) const {
         return Vector3(v_[0] * f, v_[1] * f, v_[2] * f);
     }
 
-    inline Vector3 operator/(float f) const {
+    inline Vector3 operator/(real f) const {
         return Vector3(v_[0] / f, v_[1] / f, v_[2] / f);
     }
 
@@ -76,7 +78,7 @@ public:
         return out;
     }
 
-    friend Vector3 operator*(float s, const Vector3& v) {
+    friend Vector3 operator*(real s, const Vector3& v) {
         return v * s;
     }
 
@@ -86,7 +88,7 @@ public:
 
 protected:
 
-    float v_[3];
+    real v_[3];
 };
 
 
@@ -99,9 +101,9 @@ public:
 
     Matrix3x3() {}
 
-    Matrix3x3(float m11, float m12, float m13,
-              float m21, float m22, float m23,
-              float m31, float m32, float m33) //:
+    Matrix3x3(real m11, real m12, real m13,
+              real m21, real m22, real m23,
+              real m31, real m32, real m33) //:
 //        m_{m11, m12, m13, m21, m22, m23, m31, m32, m33}
     {
         m_[0]= m11;
@@ -115,21 +117,21 @@ public:
         m_[8]= m33;
     }
 
-    Matrix3x3(const float* m) {
-        memcpy(m_, m, 9 * sizeof(float));
+    Matrix3x3(const real* m) {
+        memcpy(m_, m, 9 * sizeof(real));
     }
 
-    void setRPY(float roll, float pitch, float yaw)  {
-        float ci = cos(roll);
-        float cj = cos(pitch);
-        float ch = cos(yaw);
-        float si = sin(roll);
-        float sj = sin(pitch);
-        float sh = sin(yaw);
-        float cc = ci * ch;
-        float cs = ci * sh;
-        float sc = si * ch;
-        float ss = si * sh;
+    void setRPY(real roll, real pitch, real yaw)  {
+        real ci = cos(roll);
+        real cj = cos(pitch);
+        real ch = cos(yaw);
+        real si = sin(roll);
+        real sj = sin(pitch);
+        real sh = sin(yaw);
+        real cc = ci * ch;
+        real cs = ci * sh;
+        real sc = si * ch;
+        real ss = si * sh;
 
         m_[0] = cj * ch; m_[1] = sj * sc - cs; m_[2] = sj * cc + ss;
         m_[3] = cj * sh; m_[4] = sj * ss + cc, m_[5] = sj * cs - sc;
@@ -137,7 +139,7 @@ public:
     }
 
     inline Vector3 getRow(int i) {
-        return Vector3(m_[i], m_[i+1], m_[i+2]);
+        return Vector3(m_[i*3], m_[i*3+1], m_[i*3+2]);
     }
 
     Matrix3x3 operator*(const Matrix3x3& n) const {
@@ -161,7 +163,7 @@ public:
 
 protected:
 
-    float m_[9];
+    real m_[9];
 
 };
 
@@ -171,10 +173,15 @@ public:
 
     Transform() {}
 
-    Transform(float m11, float m12, float m13,
-              float m21, float m22, float m23,
-              float m31, float m32, float m33,
-              float x, float y, float z) {
+    Transform(real x, real y, real z, real roll = 0, real pitch = 0, real yaw = 0) {
+        o_[0] = x; o_[1] = y; o_[2] = z;
+        setRPY(roll, pitch, yaw);
+    }
+
+    Transform(real m11, real m12, real m13,
+              real m21, real m22, real m23,
+              real m31, real m32, real m33,
+              real x, real y, real z) {
 
         r_[0] = m11; r_[1] = m12; r_[2] = m13;
         r_[3] = m21; r_[4] = m22; r_[5] = m23;
@@ -183,8 +190,8 @@ public:
     }
 
     Transform(const Vector3& v, const Matrix3x3& r) {
-        memcpy(o_, v.v_, 3 * sizeof(float));
-        memcpy(r_, r.m_, 9 * sizeof(float));
+        memcpy(o_, v.v_, 3 * sizeof(real));
+        memcpy(r_, r.m_, 9 * sizeof(real));
     }
 
     inline Vector3 operator*(const Vector3& v) const {
@@ -222,17 +229,17 @@ public:
         return t;
     }
 
-    void setRPY(float roll, float pitch, float yaw)  {
-        float ci = cos(roll);
-        float cj = cos(pitch);
-        float ch = cos(yaw);
-        float si = sin(roll);
-        float sj = sin(pitch);
-        float sh = sin(yaw);
-        float cc = ci * ch;
-        float cs = ci * sh;
-        float sc = si * ch;
-        float ss = si * sh;
+    void setRPY(real roll, real pitch, real yaw)  {
+        real ci = cos(roll);
+        real cj = cos(pitch);
+        real ch = cos(yaw);
+        real si = sin(roll);
+        real sj = sin(pitch);
+        real sh = sin(yaw);
+        real cc = ci * ch;
+        real cs = ci * sh;
+        real sc = si * ch;
+        real ss = si * sh;
 
         r_[0] = cj * ch; r_[1] = sj * sc - cs; r_[2] = sj * cc + ss;
         r_[3] = cj * sh; r_[4] = sj * ss + cc, r_[5] = sj * cs - sc;
@@ -248,8 +255,8 @@ public:
 
 protected:
 
-    float o_[3];
-    float r_[9];
+    real o_[3];
+    real r_[9];
 
 };
 

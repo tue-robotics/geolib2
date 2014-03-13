@@ -42,9 +42,13 @@ bool Shape::write(std::ostream& output) const {
     output.write((char*)&p_size, sizeof(p_size));
     for(std::vector<geo::Vector3>::const_iterator it = points.begin(); it != points.end(); ++it) {
         const geo::Vector3& v = *it;
-        output.write((char*)&v.x(), sizeof(v.x()));
-        output.write((char*)&v.y(), sizeof(v.y()));
-        output.write((char*)&v.z(), sizeof(v.z()));
+        float x = v.x();
+        float y = v.y();
+        float z = v.z();
+
+        output.write((char*)&x, sizeof(x));
+        output.write((char*)&y, sizeof(y));
+        output.write((char*)&z, sizeof(z));
     }
 
     const std::vector<geo::TriangleI> triangles = mesh_.getTriangleIs();
@@ -67,7 +71,7 @@ ShapePtr Shape::read(std::istream& input) {
     input.read((char*)&p_size, sizeof(p_size));
 
     for(int i = 0; i < p_size; ++i) {
-        double x, y, z;
+        float x, y, z;
         input.read((char*)&x, sizeof(x));
         input.read((char*)&y, sizeof(y));
         input.read((char*)&z, sizeof(z));

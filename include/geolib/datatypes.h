@@ -52,6 +52,7 @@ class Ray;
 
 #ifdef GEOLIB_USE_TF
 
+typedef tfScalar real;
 typedef tf::StampedTransform Transform;
 typedef tf::Vector3 Vector3;
 typedef tf::Point Point;
