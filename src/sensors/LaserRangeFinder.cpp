@@ -139,7 +139,7 @@ LaserRangeFinder::RenderResult LaserRangeFinder::render(const Shape& shape, cons
 
     // transform Z-coordinates
     std::vector<double> zs_t(points.size());
-    const Vector3& Rz = t_inv.getBasis().getRow(2);
+    Vector3 Rz = t_inv.getBasis().getRow(2);
     double z_offset = t_inv.getOrigin().getZ();
     for(unsigned int i = 0; i < points.size(); ++i) {
         zs_t[i] = Rz.dot(points[i]) + z_offset;

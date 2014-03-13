@@ -189,7 +189,7 @@ public:
         o_[0] = x; o_[1] = y; o_[2] = z;
     }
 
-    Transform(const Vector3& v, const Matrix3x3& r) {
+    Transform(const Matrix3x3& r, const Vector3& v) {
         memcpy(o_, v.v_, 3 * sizeof(real));
         memcpy(r_, r.m_, 9 * sizeof(real));
     }
@@ -219,14 +219,13 @@ public:
     }
 
     inline Transform inverse() const {
-        Transform t;
-        t.r_[0] = -r_[0]; t.r_[1] = -r_[1]; t.r_[2] = -r_[2];
+        return Transform(r_[0], r_[3], r_[6],
+                         r_[1], r_[4], r_[7],
+                         r_[2], r_[5], r_[8],
 
-        t.r_[0] = r_[0]; t.r_[1] = r_[3]; t.r_[2] = r_[6];
-        t.r_[3] = r_[1]; t.r_[4] = r_[4]; t.r_[5] = r_[7];
-        t.r_[6] = r_[2]; t.r_[7] = r_[5]; t.r_[8] = r_[8];
-
-        return t;
+                         -r_[0]*o_[0]-r_[3]*o_[1]-r_[6]*o_[2],
+                         -r_[1]*o_[0]-r_[4]*o_[1]-r_[7]*o_[2],
+                         -r_[2]*o_[0]-r_[5]*o_[1]-r_[8]*o_[2]);
     }
 
     void setRPY(real roll, real pitch, real yaw)  {
