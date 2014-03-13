@@ -119,6 +119,23 @@ public:
         memcpy(m_, m, 9 * sizeof(float));
     }
 
+    void setRPY(float roll, float pitch, float yaw)  {
+        float ci = cos(roll);
+        float cj = cos(pitch);
+        float ch = cos(yaw);
+        float si = sin(roll);
+        float sj = sin(pitch);
+        float sh = sin(yaw);
+        float cc = ci * ch;
+        float cs = ci * sh;
+        float sc = si * ch;
+        float ss = si * sh;
+
+        m_[0] = cj * ch; m_[1] = sj * sc - cs; m_[2] = sj * cc + ss;
+        m_[3] = cj * sh; m_[4] = sj * ss + cc, m_[5] = sj * cs - sc;
+        m_[6] = -sj;     m_[7] = cj * si;      m_[8] = cj * ci ;
+    }
+
     inline Vector3 getRow(int i) {
         return Vector3(m_[i], m_[i+1], m_[i+2]);
     }
@@ -203,6 +220,23 @@ public:
         t.r_[6] = r_[2]; t.r_[7] = r_[5]; t.r_[8] = r_[8];
 
         return t;
+    }
+
+    void setRPY(float roll, float pitch, float yaw)  {
+        float ci = cos(roll);
+        float cj = cos(pitch);
+        float ch = cos(yaw);
+        float si = sin(roll);
+        float sj = sin(pitch);
+        float sh = sin(yaw);
+        float cc = ci * ch;
+        float cs = ci * sh;
+        float sc = si * ch;
+        float ss = si * sh;
+
+        r_[0] = cj * ch; r_[1] = sj * sc - cs; r_[2] = sj * cc + ss;
+        r_[3] = cj * sh; r_[4] = sj * ss + cc, r_[5] = sj * cs - sc;
+        r_[6] = -sj;     r_[7] = cj * si;      r_[8] = cj * ci ;
     }
 
     friend std::ostream& operator<< (std::ostream& out, const Transform& t) {
