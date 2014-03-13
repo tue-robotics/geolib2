@@ -48,7 +48,7 @@ int main(int argc, char **argv) {
 
 #ifdef USE_TF
     tf::Transform t1(tf_rot1, tf_v1);
-    tf::Transform t2(tf_rot2, tf_v1);
+    tf::Transform t2(tf_rot2, tf_v2);
     tf::Vector3 v = tf_v;
 
     tf::Transform t3;
@@ -72,7 +72,7 @@ int main(int argc, char **argv) {
     std::vector<geo::Vector3> result(10000000);
 #endif
 
-    t3 = t1.inverse();
+    t3 = t1 * t2;
 
     Timer timer;
     timer.start();
@@ -83,6 +83,8 @@ int main(int argc, char **argv) {
     std::cout << timer.getElapsedTimeInMilliSec() << " ms" << std::endl;
 
     print(t1);
+    std::cout << std::endl;
+    print(t2);
     std::cout << std::endl;
     print(t3);
     std::cout << std::endl;
