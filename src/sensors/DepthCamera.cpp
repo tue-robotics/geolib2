@@ -86,6 +86,10 @@ RasterizeResult DepthCamera::rasterize(const Shape& shape, const Pose3D& pose, c
     Transform pose_in = pose;
 #endif
 
+    if (shape.getMaxRadius() < pose_in.getOrigin().z()) {
+        return res;
+    }
+
     //pose_in.setOrigin(-pose.getOrigin());
     //tf::Transform pose_in = Pose3D(0, 0, -5, 2.3, 0.3, 0.3);//pose.inverse();
 
