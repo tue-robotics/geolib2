@@ -19,9 +19,16 @@ bool CompositeShape::intersect(const Ray& r, float t0, float t1, double& distanc
 
     bool hit = false;
     double min_distance = t1;
+
+#ifdef GEOLIB_USE_TF
     for(std::vector<std::pair<ShapePtr, tf::Transform> >::const_iterator it = shapes_.begin(); it != shapes_.end(); ++it) {
-        const Shape& shape = *it->first;
         const tf::Transform& pose_inv = it->second;
+#else
+    for(std::vector<std::pair<ShapePtr, Transform> >::const_iterator it = shapes_.begin(); it != shapes_.end(); ++it) {
+        const Transform& pose_inv = it->second;
+#endif
+
+        const Shape& shape = *it->first;
 
         Ray r_t(pose_inv * r.origin_, pose_inv.getBasis() * r.direction_);
 
@@ -46,7 +53,11 @@ double CompositeShape::getMaxRadius() const {
 
 void CompositeShape::addShape(const Shape& shape, const Pose3D& pose) {
     // add to shapes
+#ifdef GEOLIB_USE_TF
     shapes_.push_back(std::pair<ShapePtr, tf::Transform>(ShapePtr(shape.clone()), pose.inverse()));
+#else
+    shapes_.push_back(std::pair<ShapePtr, Transform>(ShapePtr(shape.clone()), pose.inverse()));
+#endif
 
     // add to mesh
     const std::vector<Triangle>& triangles = shape.getMesh().getTriangles();
@@ -55,9 +66,9 @@ void CompositeShape::addShape(const Shape& shape, const Pose3D& pose) {
         Vector3 p2 = pose * it->p2_;
         Vector3 p3 = pose * it->p3_;
 
-        max_radius_ = std::max(max_radius_, p1.length());
-        max_radius_ = std::max(max_radius_, p2.length());
-        max_radius_ = std::max(max_radius_, p3.length());
+        max_radius_ = std::max(max_radius_, (double)p1.length());
+        max_radius_ = std::max(max_radius_, (double)p2.length());
+        max_radius_ = std::max(max_radius_, (double)p3.length());
 
         min_.setX(std::min(min_.getX(), std::min(p1.x(), std::min(p2.x(), p3.x()))));
         min_.setY(std::min(min_.getY(), std::min(p1.y(), std::min(p2.y(), p3.y()))));
@@ -68,11 +79,14 @@ void CompositeShape::addShape(const Shape& shape, const Pose3D& pose) {
         max_.setZ(std::max(max_.getZ(), std::max(p1.z(), std::max(p2.z(), p3.z()))));
     }
 
+#ifdef GEOLIB_USE_TF
     geo::Transform t;
     t.setOrigin(pose.getOrigin());
     t.setRotation(pose.getRotation());
-
     mesh_.add(shape.getMesh().getTransformed(t));
+#else
+    mesh_.add(shape.getMesh().getTransformed(pose));
+#endif
 
     bb_ = Box(min_, max_);
 }

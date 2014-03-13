@@ -26,7 +26,11 @@ public:
 
 protected:
 
+#ifdef GEOLIB_USE_TF
     std::vector<std::pair<ShapePtr, tf::Transform> > shapes_;
+#else
+    std::vector<std::pair<ShapePtr, Transform> > shapes_;
+#endif
 
     double max_radius_;
 

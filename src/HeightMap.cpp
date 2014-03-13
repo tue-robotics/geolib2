@@ -206,10 +206,10 @@ HeightMapNode* HeightMap::createQuadTree(const std::vector<std::vector<double> >
         return 0;
     }
 
-    tf::Vector3 min_map((double)mx_min * resolution,
-                        (double)my_min * resolution, 0);
-    tf::Vector3 max_map((double)mx_max * resolution,
-                        (double)my_max * resolution, max_height);
+    Vector3 min_map((double)mx_min * resolution,
+                    (double)my_min * resolution, 0);
+    Vector3 max_map((double)mx_max * resolution,
+                    (double)my_max * resolution, max_height);
 
     HeightMapNode* n = new HeightMapNode(Box(min_map, max_map));
 

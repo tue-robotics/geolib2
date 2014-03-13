@@ -20,7 +20,11 @@ LaserRangeFinder::RenderResult LaserRangeFinder::raytrace(const Shape& shape, co
     res.min_i = 0;
     res.max_i = 0;
 
+#ifdef GEOLIB_USE_TF
     tf::Transform t = obj_pose.inverse() * cam_pose;
+#else
+    Transform t = obj_pose.inverse() * cam_pose;
+#endif
 
     if (ranges.size() != ray_dirs_.size()) {
         ranges.resize(ray_dirs_.size(), 0);
@@ -31,8 +35,11 @@ LaserRangeFinder::RenderResult LaserRangeFinder::raytrace(const Shape& shape, co
 
     double max_radius = shape.getMaxRadius();
     if (max_radius > 0) {
+#ifdef GEOLIB_USE_TF
         tf::Transform t_inv = t.inverse();
-
+#else
+        Transform t_inv = t.inverse();
+#endif
         // If object is to far above or below the laser plane, do not render
         if (std::abs(t_inv.getOrigin().getZ()) > max_radius) {
             return res;
@@ -97,8 +104,13 @@ LaserRangeFinder::RenderResult LaserRangeFinder::render(const Shape& shape, cons
     res.min_i = 0;
     res.max_i = ray_dirs_.size();
 
+#ifdef GEOLIB_USE_TF
     tf::Transform t = obj_pose.inverse() * cam_pose;
     tf::Transform t_inv = t.inverse();
+#else
+    Transform t = obj_pose.inverse() * cam_pose;
+    Transform t_inv = t.inverse();
+#endif
 
     if (ranges.size() != ray_dirs_.size()) {
         ranges.resize(ray_dirs_.size(), 0);

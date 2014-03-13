@@ -10,7 +10,7 @@ Mesh::~Mesh() {
 
 int Mesh::addPoint(double x, double y, double z) {
     int i = points_.size();
-    points_.push_back(tf::Vector3(x, y, z));
+    points_.push_back(Vector3(x, y, z));
     triangles_.clear();
     return i;
 }
@@ -38,7 +38,7 @@ void Mesh::add(const Mesh& mesh) {
     triangles_.clear();
 }
 
-const std::vector<tf::Vector3>& Mesh::getPoints() const {
+const std::vector<Vector3>& Mesh::getPoints() const {
     return points_;
 }
 
@@ -67,7 +67,7 @@ Mesh Mesh::getTransformed(const geo::Transform t) const {
 }
 
 void Mesh::filterOverlappingVertices() {
-    std::vector<tf::Vector3> old_points = points_;
+    std::vector<Vector3> old_points = points_;
     points_.clear();
 
     std::map<int, std::map<int, std::map<int, int> > > xyz_map;
@@ -111,7 +111,7 @@ double Mesh::getMaxRadius() const {
     if (max_radius_ == 0) {
         double max_radius_sq = 0;
         for(std::vector<Vector3>::const_iterator it = points_.begin(); it != points_.end(); ++it) {
-            max_radius_sq = std::max(max_radius_sq, it->length2());
+            max_radius_sq = std::max(max_radius_sq, (double)it->length2());
         }
         max_radius_ = sqrt(max_radius_sq);
     }

@@ -19,8 +19,11 @@ DepthCamera::~DepthCamera() {
 void DepthCamera::render(const Shape& shape, const Pose3D& pose, cv::Mat& image) {
 
     //Transform tf_map_to_sensor(pose);
-
+#ifdef GEOLIB_USE_TF
     tf::Transform pose_in = pose.inverse();
+#else
+    Transform pose_in = pose.inverse();
+#endif
 
     for(int my = 0; my < image.rows; ++my) {
         for(int mx = 0; mx < image.cols; ++mx) {
@@ -52,8 +55,12 @@ void DepthCamera::render(const Shape& shape, const Pose3D& pose, cv::Mat& image)
 
 RasterizeResult DepthCamera::rasterize(const Shape& shape, const Pose3D& cam_pose, const Pose3D& obj_pose, cv::Mat& image,
                                        PointerMap& pointer_map, void* pointer) const {
+#ifdef GEOLIB_USE_TF
     tf::Transform t = cam_pose.inverse() * obj_pose;
     return rasterize(shape, geo::Pose3D(t.getOrigin(), t.getRotation()), image, pointer_map, pointer);
+#else
+    return rasterize(shape, cam_pose.inverse() * obj_pose, image, pointer_map, pointer);
+#endif
 }
 
 RasterizeResult DepthCamera::rasterize(const Shape& shape, const Pose3D& pose, cv::Mat& image,
@@ -73,7 +80,12 @@ RasterizeResult DepthCamera::rasterize(const Shape& shape, const Pose3D& pose, c
     res.max_x = 0;
     res.max_y = 0;
 
+#ifdef GEOLIB_USE_TF
     tf::Transform pose_in = pose;
+#else
+    Transform pose_in = pose;
+#endif
+
     //pose_in.setOrigin(-pose.getOrigin());
     //tf::Transform pose_in = Pose3D(0, 0, -5, 2.3, 0.3, 0.3);//pose.inverse();
 

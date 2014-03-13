@@ -1,7 +1,6 @@
 #ifndef FAST_SIMULATOR_HEIGHT_MAP_H_
 #define FAST_SIMULATOR_HEIGHT_MAP_H_
 
-#include <tf/transform_datatypes.h>
 #include "Ray.h"
 #include "Box.h"
 

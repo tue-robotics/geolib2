@@ -22,13 +22,17 @@ public:
         v_[2] = z;
     }
 
-    inline float x() const { return v_[0]; }
-    inline float y() const { return v_[1]; }
-    inline float z() const { return v_[2]; }
+    Vector3(const float* v) {
+        memcpy(v_, v, 3 * sizeof(float));
+    }
 
-    inline float getX() const { return v_[0]; }
-    inline float getY() const { return v_[1]; }
-    inline float getZ() const { return v_[2]; }
+    inline const float& x() const { return v_[0]; }
+    inline const float& y() const { return v_[1]; }
+    inline const float& z() const { return v_[2]; }
+
+    inline const float& getX() const { return v_[0]; }
+    inline const float& getY() const { return v_[1]; }
+    inline const float& getZ() const { return v_[2]; }
 
     inline void setX(float x) { v_[0] = x; }
     inline void setY(float y) { v_[1] = y; }
@@ -40,6 +44,15 @@ public:
 
     inline float length2() const {
         return v_[0]*v_[0] + v_[1]*v_[1] + v_[2]*v_[2];
+    }
+
+    inline void normalize() {
+        float l = length();
+        v_[0] /= l; v_[1] /= l; v_[2] /= l;
+    }
+
+    inline float dot(const Vector3& v) const {
+        return v_[0]*v.v_[0] + v_[1]*v.v_[1] + v_[2]*v.v_[2];
     }
 
     inline Vector3 operator+(const Vector3& v) const {
@@ -63,10 +76,20 @@ public:
         return out;
     }
 
+    friend Vector3 operator*(float s, const Vector3& v) {
+        return v * s;
+    }
+
+    friend Vector3 operator-(const Vector3& v) {
+        return Vector3(-v.v_[0], -v.v_[1], -v.v_[2]);
+    }
+
 protected:
 
     float v_[3];
 };
+
+
 
 class Matrix3x3 {
 
@@ -90,6 +113,14 @@ public:
         m_[6]= m31;
         m_[7]= m32;
         m_[8]= m33;
+    }
+
+    Matrix3x3(const float* m) {
+        memcpy(m_, m, 9 * sizeof(float));
+    }
+
+    inline Vector3 getRow(int i) {
+        return Vector3(m_[i], m_[i+1], m_[i+2]);
     }
 
     Matrix3x3 operator*(const Matrix3x3& n) const {
@@ -123,27 +154,67 @@ public:
 
     Transform() {}
 
+    Transform(float m11, float m12, float m13,
+              float m21, float m22, float m23,
+              float m31, float m32, float m33,
+              float x, float y, float z) {
+
+        r_[0] = m11; r_[1] = m12; r_[2] = m13;
+        r_[3] = m21; r_[4] = m22; r_[5] = m23;
+        r_[6] = m31; r_[7] = m32; r_[8] = m33;
+        o_[0] = x; o_[1] = y; o_[2] = z;
+    }
+
     Transform(const Vector3& v, const Matrix3x3& r) {
-        memcpy(t_, v.v_, 3 * sizeof(float));
+        memcpy(o_, v.v_, 3 * sizeof(float));
         memcpy(r_, r.m_, 9 * sizeof(float));
     }
 
-    Vector3 operator*(const Vector3& v) const {
-        return Vector3(r_[0]*v.v_[0]+r_[1]*v.v_[1]+r_[2]*v.v_[2]+t_[0],
-                       r_[3]*v.v_[0]+r_[4]*v.v_[1]+r_[5]*v.v_[2]+t_[1],
-                       r_[6]*v.v_[0]+r_[7]*v.v_[1]+r_[8]*v.v_[2]+t_[2]);
+    inline Vector3 operator*(const Vector3& v) const {
+        return Vector3(r_[0]*v.v_[0]+r_[1]*v.v_[1]+r_[2]*v.v_[2]+o_[0],
+                       r_[3]*v.v_[0]+r_[4]*v.v_[1]+r_[5]*v.v_[2]+o_[1],
+                       r_[6]*v.v_[0]+r_[7]*v.v_[1]+r_[8]*v.v_[2]+o_[2]);
+    }
+
+    inline Transform operator*(const Transform& t) const {
+        return Transform(r_[0]*t.r_[0]+r_[1]*t.r_[3]+r_[2]*t.r_[6], r_[0]*t.r_[1]+r_[1]*t.r_[4]+r_[2]*t.r_[7], r_[0]*t.r_[2]+r_[1]*t.r_[5]+r_[2]*t.r_[8],
+                         r_[3]*t.r_[0]+r_[4]*t.r_[3]+r_[5]*t.r_[6], r_[3]*t.r_[1]+r_[4]*t.r_[4]+r_[5]*t.r_[7], r_[3]*t.r_[2]+r_[4]*t.r_[5]+r_[5]*t.r_[8],
+                         r_[6]*t.r_[0]+r_[7]*t.r_[3]+r_[8]*t.r_[6], r_[6]*t.r_[1]+r_[7]*t.r_[4]+r_[8]*t.r_[7], r_[6]*t.r_[2]+r_[7]*t.r_[5]+r_[8]*t.r_[8],
+
+                         r_[0]*t.o_[0]+r_[1]*t.o_[1]+r_[2]*t.o_[2]+o_[0],
+                         r_[3]*t.o_[0]+r_[4]*t.o_[1]+r_[5]*t.o_[2]+o_[1],
+                         r_[6]*t.o_[0]+r_[7]*t.o_[1]+r_[8]*t.o_[2]+o_[2]);
+    }
+
+    inline Vector3 getOrigin() const {
+        return Vector3(o_);
+    }
+
+    inline Matrix3x3 getBasis() const {
+        return Matrix3x3(r_);
+    }
+
+    inline Transform inverse() const {
+        Transform t;
+        t.r_[0] = -r_[0]; t.r_[1] = -r_[1]; t.r_[2] = -r_[2];
+
+        t.r_[0] = r_[0]; t.r_[1] = r_[3]; t.r_[2] = r_[6];
+        t.r_[3] = r_[1]; t.r_[4] = r_[4]; t.r_[5] = r_[7];
+        t.r_[6] = r_[2]; t.r_[7] = r_[5]; t.r_[8] = r_[8];
+
+        return t;
     }
 
     friend std::ostream& operator<< (std::ostream& out, const Transform& t) {
-        out << "[ " << t.r_[0] << " " << t.r_[1] << " " << t.r_[2] << "   [ " << t.t_[0] << " ]" << std::endl
-                    << t.r_[3] << " " << t.r_[4] << " " << t.r_[5] << "   [ " << t.t_[1] << " ]" << std::endl
-                    << t.r_[6] << " " << t.r_[7] << " " << t.r_[8] << " ] [ " << t.t_[2] << " ]";
+        out << "[ " << t.r_[0] << " " << t.r_[1] << " " << t.r_[2] << "   [ " << t.o_[0] << " ]" << std::endl
+                    << t.r_[3] << " " << t.r_[4] << " " << t.r_[5] << "   [ " << t.o_[1] << " ]" << std::endl
+                    << t.r_[6] << " " << t.r_[7] << " " << t.r_[8] << " ] [ " << t.o_[2] << " ]";
         return out;
     }
 
 protected:
 
-    float t_[3];
+    float o_[3];
     float r_[9];
 
 };
