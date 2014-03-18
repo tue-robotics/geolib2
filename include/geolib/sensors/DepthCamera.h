@@ -58,6 +58,9 @@ public:
 
 };
 
+typedef std::vector<std::vector<void*> > PointerMap;
+typedef std::vector<std::vector<int> > TriangleMap;
+
 struct RasterizeResult {
     int min_x;
     int min_y;
@@ -65,9 +68,9 @@ struct RasterizeResult {
     int max_y;
 };
 
-typedef std::vector<std::vector<void*> > PointerMap;
-
 static PointerMap EMPTY_POINTER_MAP;
+static TriangleMap EMPTY_TRIANGLE_MAP;
+
 
 class DepthCamera {
 
@@ -81,11 +84,11 @@ public:
 
     RasterizeResult rasterize(const Shape& shape, const Pose3D& pose, cv::Mat& image,
                               PointerMap& pointer_map = EMPTY_POINTER_MAP,
-                              void* pointer = 0) const;
+                              void* pointer = 0, TriangleMap& triangle_map = EMPTY_TRIANGLE_MAP) const;
 
     RasterizeResult rasterize(const Shape& shape, const Pose3D& cam_pose, const Pose3D& obj_pose, cv::Mat& image,
                               PointerMap& pointer_map = EMPTY_POINTER_MAP,
-                              void* pointer = 0) const;
+                              void* pointer = 0, TriangleMap& triangle_map = EMPTY_TRIANGLE_MAP) const;
 
     inline cv::Point2d project3Dto2D(const Vector3 p, int width = 0, int height = 0) const {
         return cv::Point2d((fx_ * p.x() + tx_) / -p.z() + cx_, (fy_ * -p.y() + ty_) / -p.z() + cy_);
@@ -143,16 +146,21 @@ protected:
     double cy_plus_ty_;
 
     void drawTriangle(const Vector3& p1, const Vector3& p2, const Vector3& p3, cv::Mat& image,
-                      PointerMap& pointer_map, void* pointer, RasterizeResult& res) const;
+                      PointerMap& pointer_map, void* pointer, TriangleMap& triangle_map, int i_triangle, RasterizeResult& res) const;
 
     void drawTriangle(float x1, float y1, float depth1,
                       float x2, float y2, float depth2,
                       float x3, float y3, float depth3, cv::Mat& image,
-                      PointerMap& pointer_map, void* pointer, RasterizeResult& res) const;
+                      PointerMap& pointer_map, void* pointer,
+                      TriangleMap& triangle_map, int i_triangle, RasterizeResult& res) const;
 
-    void drawSpansBetweenEdges(const Edge& e1, const Edge& e2, cv::Mat& image, PointerMap& pointer_map, void* pointer) const;
+    void drawSpansBetweenEdges(const Edge& e1, const Edge& e2, cv::Mat& image,
+                               PointerMap& pointer_map, void* pointer,
+                               TriangleMap& triangle_map, int i_triangle) const;
 
-    void drawSpan(const Span &span, int y, cv::Mat& image, PointerMap& pointer_map, void* pointer) const;
+    void drawSpan(const Span &span, int y, cv::Mat& image,
+                  PointerMap& pointer_map, void* pointer,
+                  TriangleMap& triangle_map, int i_triangle) const;
 
 };
 
