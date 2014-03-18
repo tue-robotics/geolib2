@@ -38,6 +38,37 @@ void Mesh::add(const Mesh& mesh) {
     triangles_.clear();
 }
 
+//void Mesh::removeTriangles(const std::set<int>& indices) {
+//    for(std::set<int>::const_reverse_iterator it = indices.rbegin(); it != indices.rend(); ++it) {
+//        int i_triangle = *it;
+//        if (i_triangle <= (int)triangles_i_.size() - 1) {
+//            triangles_i_[i_triangle] = triangles_i_.back();
+//            triangles_i_.pop_back();
+//        }
+//    }
+
+//    triangles_.clear();
+//}
+
+void Mesh::copyAndRemoveTriangles(const std::set<int>& indices, geo::Mesh& target) const {
+    target.clear();
+
+    std::vector<int> vertex_mapping(points_.size(), -1);
+
+    std::set<int>::const_iterator it = indices.begin();
+    for(int i = 0; i < (int)triangles_i_.size() && it != indices.end(); ++i) {
+        int i_triangle = *it;
+        if (i == i_triangle) {
+            ++it;
+        } else {
+            int i1 = foo(triangles_i_[i].i1_, points_, vertex_mapping, target.points_);
+            int i2 = foo(triangles_i_[i].i2_, points_, vertex_mapping, target.points_);
+            int i3 = foo(triangles_i_[i].i3_, points_, vertex_mapping, target.points_);
+            target.triangles_i_.push_back(TriangleI(i1, i2, i3));
+        }
+    }
+}
+
 const std::vector<Vector3>& Mesh::getPoints() const {
     return points_;
 }
