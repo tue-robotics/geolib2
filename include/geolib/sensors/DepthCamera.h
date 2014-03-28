@@ -7,65 +7,12 @@
 
 namespace geo {
 
-class Edge {
-
-public:
-
-    Edge(int x1, int y1, float depth1, int x2, int y2, float depth2) {
-        if (y1 < y2) {
-            Color1 = depth1;
-            X1 = x1;
-            Y1 = y1;
-            Color2 = depth2;
-            X2 = x2;
-            Y2 = y2;
-        } else {
-            Color1 = depth2;
-            X1 = x2;
-            Y1 = y2;
-            Color2 = depth1;
-            X2 = x1;
-            Y2 = y1;
-        }
-    }
-
-    int X1, X2;
-    int Y1, Y2;
-    float Color1, Color2;
-
-};
-
-class Span {
-
-public:
-
-    Span(float color1, int x1, float color2, int x2) {
-        if(x1 < x2) {
-            Color1 = color1;
-            X1 = x1;
-            Color2 = color2;
-            X2 = x2;
-        } else {
-            Color1 = color2;
-            X1 = x2;
-            Color2 = color1;
-            X2 = x1;
-        }
-    }
-
-    int X1, X2;
-    float Color1, Color2;
-
-};
-
 typedef std::vector<std::vector<void*> > PointerMap;
 typedef std::vector<std::vector<int> > TriangleMap;
 
 struct RasterizeResult {
-    int min_x;
-    int min_y;
-    int max_x;
-    int max_y;
+    int min_x, min_y;
+    int max_x, max_y;
 };
 
 static PointerMap EMPTY_POINTER_MAP;
@@ -79,8 +26,6 @@ public:
     DepthCamera();
 
     virtual ~DepthCamera();
-
-    void render(const Shape& shape, const Pose3D& pose, cv::Mat& image);   
 
     RasterizeResult rasterize(const Shape& shape, const Pose3D& pose, cv::Mat& image,
                               PointerMap& pointer_map = EMPTY_POINTER_MAP,
@@ -154,22 +99,11 @@ protected:
                       PointerMap& pointer_map, void* pointer,
                       TriangleMap& triangle_map, int i_triangle, RasterizeResult& res) const;
 
-    void blaa(cv::Mat& depth_image, int y_start, int y_end,
-              float x_start, float x_start_delta, float x_end, float x_end_delta,
-              float d_start, float d_start_delta, float d_end, float d_end_delta,
-              PointerMap& pointer_map, void* pointer,
-              TriangleMap& triangle_map, int i_triangle) const;
-
-
-
-
-    void drawSpansBetweenEdges(const Edge& e1, const Edge& e2, cv::Mat& image,
-                               PointerMap& pointer_map, void* pointer,
-                               TriangleMap& triangle_map, int i_triangle) const;
-
-    void drawSpan(const Span &span, int y, cv::Mat& image,
-                  PointerMap& pointer_map, void* pointer,
-                  TriangleMap& triangle_map, int i_triangle) const;
+    void drawTrianglePart(cv::Mat& depth_image, int y_start, int y_end,
+                          float x_start, float x_start_delta, float x_end, float x_end_delta,
+                          float d_start, float d_start_delta, float d_end, float d_end_delta,
+                          PointerMap& pointer_map, void* pointer,
+                          TriangleMap& triangle_map, int i_triangle) const;
 
 };
 

@@ -16,7 +16,7 @@ double CANVAS_HEIGHT = 480;
 
 using namespace geo;
 
-double renderDepthCamera(cv::Mat& image, const Shape& shape, bool rasterize, bool show) {
+double renderDepthCamera(cv::Mat& image, const Shape& shape, bool show) {
     DepthCamera cam;
     cam.setFocalLengths(554.2559327880068 * CANVAS_WIDTH / 640, 554.2559327880068 * CANVAS_HEIGHT / 480);
     cam.setOpticalCenter(320.5 * CANVAS_WIDTH / 640, 240.5 * CANVAS_HEIGHT / 480);
@@ -33,11 +33,7 @@ double renderDepthCamera(cv::Mat& image, const Shape& shape, bool rasterize, boo
 
 
         Pose3D pose(0, -0.5, -5, -1.57, angle, 0);
-        if (rasterize) {
-            cam.rasterize(shape, pose, image);
-        } else {
-            cam.render(shape, pose, image);
-        }
+        cam.rasterize(shape, pose, image);
 
         if (show) {
             cv::imshow("visualization", image /  10);
@@ -268,13 +264,13 @@ int main(int argc, char **argv) {
 
     Box plane(Vector3(-10, -10, -0.1), Vector3(10, 10, 0));
 
-    std::cout << "DepthCamera::rasterize(box):\t" << renderDepthCamera(image, shape, true, false) << " ms" << std::endl;
-    std::cout << "DepthCamera::rasterize(table):\t" << renderDepthCamera(image, table, true, false) << " ms" << std::endl;
-    std::cout << "DepthCamera::rasterize(heightmap):\t" << renderDepthCamera(image, hmap, true, false) << " ms" << std::endl;
+    std::cout << "DepthCamera::rasterize(box):\t" << renderDepthCamera(image, shape, false) << " ms" << std::endl;
+    std::cout << "DepthCamera::rasterize(table):\t" << renderDepthCamera(image, table, false) << " ms" << std::endl;
+    std::cout << "DepthCamera::rasterize(heightmap):\t" << renderDepthCamera(image, hmap, false) << " ms" << std::endl;
 //    std::cout << "DepthCamera::rasterize(abstract_shape):\t" << renderDepthCamera(image, tree, true, false) << " ms" << std::endl;
 
     if (mesh) {
-        std::cout << "DepthCamera::rasterize(input_mesh):\t" << renderDepthCamera(image, *mesh, true, false) << " ms" << std::endl;
+        std::cout << "DepthCamera::rasterize(input_mesh):\t" << renderDepthCamera(image, *mesh, false) << " ms" << std::endl;
     }
 
     std::cout << "LaserRangeFinder::render(box):\t" << renderLRF(image, shape, true, false) << " ms" << std::endl;

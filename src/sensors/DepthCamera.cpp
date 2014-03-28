@@ -12,43 +12,6 @@ DepthCamera::~DepthCamera() {
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 //
-//                                        RAYTRACING
-//
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
-
-void DepthCamera::render(const Shape& shape, const Pose3D& pose, cv::Mat& image) {
-
-    //Transform tf_map_to_sensor(pose);
-#ifdef GEOLIB_USE_TF
-    tf::Transform pose_in = pose.inverse();
-#else
-    Transform pose_in = pose.inverse();
-#endif
-
-    for(int my = 0; my < image.rows; ++my) {
-        for(int mx = 0; mx < image.cols; ++mx) {
-            Vector3 dir((double)mx / image.cols - 0.5, (double)my / image.rows - 0.5, 1);
-            dir.normalize();
-
-            Ray r(Vector3(0, 0, 0), dir);
-
-            Vector3 dir_transformed = pose_in.getBasis() * r.direction_;
-            Ray r_transformed(pose_in.getOrigin(), dir_transformed);
-
-            //std::cout << r_transformed.origin_ << std::endl;
-
-            double distance = 0;
-            if (shape.intersect(r_transformed, 0, 10, distance)) {
-                if (image.at<float>(my, mx) == 0 || distance < image.at<float>(my, mx)) {
-                    image.at<float>(my, mx) = distance;
-                }
-            }
-        }
-    }
-}
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
-//
 //                                        RASTERIZATION
 //
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -197,18 +160,10 @@ RasterizeResult DepthCamera::rasterize(const Shape& shape, const Pose3D& pose, c
         ++i_triangle;
     }
 
-    /*
-    for(int y = 0; y < image.rows; ++y) {
-        for(int x = 0; x < image.cols; ++x) {
-            if (image.at<float>(y, x) > 9) {
-                image.at<float>(y, x) = 0.0 / 0.0;
-            }
-        }
-    }
-    */
-
     return res;
 }
+
+// -------------------------------------------------------------------------------
 
 void DepthCamera::drawTriangle(const Vector3& p1_3d, const Vector3& p2_3d, const Vector3& p3_3d, cv::Mat& image,
                                PointerMap& pointer_map, void* pointer, TriangleMap& triangle_map, int i_triangle,
@@ -222,6 +177,7 @@ void DepthCamera::drawTriangle(const Vector3& p1_3d, const Vector3& p2_3d, const
                  p3_2d, -p3_3d.z(), image, pointer_map, pointer, triangle_map, i_triangle, res);
 }
 
+// -------------------------------------------------------------------------------
 
 void DepthCamera::drawTriangle(const cv::Point2d& p1, float d1,
                                const cv::Point2d& p2, float d2,
@@ -278,6 +234,7 @@ void DepthCamera::drawTriangle(const cv::Point2d& p1, float d1,
             int y_min_max = (int)p_max.y - (int)p_min.y;
 
             if (y_min_max == 0) {
+                // TODO!
                 return;
             }
 
@@ -294,12 +251,12 @@ void DepthCamera::drawTriangle(const cv::Point2d& p1, float d1,
                 ad = d_mid; bd = d_prime;
             }
 
-            blaa(image, p_min.y, p_mid.y,
+            drawTrianglePart(image, p_min.y, p_mid.y,
                  p_min.x, (ax - p_min.x) / y_min_mid, p_min.x, (bx - p_min.x) / y_min_mid,
                  d_min, (ad - d_min) / y_min_mid, d_min, (bd - d_min) / y_min_mid,
                  pointer_map, pointer, triangle_map, i_triangle);
 
-            blaa(image, p_mid.y, p_max.y,
+            drawTrianglePart(image, p_mid.y, p_max.y,
                  ax, (p_max.x - ax) / y_mid_max, bx, (p_max.x - bx) / y_mid_max,
                  ad, (d_max - ad) / y_mid_max, bd, (d_max - bd) / y_mid_max,
                  pointer_map, pointer, triangle_map, i_triangle);
@@ -309,11 +266,11 @@ void DepthCamera::drawTriangle(const cv::Point2d& p1, float d1,
 
 // -------------------------------------------------------------------------------
 
-void DepthCamera::blaa(cv::Mat& image, int y_start, int y_end,
-                       float x_start, float x_start_delta, float x_end, float x_end_delta,
-                       float d_start, float d_start_delta, float d_end, float d_end_delta,
-                       PointerMap& pointer_map, void* pointer,
-                       TriangleMap& triangle_map, int i_triangle) const {
+void DepthCamera::drawTrianglePart(cv::Mat& image, int y_start, int y_end,
+                                   float x_start, float x_start_delta, float x_end, float x_end_delta,
+                                   float d_start, float d_start_delta, float d_end, float d_end_delta,
+                                   PointerMap& pointer_map, void* pointer,
+                                   TriangleMap& triangle_map, int i_triangle) const {
 
     if (y_start < 0) {
         d_start += d_start_delta * -y_start;
@@ -325,7 +282,7 @@ void DepthCamera::blaa(cv::Mat& image, int y_start, int y_end,
 
     y_end = std::min(image.rows - 1, y_end);
 
-    for(int y = y_start; y < y_end; ++y) {
+    for(int y = y_start; y <= y_end; ++y) {
         float d = d_start;
         float d_delta = (d_end - d_start) / (x_end - x_start);
 
@@ -359,132 +316,6 @@ void DepthCamera::blaa(cv::Mat& image, int y_start, int y_end,
         d_end += d_end_delta;
         x_start += x_start_delta;
         x_end += x_end_delta;
-    }
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-void DepthCamera::drawSpansBetweenEdges(const Edge& e1, const Edge& e2, cv::Mat& image,
-                                        PointerMap& pointer_map, void* pointer,
-                                        TriangleMap& triangle_map, int i_triangle) const {
-    // calculate difference between the y coordinates
-    // of the first edge and return if 0
-    float e1ydiff = (float)(e1.Y2 - e1.Y1);
-    if(e1ydiff == 0.0f)
-        return;
-
-    // calculate difference between the y coordinates
-    // of the second edge and return if 0
-    float e2ydiff = (float)(e2.Y2 - e2.Y1);
-    if(e2ydiff == 0.0f)
-        return;
-
-    // calculate differences between the x coordinates
-    // and colors of the points of the edges
-    float e1xdiff = (float)(e1.X2 - e1.X1);
-    float e2xdiff = (float)(e2.X2 - e2.X1);
-    float e1colordiff = (e1.Color2 - e1.Color1);
-    float e2colordiff = (e2.Color2 - e2.Color1);
-
-    // calculate factors to use for interpolation
-    // with the edges and the step values to increase
-    // them by after drawing each span
-    float factor1 = (float)(e2.Y1 - e1.Y1) / e1ydiff;
-    float factorStep1 = 1.0f / e1ydiff;
-    float factor2 = 0.0f;
-    float factorStep2 = 1.0f / e2ydiff;
-
-
-    if (e2.Y1 < 0) {
-        factor1 += -e2.Y1 * factorStep1;
-        factor2 += -e2.Y1 * factorStep2;
-    }
-
-    // loop through the lines between the edges and draw spans
-    for(int y = std::max(0, e2.Y1); y < std::min(e2.Y2, image.rows); y++) {
-        if (y >= 0 && y < image.rows) {
-            //cout << y << endl;
-            // create and draw span
-            Span span(e1.Color1 + (e1colordiff * factor1),
-                      e1.X1 + (int)(e1xdiff * factor1),
-                      e2.Color1 + (e2colordiff * factor2),
-                      e2.X1 + (int)(e2xdiff * factor2));
-            drawSpan(span, y, image, pointer_map, pointer, triangle_map, i_triangle);
-        }
-
-        // increase factors
-        factor1 += factorStep1;
-        factor2 += factorStep2;
-    }
-}
-
-void DepthCamera::drawSpan(const Span &span, int y, cv::Mat& image,
-                           PointerMap& pointer_map, void* pointer,
-                           TriangleMap& triangle_map, int i_triangle) const {
-
-//    std::cout << "    Span: " << span.X1 << " - " << span.X2 << std::endl;
-
-    int xdiff = span.X2 - span.X1;
-    if(xdiff == 0)
-        return;
-
-    float colordiff = span.Color2 - span.Color1;
-
-    float factor = 0.0f;
-    float factorStep = 1.0f / (float)xdiff;
-
-    if (span.X1 < 0) {
-        factor += -span.X1 * factorStep;
-    }
-
-
-    // draw each pixel in the span
-    for(int x = std::max(0, span.X1); x < std::min(span.X2, image.cols); x++) {
-        if (x >= 0 && x < image.cols) {
-            float depth = 1 / (span.Color1 + (colordiff * factor));
-            float old_depth = image.at<float>(y, x);
-            if (old_depth == 0 || old_depth > depth) {
-                image.at<float>(y, x) = depth;
-                if (pointer) {
-                    pointer_map[x][y] = pointer;
-                }
-
-                if (!triangle_map.empty()) {
-                    triangle_map[x][y] = i_triangle;
-                }
-            }
-
-//            std::cout << "        Pixel: " << x << " , " << y << ": " << depth << std::endl;
-        }
-        factor += factorStep;
     }
 }
 
