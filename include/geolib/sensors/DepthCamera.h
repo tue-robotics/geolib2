@@ -148,11 +148,18 @@ protected:
     void drawTriangle(const Vector3& p1, const Vector3& p2, const Vector3& p3, cv::Mat& image,
                       PointerMap& pointer_map, void* pointer, TriangleMap& triangle_map, int i_triangle, RasterizeResult& res) const;
 
-    void drawTriangle(float x1, float y1, float depth1,
-                      float x2, float y2, float depth2,
-                      float x3, float y3, float depth3, cv::Mat& image,
+    void drawTriangle(const cv::Point2d& p1, float d1,
+                      const cv::Point2d& p2, float d2,
+                      const cv::Point2d& p3, float d3, cv::Mat& image,
                       PointerMap& pointer_map, void* pointer,
                       TriangleMap& triangle_map, int i_triangle, RasterizeResult& res) const;
+
+    void blaa(cv::Mat& depth_image, int y_start, int y_end,
+              float x_start, float x_start_delta, float x_end, float x_end_delta,
+              float d_start, float d_start_delta, float d_end, float d_end_delta) const;
+
+
+
 
     void drawSpansBetweenEdges(const Edge& e1, const Edge& e2, cv::Mat& image,
                                PointerMap& pointer_map, void* pointer,
