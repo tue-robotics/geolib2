@@ -156,7 +156,9 @@ protected:
 
     void blaa(cv::Mat& depth_image, int y_start, int y_end,
               float x_start, float x_start_delta, float x_end, float x_end_delta,
-              float d_start, float d_start_delta, float d_end, float d_end_delta) const;
+              float d_start, float d_start_delta, float d_end, float d_end_delta,
+              PointerMap& pointer_map, void* pointer,
+              TriangleMap& triangle_map, int i_triangle) const;
 
 
 

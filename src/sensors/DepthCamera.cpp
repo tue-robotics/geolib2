@@ -296,11 +296,13 @@ void DepthCamera::drawTriangle(const cv::Point2d& p1, float d1,
 
             blaa(image, p_min.y, p_mid.y,
                  p_min.x, (ax - p_min.x) / y_min_mid, p_min.x, (bx - p_min.x) / y_min_mid,
-                 d_min, (ad - d_min) / y_min_mid, d_min, (bd - d_min) / y_min_mid);
+                 d_min, (ad - d_min) / y_min_mid, d_min, (bd - d_min) / y_min_mid,
+                 pointer_map, pointer, triangle_map, i_triangle);
 
             blaa(image, p_mid.y, p_max.y,
                  ax, (p_max.x - ax) / y_mid_max, bx, (p_max.x - bx) / y_mid_max,
-                 ad, (d_max - ad) / y_mid_max, bd, (d_max - bd) / y_mid_max);
+                 ad, (d_max - ad) / y_mid_max, bd, (d_max - bd) / y_mid_max,
+                 pointer_map, pointer, triangle_map, i_triangle);
         }
     }
 }
@@ -308,8 +310,10 @@ void DepthCamera::drawTriangle(const cv::Point2d& p1, float d1,
 // -------------------------------------------------------------------------------
 
 void DepthCamera::blaa(cv::Mat& image, int y_start, int y_end,
-                        float x_start, float x_start_delta, float x_end, float x_end_delta,
-                        float d_start, float d_start_delta, float d_end, float d_end_delta) const {
+                       float x_start, float x_start_delta, float x_end, float x_end_delta,
+                       float d_start, float d_start_delta, float d_end, float d_end_delta,
+                       PointerMap& pointer_map, void* pointer,
+                       TriangleMap& triangle_map, int i_triangle) const {
 
     if (y_start < 0) {
         d_start += d_start_delta * -y_start;
@@ -336,7 +340,18 @@ void DepthCamera::blaa(cv::Mat& image, int y_start, int y_end,
         int x_end2 = std::min(image.cols - 1, (int)x_end);
 
         for(int x = x_start2; x <= x_end2; ++x) {
-            image.at<float>(y, x) = 1.0f / d;
+            float depth = 1.0f / d;
+            float old_depth = image.at<float>(y, x);
+            if (old_depth == 0 || old_depth > depth) {
+                image.at<float>(y, x) = depth;
+                if (pointer) {
+                    pointer_map[x][y] = pointer;
+                }
+
+                if (!triangle_map.empty()) {
+                    triangle_map[x][y] = i_triangle;
+                }
+            }
             d += d_delta;
         }
 
