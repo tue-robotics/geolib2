@@ -66,15 +66,16 @@ RasterizeResult DepthCamera::rasterize(const Shape& shape, const Pose3D& cam_pos
 RasterizeResult DepthCamera::rasterize(const Shape& shape, const Pose3D& pose, cv::Mat& image,
                                        PointerMap& pointer_map, void* pointer, TriangleMap& triangle_map) const {
 
-    // reserve pointer map and triangle map
+    // reserve pointer map
     if (pointer) {
         if ((int)pointer_map.size() != image.cols || (int)pointer_map[0].size() != image.rows) {
             pointer_map.resize(image.cols, std::vector<void*>(image.rows, NULL));
         }
+    }
 
-        if ((int)triangle_map.size() != image.cols || (int)triangle_map[0].size() != image.rows) {
-            triangle_map.resize(image.cols, std::vector<int>(image.rows, -1));
-        }
+    // reserve triangle map
+    if ((int)triangle_map.size() != image.cols || (int)triangle_map[0].size() != image.rows) {
+        triangle_map.resize(image.cols, std::vector<int>(image.rows, -1));
     }
 
     RasterizeResult res;
