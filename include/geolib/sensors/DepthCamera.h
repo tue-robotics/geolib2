@@ -4,6 +4,7 @@
 #include <opencv2/core/core.hpp>
 
 #include "geolib/Ray.h"
+#include "geolib/math_types.h"
 
 namespace geo {
 
@@ -17,6 +18,30 @@ struct RasterizeResult {
 
 static PointerMap EMPTY_POINTER_MAP;
 static TriangleMap EMPTY_TRIANGLE_MAP;
+
+class RenderOptions {
+
+    RenderOptions() : pointer_(0) {}
+
+protected:
+
+    void* pointer_;
+
+};
+
+class RenderOutput {
+
+    const cv::Mat& getDepthImage() const { return image_; }
+    const PointerMap& getPointerMap() const { return pointer_map_; }
+    const TriangleMap& getTriangleMap() const { return triangle_map_; }
+
+protected:
+
+    cv::Mat image_;
+    PointerMap pointer_map_;
+    TriangleMap triangle_map_;
+
+};
 
 
 class DepthCamera {
@@ -93,17 +118,18 @@ protected:
     void drawTriangle(const Vector3& p1, const Vector3& p2, const Vector3& p3, cv::Mat& image,
                       PointerMap& pointer_map, void* pointer, TriangleMap& triangle_map, int i_triangle, RasterizeResult& res) const;
 
-    void drawTriangle(const cv::Point2d& p1, float d1,
-                      const cv::Point2d& p2, float d2,
-                      const cv::Point2d& p3, float d3, cv::Mat& image,
-                      PointerMap& pointer_map, void* pointer,
-                      TriangleMap& triangle_map, int i_triangle, RasterizeResult& res) const;
+    void drawTriangle2D(const Vec3f& p1, const Vec3f& p2, const Vec3f& p3,
+                        cv::Mat& image, PointerMap& pointer_map, void* pointer,
+                        TriangleMap& triangle_map, int i_triangle, RasterizeResult& res) const;
 
     void drawTrianglePart(cv::Mat& depth_image, int y_start, int y_end,
                           float x_start, float x_start_delta, float x_end, float x_end_delta,
                           float d_start, float d_start_delta, float d_end, float d_end_delta,
                           PointerMap& pointer_map, void* pointer,
                           TriangleMap& triangle_map, int i_triangle) const;
+
+    void sort(const geo::Vec3f& p1, const geo::Vec3f& p2, const geo::Vec3f& p3, int dim,
+              Vec3f& p_min,geo::Vec3f& p_mid, geo::Vec3f& p_max) const;
 
 };
 
