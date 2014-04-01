@@ -3,6 +3,21 @@
 
 namespace geo {
 
+void RenderResult::renderPixel(int x, int y, float depth, int i_triangle) {
+    float old_depth = image_.at<float>(y, x);
+    if (old_depth == 0 || old_depth > depth) {
+        image_.at<float>(y, x) = depth;
+
+        if (pointer_) {
+            pointer_map_[x][y] = pointer_;
+        }
+
+        if (!triangle_map_.empty()) {
+            triangle_map_[x][y] = i_triangle;
+        }
+    }
+}
+
 DepthCamera::DepthCamera() {
 }
 
@@ -26,8 +41,45 @@ RasterizeResult DepthCamera::rasterize(const Shape& shape, const Pose3D& cam_pos
 #endif
 }
 
+// -------------------------------------------------------------------------------
+
 RasterizeResult DepthCamera::rasterize(const Shape& shape, const Pose3D& pose, cv::Mat& image,
                                        PointerMap& pointer_map, void* pointer, TriangleMap& triangle_map) const {
+
+    RenderOptions opt;
+    opt.shape_ = &shape;
+    opt.pose_ = pose;    
+
+    RenderResult res;
+    res.pointer_map_ = pointer_map;
+    res.triangle_map_ = triangle_map;
+    res.image_ = image;
+    res.pointer_ = pointer;
+
+    render(opt, res);
+
+    RasterizeResult res2;
+    res2.min_x = res.min_x;
+    res2.max_x = res.max_x;
+    res2.min_y = res.min_y;
+    res2.max_y = res.max_y;
+
+    image = res.image_;
+    pointer_map = res.pointer_map_;
+    triangle_map = res.triangle_map_;
+
+    return res2;
+}
+
+// -------------------------------------------------------------------------------
+
+void DepthCamera::render(const RenderOptions& opt, RenderResult& res) const {
+    const Shape& shape = *opt.shape_;
+    const Pose3D& pose = opt.pose_;
+    PointerMap& pointer_map = res.pointer_map_;
+    void* pointer = res.pointer_;
+    TriangleMap& triangle_map = res.triangle_map_;
+    cv::Mat& image = res.image_;
 
     // reserve pointer map
     if (pointer) {
@@ -37,11 +89,11 @@ RasterizeResult DepthCamera::rasterize(const Shape& shape, const Pose3D& pose, c
     }
 
     // reserve triangle map
-    if ((int)triangle_map.size() != image.cols || (int)triangle_map[0].size() != image.rows) {
+    if (triangle_map.empty() || (int)triangle_map.size() != image.cols || (int)triangle_map[0].size() != image.rows) {
         triangle_map.resize(image.cols, std::vector<int>(image.rows, -1));
     }
 
-    RasterizeResult res;
+    //RasterizeResult res;
     res.min_x = image.cols;
     res.min_y = image.rows;
     res.max_x = 0;
@@ -54,7 +106,7 @@ RasterizeResult DepthCamera::rasterize(const Shape& shape, const Pose3D& pose, c
 #endif
 
     if (shape.getMaxRadius() < pose_in.getOrigin().z()) {
-        return res;
+        return;
     }
 
     //pose_in.setOrigin(-pose.getOrigin());
@@ -76,6 +128,7 @@ RasterizeResult DepthCamera::rasterize(const Shape& shape, const Pose3D& pose, c
 
     int i_triangle = 0;
     for(std::vector<TriangleI>::const_iterator it_tri = triangles.begin(); it_tri != triangles.end(); ++it_tri) {
+
         const Vector3& p1_3d = points_t[it_tri->i1_];
         const Vector3& p2_3d = points_t[it_tri->i2_];
         const Vector3& p3_3d = points_t[it_tri->i3_];
@@ -121,7 +174,7 @@ RasterizeResult DepthCamera::rasterize(const Shape& shape, const Pose3D& pose, c
 
             Vector3 new3(vIn[0]->x() + v02.x() * t2, vIn[0]->y() + v02.y() * t2, near_clip_z);
 
-            drawTriangle(*vIn[0], new2, new3, image, pointer_map, pointer, triangle_map, i_triangle, res);
+            drawTriangle(*vIn[0], new2, new3, opt, res, i_triangle);
         } else if (n_verts_in == 2) {
             if (!v1_in) { vIn[0]=&(p2_3d); vIn[1]=&(p3_3d); vIn[2]=&(p1_3d); }
             if (!v2_in) { vIn[0]=&(p3_3d); vIn[1]=&(p1_3d); vIn[2]=&(p2_3d); }
@@ -142,9 +195,9 @@ RasterizeResult DepthCamera::rasterize(const Shape& shape, const Pose3D& pose, c
 
             Vector3 new3((*vIn[1]).x() + v02.x() * t2, (*vIn[1]).y() + v02.y() * t2, near_clip_z);
 
-            drawTriangle(*vIn[0], *vIn[1], new2, image, pointer_map, pointer, triangle_map, i_triangle, res);
+            drawTriangle(*vIn[0], *vIn[1], new2, opt, res, i_triangle);
 
-            drawTriangle(new2, *vIn[1], new3, image, pointer_map, pointer, triangle_map, i_triangle, res);
+            drawTriangle(new2, *vIn[1], new3, opt, res, i_triangle);
 
         } else if (n_verts_in == 3) {
             const cv::Point2d& p1_2d = points_proj[it_tri->i1_];
@@ -154,57 +207,53 @@ RasterizeResult DepthCamera::rasterize(const Shape& shape, const Pose3D& pose, c
             drawTriangle2D(Vec3f(p1_2d.x, p1_2d.y, 1.0f / -p1_3d.z()),
                            Vec3f(p2_2d.x, p2_2d.y, 1.0f / -p2_3d.z()),
                            Vec3f(p3_2d.x, p3_2d.y, 1.0f / -p3_3d.z()),
-                           image, pointer_map, pointer, triangle_map, i_triangle, res);
+                           opt, res, i_triangle);
         }
 
         ++i_triangle;
     }
-
-    return res;
 }
 
 // -------------------------------------------------------------------------------
 
-void DepthCamera::drawTriangle(const Vector3& p1_3d, const Vector3& p2_3d, const Vector3& p3_3d, cv::Mat& image,
-                               PointerMap& pointer_map, void* pointer, TriangleMap& triangle_map, int i_triangle,
-                               RasterizeResult& res) const {
-    cv::Point2d p1_2d = project3Dto2D(p1_3d, image.cols, image.rows);
-    cv::Point2d p2_2d = project3Dto2D(p2_3d, image.cols, image.rows);
-    cv::Point2d p3_2d = project3Dto2D(p3_3d, image.cols, image.rows);
+void DepthCamera::drawTriangle(const Vector3& p1_3d, const Vector3& p2_3d, const Vector3& p3_3d,
+                               const RenderOptions& opt, RenderResult& res, int i_triangle) const {
+    cv::Point2d p1_2d = project3Dto2D(p1_3d, res.image_.cols, res.image_.rows);
+    cv::Point2d p2_2d = project3Dto2D(p2_3d, res.image_.cols, res.image_.rows);
+    cv::Point2d p3_2d = project3Dto2D(p3_3d, res.image_.cols, res.image_.rows);
 
     drawTriangle2D(Vec3f(p1_2d.x, p1_2d.y, 1.0f / -p1_3d.z()),
                    Vec3f(p2_2d.x, p2_2d.y, 1.0f / -p2_3d.z()),
                    Vec3f(p3_2d.x, p3_2d.y, 1.0f / -p3_3d.z()),
-                   image, pointer_map, pointer, triangle_map, i_triangle, res);
+                   opt, res, i_triangle);
 }
 
 // -------------------------------------------------------------------------------
 
 void DepthCamera::drawTriangle2D(const Vec3f& p1, const Vec3f& p2, const Vec3f& p3,
-                               cv::Mat& image, PointerMap& pointer_map, void* pointer,
-                               TriangleMap& triangle_map, int i_triangle,
-                               RasterizeResult& res) const {
+                               const RenderOptions& opt, RenderResult& res, int i_triangle) const {
 
     if ((p2.x - p1.x) * (p3.y - p1.y) - (p3.x - p1.x) * (p2.y - p1.y) < 0) {        
+
         int min_y = std::min<int>(p1.y, std::min<int>(p2.y, p3.y));
         int max_y = std::max<int>(p1.y, std::max<int>(p2.y, p3.y));
         int min_x = std::min<int>(p1.x, std::min<int>(p2.x, p3.x));
         int max_x = std::max<int>(p1.x, std::max<int>(p2.x, p3.x));
 
-        if (min_x < image.cols && max_x > 0 && min_y < image.rows && max_y > 0) {
+        if (min_x < res.image_.cols && max_x > 0 && min_y < res.image_.rows && max_y > 0) {
             res.min_x = std::max(0, std::min<int>(res.min_x, min_x));
             res.min_y = std::max(0, std::min<int>(res.min_y, min_y));
-            res.max_x = std::min(image.cols - 1, std::max<int>(res.max_x, max_x));
-            res.max_y = std::min(image.rows - 1, std::max<int>(res.max_y, max_y));
+            res.max_x = std::min(res.image_.cols - 1, std::max<int>(res.max_x, max_x));
+            res.max_y = std::min(res.image_.rows - 1, std::max<int>(res.max_y, max_y));
 
             if (min_y == max_y) {
                 Vec3f p_min, p_mid, p_max;
                 sort(p1, p2, p3, 0, p_min, p_mid, p_max);
 
-                drawTrianglePart(image, p_min.y, p_mid.y,
+                drawTrianglePart(p_min.y, p_mid.y,
                      p_min.x, 0, p_max.x, 0,
                      p_min.z, 0, p_max.z, 0,
-                     pointer_map, pointer, triangle_map, i_triangle);
+                     opt, res, i_triangle);
             } else {
                 Vec3f p_min, p_mid, p_max;
                 sort(p1, p2, p3, 1, p_min, p_mid, p_max);
@@ -222,15 +271,15 @@ void DepthCamera::drawTriangle2D(const Vec3f& p1, const Vec3f& p2, const Vec3f& 
                     p_a = p_mid; p_b = p_prime;
                 }
 
-                drawTrianglePart(image, p_min.y, p_mid.y,
+                drawTrianglePart(p_min.y, p_mid.y,
                      p_min.x, (p_a.x - p_min.x) / y_min_mid, p_min.x, (p_b.x - p_min.x) / y_min_mid,
                      p_min.z, (p_a.z - p_min.z) / y_min_mid, p_min.z, (p_b.z - p_min.z) / y_min_mid,
-                     pointer_map, pointer, triangle_map, i_triangle);
+                     opt, res, i_triangle);
 
-                drawTrianglePart(image, p_mid.y, p_max.y,
+                drawTrianglePart(p_mid.y, p_max.y,
                      p_a.x, (p_max.x - p_a.x) / y_mid_max, p_b.x, (p_max.x - p_b.x) / y_mid_max,
                      p_a.z, (p_max.z - p_a.z) / y_mid_max, p_b.z, (p_max.z - p_b.z) / y_mid_max,
-                     pointer_map, pointer, triangle_map, i_triangle);
+                     opt, res, i_triangle);
 
             }
         }
@@ -239,11 +288,12 @@ void DepthCamera::drawTriangle2D(const Vec3f& p1, const Vec3f& p2, const Vec3f& 
 
 // -------------------------------------------------------------------------------
 
-void DepthCamera::drawTrianglePart(cv::Mat& image, int y_start, int y_end,
+void DepthCamera::drawTrianglePart(int y_start, int y_end,
                                    float x_start, float x_start_delta, float x_end, float x_end_delta,
                                    float d_start, float d_start_delta, float d_end, float d_end_delta,
-                                   PointerMap& pointer_map, void* pointer,
-                                   TriangleMap& triangle_map, int i_triangle) const {
+                                   const RenderOptions& opt, RenderResult& res, int i_triangle) const {
+
+    cv::Mat& image = res.image_;
 
     if (y_start < 0) {
         d_start += d_start_delta * -y_start;
@@ -271,18 +321,21 @@ void DepthCamera::drawTrianglePart(cv::Mat& image, int y_start, int y_end,
 
         for(int x = x_start2; x <= x_end2; ++x) {
             float depth = 1.0f / d;
-            float old_depth = image.at<float>(y, x);
 
-            if (old_depth == 0 || old_depth > depth) {
-                image.at<float>(y, x) = depth;
-                if (pointer) {
-                    pointer_map[x][y] = pointer;
-                }
+            res.renderPixel(x, y, depth, i_triangle);
 
-                if (!triangle_map.empty()) {
-                    triangle_map[x][y] = i_triangle;
-                }
-            }
+//            float old_depth = image.at<float>(y, x);
+
+//            if (old_depth == 0 || old_depth > depth) {
+//                image.at<float>(y, x) = depth;
+//                if (pointer) {
+//                    pointer_map[x][y] = pointer;
+//                }
+
+//                if (!triangle_map.empty()) {
+//                    triangle_map[x][y] = i_triangle;
+//                }
+//            }
             d += d_delta;
         }
 
@@ -292,6 +345,8 @@ void DepthCamera::drawTrianglePart(cv::Mat& image, int y_start, int y_end,
         x_end += x_end_delta;
     }
 }
+
+// -------------------------------------------------------------------------------
 
 void DepthCamera::sort(const geo::Vec3f& p1, const geo::Vec3f& p2, const geo::Vec3f& p3, int i,
                        Vec3f& p_min,geo::Vec3f& p_mid, geo::Vec3f& p_max) const {
