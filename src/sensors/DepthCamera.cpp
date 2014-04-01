@@ -47,8 +47,8 @@ RasterizeResult DepthCamera::rasterize(const Shape& shape, const Pose3D& pose, c
                                        PointerMap& pointer_map, void* pointer, TriangleMap& triangle_map) const {
 
     RenderOptions opt;
-    opt.shape_ = &shape;
-    opt.pose_ = pose;    
+    opt.setMesh(shape.getMesh());
+    opt.pose_ = pose;
 
     RenderResult res;
     res.pointer_map_ = pointer_map;
@@ -74,7 +74,7 @@ RasterizeResult DepthCamera::rasterize(const Shape& shape, const Pose3D& pose, c
 // -------------------------------------------------------------------------------
 
 void DepthCamera::render(const RenderOptions& opt, RenderResult& res) const {
-    const Shape& shape = *opt.shape_;
+    const Mesh& mesh = *opt.mesh_;
     const Pose3D& pose = opt.pose_;
     PointerMap& pointer_map = res.pointer_map_;
     void* pointer = res.pointer_;
@@ -83,7 +83,7 @@ void DepthCamera::render(const RenderOptions& opt, RenderResult& res) const {
 
     // reserve pointer map
     if (pointer) {
-        if ((int)pointer_map.size() != image.cols || (int)pointer_map[0].size() != image.rows) {
+        if (pointer_map.empty() || (int)pointer_map.size() != image.cols || (int)pointer_map[0].size() != image.rows) {
             pointer_map.resize(image.cols, std::vector<void*>(image.rows, NULL));
         }
     }
@@ -105,7 +105,7 @@ void DepthCamera::render(const RenderOptions& opt, RenderResult& res) const {
     Transform pose_in = pose;
 #endif
 
-    if (shape.getMaxRadius() < pose_in.getOrigin().z()) {
+    if (mesh.getMaxRadius() < pose_in.getOrigin().z()) {
         return;
     }
 
@@ -114,8 +114,8 @@ void DepthCamera::render(const RenderOptions& opt, RenderResult& res) const {
 
     double near_clip_z = -0.1;
 
-    const std::vector<TriangleI>& triangles = shape.getMesh().getTriangleIs();
-    const std::vector<Vector3>& points = shape.getMesh().getPoints();
+    const std::vector<TriangleI>& triangles = mesh.getTriangleIs();
+    const std::vector<Vector3>& points = mesh.getPoints();
 
     // transform points
     std::vector<Vector3> points_t(points.size());
@@ -210,6 +210,10 @@ void DepthCamera::render(const RenderOptions& opt, RenderResult& res) const {
                            opt, res, i_triangle);
         }
 
+        if (res.stop_) {
+            return;
+        }
+
         ++i_triangle;
     }
 }
@@ -233,7 +237,7 @@ void DepthCamera::drawTriangle(const Vector3& p1_3d, const Vector3& p2_3d, const
 void DepthCamera::drawTriangle2D(const Vec3f& p1, const Vec3f& p2, const Vec3f& p3,
                                const RenderOptions& opt, RenderResult& res, int i_triangle) const {
 
-    if ((p2.x - p1.x) * (p3.y - p1.y) - (p3.x - p1.x) * (p2.y - p1.y) < 0) {        
+    if (!opt.back_face_culling_ || (p2.x - p1.x) * (p3.y - p1.y) - (p3.x - p1.x) * (p2.y - p1.y) < 0) {
 
         int min_y = std::min<int>(p1.y, std::min<int>(p2.y, p3.y));
         int max_y = std::max<int>(p1.y, std::max<int>(p2.y, p3.y));

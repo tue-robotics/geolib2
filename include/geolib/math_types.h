@@ -36,7 +36,11 @@ public:
   /// multiplies vector with a scalar
   friend Vec2 operator*(T s, const Vec2& v) { return Vec2(v.x * s, v.y * s); }
 
-  // serialize vector to stream
+  T length2() const { return x * x + y * y; }
+
+  T length() const { return sqrt(length2()); }
+
+  /// serialize vector to stream
   friend std::ostream& operator<< (std::ostream& out, const Vec2& v) {
       out << "[ " << v.x << " " << v.y << " ]";
       return out;

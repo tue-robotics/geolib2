@@ -19,6 +19,7 @@ struct RasterizeResult {
 static PointerMap EMPTY_POINTER_MAP;
 static TriangleMap EMPTY_TRIANGLE_MAP;
 
+class Mesh;
 class DepthCamera;
 
 class RenderOptions {
@@ -27,12 +28,17 @@ class RenderOptions {
 
 public:
 
-    RenderOptions() {}
+    RenderOptions() : back_face_culling_(true) {}
+
+    void setMesh(const geo::Mesh& mesh) { mesh_ = &mesh; }
+    void setBackFaceCulling(bool b) { back_face_culling_ = b; }
 
 protected:
 
-    const Shape* shape_;
+    const geo::Mesh* mesh_;
     Pose3D pose_;
+    bool back_face_culling_;
+
 };
 
 class RenderResult {
@@ -41,21 +47,27 @@ class RenderResult {
 
 public:
 
+    RenderResult() : stop_(false) {}
+    virtual ~RenderResult() {}
+
     const cv::Mat& getDepthImage() const { return image_; }
     const PointerMap& getPointerMap() const { return pointer_map_; }
     const TriangleMap& getTriangleMap() const { return triangle_map_; }
 
     virtual void renderPixel(int x, int y, float depth, int i_triangle);
 
+    void stop() { stop_ = true; }
+
     int min_x, min_y;
     int max_x, max_y;
+    cv::Mat image_;
 
 protected:
 
-    cv::Mat image_;
     PointerMap pointer_map_;
     TriangleMap triangle_map_;
     void* pointer_;
+    bool stop_;
 
 };
 
