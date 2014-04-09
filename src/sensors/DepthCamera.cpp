@@ -84,7 +84,7 @@ void DepthCamera::render(const RenderOptions& opt, RenderResult& res) const {
     // reserve pointer map
     if (pointer) {
         if (pointer_map.empty() || (int)pointer_map.size() != image.cols || (int)pointer_map[0].size() != image.rows) {
-            pointer_map.resize(image.cols, std::vector<void*>(image.rows, NULL));
+            pointer_map.resize(image.cols, std::vector<void*>(image.rows, (void*)NULL));
         }
     }
 
