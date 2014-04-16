@@ -99,48 +99,91 @@ LaserRangeFinder::RenderResult LaserRangeFinder::raytrace(const Shape& shape, co
 //
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 
-LaserRangeFinder::RenderResult LaserRangeFinder::render(const Shape& shape, const Pose3D& cam_pose, const Pose3D& obj_pose, std::vector<double>& ranges) const {
-    LaserRangeFinder::RenderResult res;
+void LaserRangeFinder::RenderResult::renderLine(const Vector3& p1, const Vector3& p2) {
+
+    double a1 = lrf_->getAngle(p1.getX(), p1.getY());
+    double a2 = lrf_->getAngle(p2.getX(), p2.getY());
+
+    double a_min = std::min(a1, a2);
+    double a_max = std::max(a1, a2);
+
+    int i_min = lrf_->getAngleUpperIndex(a_min);
+    int i_max = lrf_->getAngleUpperIndex(a_max);
+
+    min_i = std::min(min_i, (int)i_min);
+    max_i = std::max(max_i, (int)i_max);
+
+    Vector3 s = p2 - p1;
+
+    // d = (q1 - ray_start) x s / (r x s)
+    //   = (q1 x s) / (r x s)
+
+    if (a_max - a_min < M_PI) {
+        // line is in front of sensor
+        for(unsigned int i = i_min; (int)i < i_max; ++i) {
+            const Vector3& r = lrf_->ray_dirs_[i];
+            double d = (p1.getX() * s.getY() - p1.getY() * s.getX()) / (r.getX() * s.getY() - r.getY() * s.getX());
+            renderPoint(i, d);
+        }
+    } else {
+        // line is behind sensor
+        for(unsigned int i = 0; (int)i < i_min; ++i) {
+            const Vector3& r = lrf_->ray_dirs_[i];
+            double d = (p1.getX() * s.getY() - p1.getY() * s.getX()) / (r.getX() * s.getY() - r.getY() * s.getX());
+            renderPoint(i, d);
+        }
+
+        for(unsigned int i = i_max; i < lrf_->ray_dirs_.size(); ++i) {
+            const Vector3& r = lrf_->ray_dirs_[i];
+            double d = (p1.getX() * s.getY() - p1.getY() * s.getX()) / (r.getX() * s.getY() - r.getY() * s.getX());
+            renderPoint(i, d);
+        }
+    }
+}
+
+void LaserRangeFinder::RenderResult::renderPoint(int i, float d) {
+    if (d > 0 && (ranges[i] == 0 || d < ranges[i])) {
+        ranges[i] = d;
+    }
+}
+
+void LaserRangeFinder::render(const LaserRangeFinder::RenderOptions& opt, LaserRangeFinder::RenderResult& res) const {
     res.min_i = 0;
     res.max_i = ray_dirs_.size();
 
-#ifdef GEOLIB_USE_TF
-    tf::Transform t = obj_pose.inverse() * cam_pose;
-    tf::Transform t_inv = t.inverse();
-#else
-    Transform t = obj_pose.inverse() * cam_pose;
-    Transform t_inv = t.inverse();
-#endif
-
-    if (ranges.size() != ray_dirs_.size()) {
-        ranges.resize(ray_dirs_.size(), 0);
+    if (res.ranges.size() != ray_dirs_.size()) {
+        res.ranges.resize(ray_dirs_.size(), 0);
     }
 
-    double max_radius = shape.getMaxRadius();
+    res.lrf_ = this;
+
+    const geo::Pose3D& pose = opt.getPose();
+
+    double max_radius = opt.getMesh().getMaxRadius();
     if (max_radius > 0) {
 
         // If object is to far above or below the laser plane, do not render
-        if (std::abs(t_inv.getOrigin().getZ()) > max_radius) {
-            return res;
+        if (std::abs(pose.getOrigin().getZ()) > max_radius) {
+            return;
         }
 
-        double dist = t_inv.getOrigin().length();
+        double dist_sq = pose.getOrigin().length2();
 
-        if (dist > max_radius) {
+        if (dist_sq > max_radius * max_radius) {
             // If nearest object point is certainly further away than max_range, do not render
-            if (dist - max_radius > range_max_) {
-                return res;
+            if (sqrt(dist_sq) - max_radius > range_max_) {
+                return;
             }
         }
     }
 
-    const std::vector<TriangleI>& triangles = shape.getMesh().getTriangleIs();
-    const std::vector<Vector3>& points = shape.getMesh().getPoints();
+    const std::vector<TriangleI>& triangles = opt.getMesh().getTriangleIs();
+    const std::vector<Vector3>& points = opt.getMesh().getPoints();
 
     // transform Z-coordinates
     std::vector<double> zs_t(points.size());
-    Vector3 Rz = t_inv.getBasis().getRow(2);
-    double z_offset = t_inv.getOrigin().getZ();
+    Vector3 Rz = pose.getBasis().getRow(2);
+    double z_offset = pose.getOrigin().getZ();
     for(unsigned int i = 0; i < points.size(); ++i) {
         zs_t[i] = Rz.dot(points[i]) + z_offset;
     }
@@ -152,9 +195,9 @@ LaserRangeFinder::RenderResult LaserRangeFinder::render(const Shape& shape, cons
 
         if (p1_under_plane != p2_under_plane || p2_under_plane != p3_under_plane) {
 
-            Vector3 p1_3d = t_inv * points[it_tri->i1_];
-            Vector3 p2_3d = t_inv * points[it_tri->i2_];
-            Vector3 p3_3d = t_inv * points[it_tri->i3_];
+            Vector3 p1_3d = pose * points[it_tri->i1_];
+            Vector3 p2_3d = pose * points[it_tri->i2_];
+            Vector3 p3_3d = pose * points[it_tri->i3_];
 
             double z1 = std::abs(p1_3d.getZ());
             double z2 = std::abs(p2_3d.getZ());
@@ -172,59 +215,31 @@ LaserRangeFinder::RenderResult LaserRangeFinder::render(const Shape& shape, cons
                 q2 = (p3_3d * z2 + p2_3d * z3) / (z3 + z2);
             }
 
-//            int i1 = getAngleUpperIndex(q1.getX(), q1.getY());
-//            int i2 = getAngleUpperIndex(q2.getX(), q2.getY());
-
-//            int i_min = std::min(i1, i2);
-//            int i_max = std::max(i1, i2);
-
-            double a1 = getAngle(q1.getX(), q1.getY());
-            double a2 = getAngle(q2.getX(), q2.getY());
-
-            double a_min = std::min(a1, a2);
-            double a_max = std::max(a1, a2);
-
-            int i_min = getAngleUpperIndex(a_min);
-            int i_max = getAngleUpperIndex(a_max);
-
-            res.min_i = std::min(res.min_i, (int)i_min);
-            res.max_i = std::max(res.max_i, (int)i_max);
-
-            Vector3 s = q2 - q1;
-
-            // d = (q1 - ray_start) x s / (r x s)
-            //   = (q1 x s) / (r x s)
-
-
-            if (a_max - a_min < M_PI) {
-                // line is in front of sensor
-                for(unsigned int i = i_min; (int)i < i_max; ++i) {
-                    const Vector3& r = ray_dirs_[i];
-                    double d = (q1.getX() * s.getY() - q1.getY() * s.getX()) / (r.getX() * s.getY() - r.getY() * s.getX());
-                    if (d > 0 && (ranges[i] == 0 || d < ranges[i])) {
-                        ranges[i] = d;
-                    }
-                }
-            } else {
-                // line is behind sensor
-                for(unsigned int i = 0; (int)i < i_min; ++i) {
-                    const Vector3& r = ray_dirs_[i];
-                    double d = (q1.getX() * s.getY() - q1.getY() * s.getX()) / (r.getX() * s.getY() - r.getY() * s.getX());
-                    if (d > 0 && (ranges[i] == 0 || d < ranges[i])) {
-                        ranges[i] = d;
-                    }
-                }
-
-                for(unsigned int i = i_max; i < ray_dirs_.size(); ++i) {
-                    const Vector3& r = ray_dirs_[i];
-                    double d = (q1.getX() * s.getY() - q1.getY() * s.getX()) / (r.getX() * s.getY() - r.getY() * s.getX());
-                    if (d > 0 && (ranges[i] == 0 || d < ranges[i])) {
-                        ranges[i] = d;
-                    }
-                }
-            }
+            res.renderLine(q1, q2);
         }
     }
+
+}
+
+LaserRangeFinder::RenderResult LaserRangeFinder::render(const Shape& shape, const Pose3D& cam_pose, const Pose3D& obj_pose, std::vector<double>& ranges) const {
+
+#ifdef GEOLIB_USE_TF
+    tf::Transform t = obj_pose.inverse() * cam_pose;
+    tf::Transform t_inv = t.inverse();
+#else
+    Transform t = obj_pose.inverse() * cam_pose;
+    Transform t_inv = t.inverse();
+#endif
+
+    LaserRangeFinder::RenderOptions options;
+    options.setMesh(shape.getMesh(), geo::Pose3D(t_inv.getOrigin(), t_inv.getRotation()));
+
+    LaserRangeFinder::RenderResult res;
+    res.ranges = ranges;
+
+    render(options, res);
+
+    ranges = res.ranges;
 
     return res;
 }

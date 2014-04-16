@@ -5,13 +5,46 @@
 
 namespace geo {
 
+class Mesh;
+
 class LaserRangeFinder {    
 
 public:
 
-    struct RenderResult {
+    class RenderOptions {
+
+    public:
+
+        void setMesh(const Mesh& mesh, const geo::Pose3D& pose) {
+            mesh_ = &mesh;
+            pose_ = pose;
+        }
+
+        const geo::Pose3D& getPose() const { return pose_; }
+
+        const geo::Mesh& getMesh() const { return *mesh_; }
+
+    protected:
+        const Mesh* mesh_;
+        geo::Pose3D pose_;
+
+    };
+
+    class RenderResult {
+
+    public:
+
+        virtual void renderLine(const Vector3& p1, const Vector3& p2);
+
+        virtual void renderPoint(int index, float depth);
+
         int min_i;
         int max_i;
+
+        std::vector<double> ranges;
+
+        const LaserRangeFinder* lrf_;
+
     };
 
     LaserRangeFinder();
@@ -19,6 +52,8 @@ public:
     virtual ~LaserRangeFinder();
 
     RenderResult raytrace(const Shape& shape, const Pose3D& cam_pose, const Pose3D& obj_pose, std::vector<double>& ranges) const;
+
+    void render(const LaserRangeFinder::RenderOptions& options, LaserRangeFinder::RenderResult& res) const;
 
     RenderResult render(const Shape& shape, const Pose3D& cam_pose, const Pose3D& obj_pose, std::vector<double>& ranges) const;
 
