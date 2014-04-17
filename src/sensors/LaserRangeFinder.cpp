@@ -123,26 +123,29 @@ void LaserRangeFinder::RenderResult::renderLine(const Vector3& p1, const Vector3
         for(unsigned int i = i_min; (int)i < i_max; ++i) {
             const Vector3& r = lrf_->ray_dirs_[i];
             double d = (p1.getX() * s.getY() - p1.getY() * s.getX()) / (r.getX() * s.getY() - r.getY() * s.getX());
-            renderPoint(i, d);
+            if (d > 0)
+                renderPoint(i, d);
         }
     } else {
         // line is behind sensor
         for(unsigned int i = 0; (int)i < i_min; ++i) {
             const Vector3& r = lrf_->ray_dirs_[i];
             double d = (p1.getX() * s.getY() - p1.getY() * s.getX()) / (r.getX() * s.getY() - r.getY() * s.getX());
-            renderPoint(i, d);
+            if (d > 0)
+                renderPoint(i, d);
         }
 
         for(unsigned int i = i_max; i < lrf_->ray_dirs_.size(); ++i) {
             const Vector3& r = lrf_->ray_dirs_[i];
             double d = (p1.getX() * s.getY() - p1.getY() * s.getX()) / (r.getX() * s.getY() - r.getY() * s.getX());
-            renderPoint(i, d);
+            if (d > 0)
+                renderPoint(i, d);
         }
     }
 }
 
 void LaserRangeFinder::RenderResult::renderPoint(int i, float d) {
-    if (d > 0 && (ranges[i] == 0 || d < ranges[i])) {
+    if (ranges[i] == 0 || d < ranges[i]) {
         ranges[i] = d;
     }
 }
