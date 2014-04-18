@@ -3,7 +3,7 @@
 
 namespace geo {
 
-void RenderResult::renderPixel(int x, int y, float depth, int i_triangle) {
+void DefaultRenderResult::renderPixel(int x, int y, float depth, int i_triangle) {
     float old_depth = image_.at<float>(y, x);
     if (old_depth == 0 || old_depth > depth) {
         image_.at<float>(y, x) = depth;
@@ -47,14 +47,9 @@ RasterizeResult DepthCamera::rasterize(const Shape& shape, const Pose3D& pose, c
                                        PointerMap& pointer_map, void* pointer, TriangleMap& triangle_map) const {
 
     RenderOptions opt;
-    opt.setMesh(shape.getMesh());
-    opt.pose_ = pose;
+    opt.setMesh(shape.getMesh(), pose);
 
-    RenderResult res;
-    res.pointer_map_ = pointer_map;
-    res.triangle_map_ = triangle_map;
-    res.image_ = image;
-    res.pointer_ = pointer;
+    DefaultRenderResult res(image, pointer, pointer_map, triangle_map);
 
     render(opt, res);
 
@@ -76,28 +71,6 @@ RasterizeResult DepthCamera::rasterize(const Shape& shape, const Pose3D& pose, c
 void DepthCamera::render(const RenderOptions& opt, RenderResult& res) const {
     const Mesh& mesh = *opt.mesh_;
     const Pose3D& pose = opt.pose_;
-    PointerMap& pointer_map = res.pointer_map_;
-    void* pointer = res.pointer_;
-    TriangleMap& triangle_map = res.triangle_map_;
-    cv::Mat& image = res.image_;
-
-    // reserve pointer map
-    if (pointer) {
-        if (pointer_map.empty() || (int)pointer_map.size() != image.cols || (int)pointer_map[0].size() != image.rows) {
-            pointer_map.resize(image.cols, std::vector<void*>(image.rows, (void*)NULL));
-        }
-    }
-
-    // reserve triangle map
-    if (triangle_map.empty() || (int)triangle_map.size() != image.cols || (int)triangle_map[0].size() != image.rows) {
-        triangle_map.resize(image.cols, std::vector<int>(image.rows, -1));
-    }
-
-    //RasterizeResult res;
-    res.min_x = image.cols;
-    res.min_y = image.rows;
-    res.max_x = 0;
-    res.max_y = 0;
 
 #ifdef GEOLIB_USE_TF
     tf::Transform pose_in = pose;
@@ -123,7 +96,7 @@ void DepthCamera::render(const RenderOptions& opt, RenderResult& res) const {
 
     for(unsigned int i = 0; i < points.size(); ++i) {
         points_t[i] = pose_in * points[i];
-        points_proj[i] = project3Dto2D(points_t[i], image.cols, image.rows);
+        points_proj[i] = project3Dto2D(points_t[i]);
     }
 
     int i_triangle = 0;
@@ -222,9 +195,9 @@ void DepthCamera::render(const RenderOptions& opt, RenderResult& res) const {
 
 void DepthCamera::drawTriangle(const Vector3& p1_3d, const Vector3& p2_3d, const Vector3& p3_3d,
                                const RenderOptions& opt, RenderResult& res, int i_triangle) const {
-    cv::Point2d p1_2d = project3Dto2D(p1_3d, res.image_.cols, res.image_.rows);
-    cv::Point2d p2_2d = project3Dto2D(p2_3d, res.image_.cols, res.image_.rows);
-    cv::Point2d p3_2d = project3Dto2D(p3_3d, res.image_.cols, res.image_.rows);
+    cv::Point2d p1_2d = project3Dto2D(p1_3d);
+    cv::Point2d p2_2d = project3Dto2D(p2_3d);
+    cv::Point2d p3_2d = project3Dto2D(p3_3d);
 
     drawTriangle2D(Vec3f(p1_2d.x, p1_2d.y, 1.0f / -p1_3d.z()),
                    Vec3f(p2_2d.x, p2_2d.y, 1.0f / -p2_3d.z()),

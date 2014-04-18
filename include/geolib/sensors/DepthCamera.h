@@ -31,6 +31,11 @@ public:
     RenderOptions() : back_face_culling_(true) {}
 
     void setMesh(const geo::Mesh& mesh) { mesh_ = &mesh; }
+    void setMesh(const geo::Mesh& mesh, const Pose3D& pose) {
+        mesh_ = &mesh;
+        pose_ = pose;
+    }
+
     void setBackFaceCulling(bool b) { back_face_culling_ = b; }
 
 protected:
@@ -47,8 +52,53 @@ class RenderResult {
 
 public:
 
-    RenderResult() : stop_(false) {}
+    RenderResult(cv::Mat& image) : image_(image), stop_(false) {
+        //RasterizeResult res;
+        min_x = image.cols;
+        min_y = image.rows;
+        max_x = 0;
+        max_y = 0;
+    }
+
     virtual ~RenderResult() {}
+
+    virtual void renderPixel(int x, int y, float depth, int i_triangle) = 0;
+
+    void stop() { stop_ = true; }
+
+    int min_x, min_y;
+    int max_x, max_y;
+
+protected:
+
+    cv::Mat& image_;
+    bool stop_;    
+
+};
+
+class DefaultRenderResult : public RenderResult {
+
+    friend class DepthCamera;
+
+public:
+
+    DefaultRenderResult(cv::Mat& image, void* pointer, PointerMap& pointer_map, TriangleMap& triangle_map)
+        : RenderResult(image), pointer_(pointer), pointer_map_(pointer_map), triangle_map_(triangle_map) {
+
+        // reserve pointer map
+        if (pointer_) {
+            if (pointer_map_.empty() || (int)pointer_map_.size() != image.cols || (int)pointer_map_[0].size() != image.rows) {
+                pointer_map_.resize(image.cols, std::vector<void*>(image.rows, (void*)NULL));
+            }
+        }
+
+        // reserve triangle map
+        if (triangle_map_.empty() || (int)triangle_map_.size() != image.cols || (int)triangle_map_[0].size() != image.rows) {
+            triangle_map_.resize(image_.cols, std::vector<int>(image_.rows, -1));
+        }
+    }
+
+    virtual ~DefaultRenderResult() {}
 
     const cv::Mat& getDepthImage() const { return image_; }
     const PointerMap& getPointerMap() const { return pointer_map_; }
@@ -58,16 +108,11 @@ public:
 
     void stop() { stop_ = true; }
 
-    int min_x, min_y;
-    int max_x, max_y;
-    cv::Mat image_;
-
 protected:
 
-    PointerMap pointer_map_;
-    TriangleMap triangle_map_;
     void* pointer_;
-    bool stop_;
+    PointerMap& pointer_map_;
+    TriangleMap& triangle_map_;
 
 };
 
