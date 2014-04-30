@@ -188,6 +188,25 @@ public:
 // --------------------------------------------------------------------------------
 
 template<typename T>
+class QuaternionT
+{
+
+public:
+
+    QuaternionT() {}
+    QuaternionT(T x_, T y_, T z_, T w_) : x(x_), y(y_), z(z_), w(w_) {}
+
+    ~QuaternionT() {}
+
+    union {
+        struct { T x, y, z, w; };
+        T m[4];
+    };
+};
+
+// --------------------------------------------------------------------------------
+
+template<typename T>
 class Mat3x3
 {
 
@@ -262,6 +281,36 @@ public:
       m[6] = -sj;     m[7] = cj * si;      m[8] = cj * ci ;
   }
 
+  static Mat3x3 identity() {
+      return Mat3x3(1, 0, 0, 0, 1, 0, 0, 0, 1);
+  }
+
+  void getRotation(QuaternionT<T>& q) const {
+      T trace = xx + yy + zz;
+
+      if (trace > 0) {
+          T s = sqrt(trace + 1);
+          q.m[3] = (s / 2);
+          s = 0.5 / s;
+
+          q.m[0]=((zy - yz) * s);
+          q.m[1]=((xz - zx) * s);
+          q.m[2]=((yx - xy) * s);
+      } else {
+          int i = xx < yy ? (yy < zz ? 2 : 1) : (xx < zz ? 2 : 0);
+          int j = (i + 1) % 3;
+          int k = (i + 2) % 3;
+
+          T s = sqrt(m[i*4] - m[j*4] - m[k*4] + 1);
+          q.m[i] = s / 2;
+          s = 0.5 / s;
+
+          q.m[3] = (m[k*3+j] - m[j*3+k]) * s;
+          q.m[j] = (m[j*3+i] - m[i*3+j]) * s;
+          q.m[k] = (m[k*3+i] - m[i*3+k]) * s;
+      }
+  }
+
   // Serialize matrix to stream
   friend std::ostream& operator<< (std::ostream& out, const Mat3x3& m) {
       out << "[ " << m.m[0] << " " << m.m[1] << " " << m.m[2] << std::endl
@@ -304,9 +353,17 @@ public:
         return v_;
     }
 
+    QuaternionT<T> getQuaternion() const {
+        QuaternionT<T> q;
+        R_.getRotation(q);
+    }
+
     inline const Mat3x3<T>& getBasis() const {
         return R_;
     }
+
+    void setOrigin(const Vec3<T>& v) { v_ = v; }
+    void setBasis(const Mat3x3<T>& r) { R_ = r; }
 
     inline Transform3 inverse() const {
         return Transform3(R_.transpose(), -v_);
