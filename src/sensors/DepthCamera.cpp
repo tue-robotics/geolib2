@@ -78,7 +78,7 @@ void DepthCamera::render(const RenderOptions& opt, RenderResult& res) const {
     Transform pose_in = pose;
 #endif
 
-    if (mesh.getMaxRadius() < pose_in.getOrigin().z()) {
+    if (mesh.getMaxRadius() < pose_in.getOrigin().z) {
         return;
     }
 
@@ -112,17 +112,17 @@ void DepthCamera::render(const RenderOptions& opt, RenderResult& res) const {
         bool v3_in = false;
         const Vector3* vIn[3];
 
-        if (p1_3d.z() < near_clip_z) {
+        if (p1_3d.z < near_clip_z) {
             ++n_verts_in;
             v1_in = true;
         }
 
-        if (p2_3d.z() < near_clip_z) {
+        if (p2_3d.z < near_clip_z) {
             ++n_verts_in;
             v2_in = true;
         }
 
-        if (p3_3d.z() < near_clip_z) {
+        if (p3_3d.z < near_clip_z) {
             ++n_verts_in;
             v3_in = true;
         }
@@ -136,16 +136,16 @@ void DepthCamera::render(const RenderOptions& opt, RenderResult& res) const {
             // p = v0 + v01*t
             Vector3 v01 = *vIn[1] - *vIn[0];
 
-            float t1 = ((near_clip_z - (*vIn[0]).z()) / v01.z() );
+            float t1 = ((near_clip_z - (*vIn[0]).z) / v01.z );
 
-            Vector3 new2(vIn[0]->x() + v01.x() * t1, vIn[0]->y() + v01.y() * t1, near_clip_z);
+            Vector3 new2(vIn[0]->x + v01.x * t1, vIn[0]->y + v01.y * t1, near_clip_z);
 
             // Second vert point
             Vector3 v02 = *vIn[2] - *vIn[0];
 
-            float t2 = ((near_clip_z - (*vIn[0]).z()) / v02.z());
+            float t2 = ((near_clip_z - (*vIn[0]).z) / v02.z);
 
-            Vector3 new3(vIn[0]->x() + v02.x() * t2, vIn[0]->y() + v02.y() * t2, near_clip_z);
+            Vector3 new3(vIn[0]->x + v02.x * t2, vIn[0]->y + v02.y * t2, near_clip_z);
 
             drawTriangle(*vIn[0], new2, new3, opt, res, i_triangle);
         } else if (n_verts_in == 2) {
@@ -157,16 +157,16 @@ void DepthCamera::render(const RenderOptions& opt, RenderResult& res) const {
             // p = v0 + v01*t
             Vector3 v01 = *vIn[2] - *vIn[0];
 
-            float t1 = ((near_clip_z - (*vIn[0]).z())/v01.z() );
+            float t1 = ((near_clip_z - (*vIn[0]).z)/v01.z );
 
-            Vector3 new2((*vIn[0]).x() + v01.x() * t1,(*vIn[0]).y() + v01.y() * t1, near_clip_z);
+            Vector3 new2((*vIn[0]).x + v01.x * t1,(*vIn[0]).y + v01.y * t1, near_clip_z);
 
             // Second point
             Vector3 v02 = *vIn[2] - *vIn[1];
 
-            float t2 = ((near_clip_z - (*vIn[1]).z())/v02.z());
+            float t2 = ((near_clip_z - (*vIn[1]).z)/v02.z);
 
-            Vector3 new3((*vIn[1]).x() + v02.x() * t2, (*vIn[1]).y() + v02.y() * t2, near_clip_z);
+            Vector3 new3((*vIn[1]).x + v02.x * t2, (*vIn[1]).y + v02.y * t2, near_clip_z);
 
             drawTriangle(*vIn[0], *vIn[1], new2, opt, res, i_triangle);
 
@@ -177,9 +177,9 @@ void DepthCamera::render(const RenderOptions& opt, RenderResult& res) const {
             const cv::Point2d& p2_2d = points_proj[it_tri->i2_];
             const cv::Point2d& p3_2d = points_proj[it_tri->i3_];
 
-            drawTriangle2D(Vec3f(p1_2d.x, p1_2d.y, 1.0f / -p1_3d.z()),
-                           Vec3f(p2_2d.x, p2_2d.y, 1.0f / -p2_3d.z()),
-                           Vec3f(p3_2d.x, p3_2d.y, 1.0f / -p3_3d.z()),
+            drawTriangle2D(Vec3f(p1_2d.x, p1_2d.y, 1.0f / -p1_3d.z),
+                           Vec3f(p2_2d.x, p2_2d.y, 1.0f / -p2_3d.z),
+                           Vec3f(p3_2d.x, p3_2d.y, 1.0f / -p3_3d.z),
                            opt, res, i_triangle);
         }
 
@@ -199,9 +199,9 @@ void DepthCamera::drawTriangle(const Vector3& p1_3d, const Vector3& p2_3d, const
     cv::Point2d p2_2d = project3Dto2D(p2_3d);
     cv::Point2d p3_2d = project3Dto2D(p3_3d);
 
-    drawTriangle2D(Vec3f(p1_2d.x, p1_2d.y, 1.0f / -p1_3d.z()),
-                   Vec3f(p2_2d.x, p2_2d.y, 1.0f / -p2_3d.z()),
-                   Vec3f(p3_2d.x, p3_2d.y, 1.0f / -p3_3d.z()),
+    drawTriangle2D(Vec3f(p1_2d.x, p1_2d.y, 1.0f / -p1_3d.z),
+                   Vec3f(p2_2d.x, p2_2d.y, 1.0f / -p2_3d.z),
+                   Vec3f(p3_2d.x, p3_2d.y, 1.0f / -p3_3d.z),
                    opt, res, i_triangle);
 }
 

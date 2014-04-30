@@ -53,7 +53,7 @@ LaserRangeFinder::RenderResult LaserRangeFinder::raytrace(const Shape& shape, co
                 return res;
             }
 
-            double a = getAngle(t_inv.getOrigin().x(), t_inv.getOrigin().y());
+            double a = getAngle(t_inv.getOrigin().x, t_inv.getOrigin().y);
             double a_limit = asin(max_radius / dist);
             double a_min = a - a_limit;
             double a_max = a + a_limit;
@@ -226,16 +226,17 @@ void LaserRangeFinder::render(const LaserRangeFinder::RenderOptions& opt, LaserR
 
 LaserRangeFinder::RenderResult LaserRangeFinder::render(const Shape& shape, const Pose3D& cam_pose, const Pose3D& obj_pose, std::vector<double>& ranges) const {
 
+    LaserRangeFinder::RenderOptions options;
+
 #ifdef GEOLIB_USE_TF
     tf::Transform t = obj_pose.inverse() * cam_pose;
     tf::Transform t_inv = t.inverse();
+    options.setMesh(shape.getMesh(), geo::Pose3D(t_inv.getOrigin(), t_inv.getRotation()));
 #else
     Transform t = obj_pose.inverse() * cam_pose;
     Transform t_inv = t.inverse();
+    options.setMesh(shape.getMesh(), t_inv);
 #endif
-
-    LaserRangeFinder::RenderOptions options;
-    options.setMesh(shape.getMesh(), geo::Pose3D(t_inv.getOrigin(), t_inv.getRotation()));
 
     LaserRangeFinder::RenderResult res;
     res.ranges = ranges;
@@ -285,10 +286,10 @@ void LaserRangeFinder::calculateRays() {
         Vector3 dir = polarTo2D(a, 1);
         ray_dirs_.push_back(dir);
         angles_.push_back(a);
-        if (dir.y() >= 0) {
-            xyratio_to_index_pos_[dir.x() / dir.y()] = i;
+        if (dir.y >= 0) {
+            xyratio_to_index_pos_[dir.x / dir.y] = i;
         } else {
-            xyratio_to_index_neg_[dir.x() / dir.y()] = i;
+            xyratio_to_index_neg_[dir.x / dir.y] = i;
         }
         a += a_incr;
     }

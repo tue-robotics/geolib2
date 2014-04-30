@@ -38,9 +38,9 @@ void OctreeNode::add(const Vector3& p) {
 
     int index = 0;
 
-    double x = p.x();
-    double y = p.y();
-    double z = p.z();
+    double x = p.x;
+    double y = p.y;
+    double z = p.z;
 
     if (x > split_) { index += 4; x-= split_; }
     if (y > split_) { index += 2; y-= split_; }
@@ -81,8 +81,8 @@ bool OctreeNode::intersect(const Ray& r, float t0, float t1, double& distance, c
     }
 
     Vector3 o = r.origin_ + t0 * r.direction_;
-    if (o.x() < 0 || o.y() < 0 || o.z() < 0
-            || o.x() > size_ || o.y() > size_ || o.z() > size_) {
+    if (o.x < 0 || o.y < 0 || o.z < 0
+            || o.x > size_ || o.y > size_ || o.z > size_) {
         return false;
     }
 
@@ -94,9 +94,9 @@ bool OctreeNode::intersect(const Ray& r, float t0, float t1, double& distance, c
     double dy = 0;
     double dz = 0;
 
-    if (o.x() >= split_) { index += 4; dx = split_; }
-    if (o.y() >= split_) { index += 2; dy = split_; }
-    if (o.z() >= split_) { index += 1; dz = split_; }
+    if (o.x >= split_) { index += 4; dx = split_; }
+    if (o.y >= split_) { index += 2; dy = split_; }
+    if (o.z >= split_) { index += 1; dz = split_; }
 
     if (children_[index]) {
         if (children_[index]->intersect(Ray(r.origin_ - Vector3(dx, dy, dz), r.direction_), t0, t1, distance, offset + Vector3(dx, dy, dz))) {
@@ -119,8 +119,8 @@ void OctreeNode::raytrace(const Vector3& o, const Vector3& dir, float t0, float 
     }
 
     Vector3 newo = o + t0 * dir;
-    if (newo.x() < 0 || newo.y() < 0 || newo.z() < 0
-            || newo.x() > size_ || newo.y() > size_ || newo.z() > size_) {
+    if (newo.x < 0 || newo.y < 0 || newo.z < 0
+            || newo.x > size_ || newo.y > size_ || newo.z > size_) {
         return;
     }
 
@@ -132,9 +132,9 @@ void OctreeNode::raytrace(const Vector3& o, const Vector3& dir, float t0, float 
     double dy = 0;
     double dz = 0;
 
-    if (newo.x() >= split_) { index += 4; dx = split_; }
-    if (newo.y() >= split_) { index += 2; dy = split_; }
-    if (newo.z() >= split_) { index += 1; dz = split_; }
+    if (newo.x >= split_) { index += 4; dx = split_; }
+    if (newo.y >= split_) { index += 2; dy = split_; }
+    if (newo.z >= split_) { index += 1; dz = split_; }
 
     if (children_[index]) {
         children_[index]->raytrace(o - Vector3(dx, dy, dz), dir, t0, t1, offset + Vector3(dx, dy, dz));
@@ -154,9 +154,9 @@ bool OctreeNode::intersect(const Vector3& p) const {
 
     int index = 0;
 
-    double x = p.x();
-    double y = p.y();
-    double z = p.z();
+    double x = p.x;
+    double y = p.y;
+    double z = p.z;
 
     if (x > split_) { index += 4; x-= split_; }
     if (y > split_) { index += 2; y-= split_; }
@@ -174,14 +174,14 @@ bool OctreeNode::intersect(const Box& b) const {
         return true;
     }
 
-    int sx = b.bounds[0].x() > split_;
-    int ex = b.bounds[1].x() > split_;
+    int sx = b.bounds[0].x > split_;
+    int ex = b.bounds[1].x > split_;
 
-    int sy = b.bounds[0].y() > split_;
-    int ey = b.bounds[1].y() > split_;
+    int sy = b.bounds[0].y > split_;
+    int ey = b.bounds[1].y > split_;
 
-    int sz = b.bounds[0].z() > split_;
-    int ez = b.bounds[1].z() > split_;
+    int sz = b.bounds[0].z > split_;
+    int ez = b.bounds[1].z > split_;
 
     for(int x = sx; x <= ex; ++x) {
         for(int y = sy; y <= ey; ++y) {

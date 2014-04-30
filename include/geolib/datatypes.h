@@ -1,7 +1,7 @@
 #ifndef GEOLIB_DATATYPES_H_
 #define GEOLIB_DATATYPES_H_
 
-#define GEOLIB_USE_TF
+//#define GEOLIB_USE_TF
 
 #include <string>
 #include <map>
@@ -11,7 +11,7 @@
 #ifdef GEOLIB_USE_TF
     #include <tf/transform_datatypes.h>
 #else
-    #include "geolib/matrix.h"
+    #include "geolib/math_types.h"
     #include <boost/shared_ptr.hpp>
 #endif
 
@@ -124,7 +124,10 @@ public:
 };
 
 #else
-    typedef Transform Pose3D;
+    typedef Transform3d Transform;
+    typedef Transform3d Pose3D;
+    typedef Vec3d Vector3;
+    typedef Mat3x3d Matrix3;
 #endif
 
 }

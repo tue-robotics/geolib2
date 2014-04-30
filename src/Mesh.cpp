@@ -107,9 +107,9 @@ void Mesh::filterOverlappingVertices() {
     for(unsigned int j = 0; j < old_points.size(); ++j) {
         const Vector3& v = old_points[j];
 
-        int ix = 1000 * v.x();
-        int iy = 1000 * v.y();
-        int iz = 1000 * v.z();
+        int ix = 1000 * v.x;
+        int iy = 1000 * v.y;
+        int iz = 1000 * v.z;
 
         bool match = false;
         std::map<int, std::map<int, std::map<int, int> > >::iterator it1 = xyz_map.find(ix);
@@ -125,7 +125,7 @@ void Mesh::filterOverlappingVertices() {
         }
 
         if (!match) {
-            int ip = this->addPoint(v.x(), v.y(), v.z());
+            int ip = this->addPoint(v.x, v.y, v.z);
             xyz_map[ix][iy][iz] = ip;
             i_map[j] = ip;
         }

@@ -6,14 +6,14 @@ Box::Box(const Vector3 &min, const Vector3 &max) {
     bounds[0] = min;
     bounds[1] = max;
 
-    int p0 = mesh_.addPoint(min.x(), min.y(), min.z()); // 0
-    int p1 = mesh_.addPoint(max.x(), min.y(), min.z()); // 1
-    int p2 = mesh_.addPoint(min.x(), max.y(), min.z()); // 2
-    int p3 = mesh_.addPoint(max.x(), max.y(), min.z()); // 3
-    int p4 = mesh_.addPoint(min.x(), min.y(), max.z()); // 4
-    int p5 = mesh_.addPoint(max.x(), min.y(), max.z()); // 5
-    int p6 = mesh_.addPoint(min.x(), max.y(), max.z()); // 6
-    int p7 = mesh_.addPoint(max.x(), max.y(), max.z()); // 7
+    int p0 = mesh_.addPoint(min.x, min.y, min.z); // 0
+    int p1 = mesh_.addPoint(max.x, min.y, min.z); // 1
+    int p2 = mesh_.addPoint(min.x, max.y, min.z); // 2
+    int p3 = mesh_.addPoint(max.x, max.y, min.z); // 3
+    int p4 = mesh_.addPoint(min.x, min.y, max.z); // 4
+    int p5 = mesh_.addPoint(max.x, min.y, max.z); // 5
+    int p6 = mesh_.addPoint(min.x, max.y, max.z); // 6
+    int p7 = mesh_.addPoint(max.x, max.y, max.z); // 7
 
     // back plane
     mesh_.addTriangle(p1, p0, p2);
@@ -47,10 +47,10 @@ Box* Box::clone() const {
 bool Box::intersect(const Ray &r, float t0, float t1, double& distance) const {
 
     float tmin, tmax, tymin, tymax, tzmin, tzmax;
-    tmin = (bounds[r.sign[0]].x() - r.origin_.x()) * r.inv_direction_.x();
-    tmax = (bounds[1-r.sign[0]].x() - r.origin_.x()) * r.inv_direction_.x();
-    tymin = (bounds[r.sign[1]].y() - r.origin_.y()) * r.inv_direction_.y();
-    tymax = (bounds[1-r.sign[1]].y() - r.origin_.y()) * r.inv_direction_.y();
+    tmin = (bounds[r.sign[0]].x - r.origin_.x) * r.inv_direction_.x;
+    tmax = (bounds[1-r.sign[0]].x - r.origin_.x) * r.inv_direction_.x;
+    tymin = (bounds[r.sign[1]].y - r.origin_.y) * r.inv_direction_.y;
+    tymax = (bounds[1-r.sign[1]].y - r.origin_.y) * r.inv_direction_.y;
 
     if ( (tmin > tymax) || (tymin > tmax) )
         return false;
@@ -58,8 +58,8 @@ bool Box::intersect(const Ray &r, float t0, float t1, double& distance) const {
         tmin = tymin;
     if (tymax < tmax)
         tmax = tymax;
-    tzmin = (bounds[r.sign[2]].z() - r.origin_.z()) * r.inv_direction_.z();
-    tzmax = (bounds[1-r.sign[2]].z() - r.origin_.z()) * r.inv_direction_.z();
+    tzmin = (bounds[r.sign[2]].z - r.origin_.z) * r.inv_direction_.z;
+    tzmax = (bounds[1-r.sign[2]].z - r.origin_.z) * r.inv_direction_.z;
     if ( (tmin > tzmax) || (tzmin > tmax) )
         return false;
     if (tzmin > tmin)
@@ -115,19 +115,19 @@ void Box::enclose(const Box& box, const Pose3D& pose) {
 
     for(unsigned int i = 0; i < 8; ++i) {
         //std::cout << points[i] << std::endl;
-        bounds[0].setX(std::min(bounds[0].getX(), points[i].getX()));
-        bounds[0].setY(std::min(bounds[0].getY(), points[i].getY()));
-        bounds[0].setZ(std::min(bounds[0].getZ(), points[i].getZ()));
+        bounds[0].x = std::min(bounds[0].getX(), points[i].getX());
+        bounds[0].y = std::min(bounds[0].getY(), points[i].getY());
+        bounds[0].z = std::min(bounds[0].getZ(), points[i].getZ());
 
-        bounds[1].setX(std::max(bounds[1].getX(), points[i].getX()));
-        bounds[1].setY(std::max(bounds[1].getY(), points[i].getY()));
-        bounds[1].setZ(std::max(bounds[1].getZ(), points[i].getZ()));
+        bounds[1].x = std::max(bounds[1].getX(), points[i].getX());
+        bounds[1].y = std::max(bounds[1].getY(), points[i].getY());
+        bounds[1].z = std::max(bounds[1].getZ(), points[i].getZ());
     }
     //std::cout << std::endl;
 }
 
 Vector3 Box::getSize() const {
-    return Vector3(bounds[1].x() - bounds[0].x(), bounds[1].y() - bounds[0].y(), bounds[1].z() - bounds[0].z());
+    return bounds[1] - bounds[0];
 }
 
 Vector3 Box::getCenter() const {

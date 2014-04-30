@@ -68,8 +68,8 @@ double renderLRF(cv::Mat& image, const Shape& shape, bool rasterize, bool show) 
             const std::vector<double>& angles = lrf.getAngles();
             for(unsigned int i = 0; i < angles.size(); ++i) {
                 geo::Vector3 p = lrf.polarTo2D(angles[i], ranges[i]);
-                double x = (p.x() * 25) + image.cols / 2;
-                double y = (p.y() * 25) + image.rows / 2;
+                double x = (p.x * 25) + image.cols / 2;
+                double y = (p.y * 25) + image.rows / 2;
 
                 image.at<float>(y, x) = 1;
             }
@@ -329,8 +329,8 @@ int main(int argc, char **argv) {
         if (lrf.rangesToPoints(ranges, points)) {
             for(unsigned int i = 0; i < points.size(); ++i) {
                 const geo::Vector3& p = points[i];
-                double x = (-p.y() * 25) + image.cols / 2;
-                double y = (-p.x() * 25) + image.rows / 2;
+                double x = (-p.y * 25) + image.cols / 2;
+                double y = (-p.x * 25) + image.rows / 2;
 
                 if (x >= 0 && y >= 0 && x < image.cols && y < image.rows) {
                     lrf_image.at<float>(y, x) = 1;

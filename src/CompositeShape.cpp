@@ -70,13 +70,13 @@ void CompositeShape::addShape(const Shape& shape, const Pose3D& pose) {
         max_radius_ = std::max(max_radius_, (double)p2.length());
         max_radius_ = std::max(max_radius_, (double)p3.length());
 
-        min_.setX(std::min(min_.getX(), std::min(p1.x(), std::min(p2.x(), p3.x()))));
-        min_.setY(std::min(min_.getY(), std::min(p1.y(), std::min(p2.y(), p3.y()))));
-        min_.setZ(std::min(min_.getZ(), std::min(p1.z(), std::min(p2.z(), p3.z()))));
+        min_.x = std::min(min_.getX(), std::min(p1.x, std::min(p2.x, p3.x)));
+        min_.y = std::min(min_.getY(), std::min(p1.y, std::min(p2.y, p3.y)));
+        min_.z = std::min(min_.getZ(), std::min(p1.z, std::min(p2.z, p3.z)));
 
-        max_.setX(std::max(max_.getX(), std::max(p1.x(), std::max(p2.x(), p3.x()))));
-        max_.setY(std::max(max_.getY(), std::max(p1.y(), std::max(p2.y(), p3.y()))));
-        max_.setZ(std::max(max_.getZ(), std::max(p1.z(), std::max(p2.z(), p3.z()))));
+        max_.x = std::max(max_.getX(), std::max(p1.x, std::max(p2.x, p3.x)));
+        max_.y = std::max(max_.getY(), std::max(p1.y, std::max(p2.y, p3.y)));
+        max_.z = std::max(max_.getZ(), std::max(p1.z, std::max(p2.z, p3.z)));
     }
 
 #ifdef GEOLIB_USE_TF

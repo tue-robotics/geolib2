@@ -136,7 +136,7 @@ public:
                               void* pointer = 0, TriangleMap& triangle_map = EMPTY_TRIANGLE_MAP) const;
 
     inline cv::Point2d project3Dto2D(const Vector3 p, int width = 0, int height = 0) const {
-        return cv::Point2d((fx_ * p.x() + tx_) / -p.z() + cx_, (fy_ * -p.y() + ty_) / -p.z() + cy_);
+        return cv::Point2d((fx_ * p.x + tx_) / -p.z + cx_, (fy_ * -p.y + ty_) / -p.z + cy_);
     }
 
     inline double project2Dto3DX(int x) const {

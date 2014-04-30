@@ -42,9 +42,9 @@ bool Shape::write(std::ostream& output) const {
     output.write((char*)&p_size, sizeof(p_size));
     for(std::vector<geo::Vector3>::const_iterator it = points.begin(); it != points.end(); ++it) {
         const geo::Vector3& v = *it;
-        float x = v.x();
-        float y = v.y();
-        float z = v.z();
+        float x = v.x;
+        float y = v.y;
+        float z = v.z;
 
         output.write((char*)&x, sizeof(x));
         output.write((char*)&y, sizeof(y));
