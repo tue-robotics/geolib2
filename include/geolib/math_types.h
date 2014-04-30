@@ -76,6 +76,7 @@ public:
   Vec3() {}
   Vec3(T x_, T y_, T z_) : x(x_), y(y_), z(z_) {}
   Vec3(T value) : x(value), y(value), z(value) {}
+  Vec3(T* values) { memcpy(m, values, 3 * sizeof(T)); }
 
   ~Vec3() {}
 
@@ -198,6 +199,8 @@ public:
 
     ~QuaternionT() {}
 
+    T length2() const { return x*x + y*y + z*z + w*w; }
+
     union {
         struct { T x, y, z, w; };
         T m[4];
@@ -212,9 +215,13 @@ class Mat3x3
 
 public:
   Mat3x3() {}
+
   Mat3x3(T xx_, T xy_, T xz_, T yx_, T yy_, T yz_, T zx_, T zy_, T zz_)
     : xx(xx_), xy(xy_), xz(xz_), yx(yx_), yy(yy_), yz(yz_), zx(zx_), zy(zy_), zz(zz_) {}
+
   Mat3x3(T value) : xx(value), xy(value), xz(value), yx(value), yy(value), yz(value), zx(value), zy(value), zz(value) {}
+
+  Mat3x3(T* values) { memcpy(m, values, 9 * sizeof(T)); }
 
   ~Mat3x3() {}
 
@@ -309,6 +316,19 @@ public:
           q.m[j] = (m[j*3+i] - m[i*3+j]) * s;
           q.m[k] = (m[k*3+i] - m[i*3+k]) * s;
       }
+  }
+
+  void setRotation(const QuaternionT<T>& q) {
+      T d = q.length2();
+      T s = 2 / d;
+      T xs = q.x * s,   ys = q.y * s,   zs = q.z * s;
+      T wx = q.w * xs,  wy = q.w * ys,  wz = q.w * zs;
+      T xx = q.x * xs,  xy = q.x * ys,  xz = q.x * zs;
+      T yy = q.y * ys,  yz = q.y * zs,  zz = q.z * zs;
+
+      m[0] = 1 - (yy + zz); m[1] = xy - wz; m[2] = xz + wy;
+      m[3] = xy + wz; m[4] = 1 - (xx + zz); m[5] = yz - wx;
+      m[6] = xz - wy; m[7] = yz + wx; m[8] = 1 - (xx + yy);
   }
 
   // Serialize matrix to stream
