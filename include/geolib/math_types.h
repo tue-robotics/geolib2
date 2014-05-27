@@ -393,7 +393,8 @@ public:
     void setBasis(const Mat3T<T>& r) { R = r; }
 
     inline Transform3T inverse() const {
-        return Transform3T(R.transpose(), -t);
+        Mat3T<T> inv = R.transpose();
+        return Transform3T(inv, inv * -t);
     }
 
     void setRPY(T roll, T pitch, T yaw)  {
