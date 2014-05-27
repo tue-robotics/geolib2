@@ -6,36 +6,38 @@
 
 namespace geo {
 
+typedef float real;
+
 // --------------------------------------------------------------------------------
 
 template<typename T>
-class Vec2
+class Vec2T
 {
 
 public:
-  Vec2() {}
-  Vec2(T x_, T y_) : x(x_), y(y_) {}
-  Vec2(T value) : x(value), y(value) {}
+  Vec2T() {}
+  Vec2T(T x_, T y_) : x(x_), y(y_) {}
+  Vec2T(T value) : x(value), y(value) {}
 
-  ~Vec2() {}
+  ~Vec2T() {}
 
   /// returns dot product
-  T dot(const Vec2& v) const { return x * v.x + y * v.y; }
+  T dot(const Vec2T& v) const { return x * v.x + y * v.y; }
 
   /// returns addition of this and v
-  Vec2 operator+(const Vec2& v) const {  return Vec2(x + v.x, y + v.y); }
+  Vec2T operator+(const Vec2T& v) const {  return Vec2T(x + v.x, y + v.y); }
 
   /// returns this minus v
-  Vec2 operator-(const Vec2& v) const { return Vec2(x - v.x, y - v.y); }
+  Vec2T operator-(const Vec2T& v) const { return Vec2T(x - v.x, y - v.y); }
 
   /// multiplies vector with a scalar
-  Vec2 operator*(T s) const { return Vec2(x * s, y * s); }
+  Vec2T operator*(T s) const { return Vec2T(x * s, y * s); }
 
   /// divides vector by scalar
-  Vec2 operator/(T s) const { return Vec2(x / s, y / s); }
+  Vec2T operator/(T s) const { return Vec2T(x / s, y / s); }
 
   /// multiplies vector with a scalar
-  friend Vec2 operator*(T s, const Vec2& v) { return Vec2(v.x * s, v.y * s); }
+  friend Vec2T operator*(T s, const Vec2T& v) { return Vec2T(v.x * s, v.y * s); }
 
   /// Returns the length of the vector
   T length() const { return sqrt(x * x + y * y); }
@@ -44,18 +46,18 @@ public:
   T length2() const { return x * x + y * y; }
 
   /// Returns the normalized version of the vector
-  Vec2 normalized() const { T len = length(); return Vec2(x / len, y / len); }
+  Vec2T normalized() const { T len = length(); return Vec2T(x / len, y / len); }
 
-  Vec2 &operator+=(const Vec2& v) { x += v.x; y += v.y; return *this; }
-  Vec2 &operator-=(const Vec2& v) { x -= v.x; y -= v.y; return *this; }
-  Vec2 &operator*=(const Vec2& v) { x *= v.x; y *= v.y; return *this; }
-  Vec2 &operator/=(const Vec2& v) { x /= v.x; y /= v.y; return *this; }
+  Vec2T &operator+=(const Vec2T& v) { x += v.x; y += v.y; return *this; }
+  Vec2T &operator-=(const Vec2T& v) { x -= v.x; y -= v.y; return *this; }
+  Vec2T &operator*=(const Vec2T& v) { x *= v.x; y *= v.y; return *this; }
+  Vec2T &operator/=(const Vec2T& v) { x /= v.x; y /= v.y; return *this; }
 
-  Vec2 &operator*=(T s) { x *= s; y *= s; return *this; }
-  Vec2 &operator/=(T s) { x /= s; y /= s; return *this; }
+  Vec2T &operator*=(T s) { x *= s; y *= s; return *this; }
+  Vec2T &operator/=(T s) { x /= s; y /= s; return *this; }
 
   // serialize vector to stream
-  friend std::ostream& operator<< (std::ostream& out, const Vec2& v) {
+  friend std::ostream& operator<< (std::ostream& out, const Vec2T& v) {
       out << "[ " << v.x << " " << v.y << " ]";
       return out;
   }
@@ -69,37 +71,37 @@ public:
 // --------------------------------------------------------------------------------
 
 template<typename T>
-class Vec3
+class Vec3T
 {
 
 public:
-  Vec3() {}
-  Vec3(T x_, T y_, T z_) : x(x_), y(y_), z(z_) {}
-  Vec3(T value) : x(value), y(value), z(value) {}
-  Vec3(T* values) { memcpy(m, values, 3 * sizeof(T)); }
+  Vec3T() {}
+  Vec3T(T x_, T y_, T z_) : x(x_), y(y_), z(z_) {}
+  Vec3T(T value) : x(value), y(value), z(value) {}
+  Vec3T(T* values) { memcpy(m, values, 3 * sizeof(T)); }
 
-  ~Vec3() {}
+  ~Vec3T() {}
 
   /// returns dot product
-  T dot(const Vec3& v) const { return x * v.x + y * v.y + z * v.z; }
+  T dot(const Vec3T& v) const { return x * v.x + y * v.y + z * v.z; }
 
   /// returns cross product
-  T cross(const Vec3& v) const { return Vec3(y * v.z - z * v.y, z * v.x - x * v.z, x * v.y - y * v.x ); }
+  T cross(const Vec3T& v) const { return Vec3T(y * v.z - z * v.y, z * v.x - x * v.z, x * v.y - y * v.x ); }
 
   /// returns addition with v
-  Vec3 operator+(const Vec3& v) const {  return Vec3(x + v.x, y + v.y, z + v.z); }
+  Vec3T operator+(const Vec3T& v) const {  return Vec3T(x + v.x, y + v.y, z + v.z); }
 
   /// returns this minus v
-  Vec3 operator-(const Vec3& v) const { return Vec3(x - v.x, y - v.y, z - v.z); }
+  Vec3T operator-(const Vec3T& v) const { return Vec3T(x - v.x, y - v.y, z - v.z); }
 
   /// multiplies vector with a scalar
-  Vec3 operator*(T s) const { return Vec3(x * s, y * s, z * s); }
+  Vec3T operator*(T s) const { return Vec3T(x * s, y * s, z * s); }
 
   /// divides vector by scalar
-  Vec3 operator/(T s) const { return Vec3(x / s, y / s, z / s); }
+  Vec3T operator/(T s) const { return Vec3T(x / s, y / s, z / s); }
 
   /// multiplies vector with a scalar
-  friend Vec3 operator*(T s, const Vec3& v) { return Vec3(v.x * s, v.y * s, v.z * s); }
+  friend Vec3T operator*(T s, const Vec3T& v) { return Vec3T(v.x * s, v.y * s, v.z * s); }
 
   /// Returns the length of the vector
   T length() const { return sqrt(x * x + y * y + z * z); }
@@ -108,24 +110,24 @@ public:
   T length2() const { return x * x + y * y + z * z; }
 
   /// Returns the normalized version of the vector
-  Vec3 normalized() const { T len = length(); return Vec3(x / len, y / len, z / len); }
+  Vec3T normalized() const { T len = length(); return Vec3T(x / len, y / len, z / len); }
 
-  friend Vec3 operator-(const Vec3& v) { return Vec3(-v.x, -v.y, -v.z); }
+  friend Vec3T operator-(const Vec3T& v) { return Vec3T(-v.x, -v.y, -v.z); }
 
-  Vec3 &operator+=(const Vec3& v) { x += v.x; y += v.y; z += v.z; return *this; }
-  Vec3 &operator-=(const Vec3& v) { x -= v.x; y -= v.y; z -= v.z; return *this; }
-  Vec3 &operator*=(const Vec3& v) { x *= v.x; y *= v.y; z *= v.z; return *this; }
-  Vec3 &operator/=(const Vec3& v) { x /= v.x; y /= v.y; z /= v.z; return *this; }
+  Vec3T &operator+=(const Vec3T& v) { x += v.x; y += v.y; z += v.z; return *this; }
+  Vec3T &operator-=(const Vec3T& v) { x -= v.x; y -= v.y; z -= v.z; return *this; }
+  Vec3T &operator*=(const Vec3T& v) { x *= v.x; y *= v.y; z *= v.z; return *this; }
+  Vec3T &operator/=(const Vec3T& v) { x /= v.x; y /= v.y; z /= v.z; return *this; }
 
-  Vec3 &operator*=(T s) { x *= s; y *= s; z *= s; return *this; }
-  Vec3 &operator/=(T s) { x /= s; y /= s; z /= s; return *this; }
+  Vec3T &operator*=(T s) { x *= s; y *= s; z *= s; return *this; }
+  Vec3T &operator/=(T s) { x /= s; y /= s; z /= s; return *this; }
 
   T getX() const { return x; }
   T getY() const { return y; }
   T getZ() const { return z; }
 
   // serialize vector to stream
-  friend std::ostream& operator<< (std::ostream& out, const Vec3& v) {
+  friend std::ostream& operator<< (std::ostream& out, const Vec3T& v) {
       out << "[ " << v.x << " " << v.y << " " << v.z << " ]";
       return out;
   }
@@ -139,41 +141,41 @@ public:
 // --------------------------------------------------------------------------------
 
 template<typename T>
-class Mat2x2
+class Mat2T
 {
 
 public:
-  Mat2x2() {}
-  Mat2x2(T xx_, T xy_, T yx_, T yy_) : xx(xx_), xy(xy_), yx(yx_), yy(yy_) {}
-  Mat2x2(T value) : xx(value), xy(value), yx(value), yy(value) {}
+  Mat2T() {}
+  Mat2T(T xx_, T xy_, T yx_, T yy_) : xx(xx_), xy(xy_), yx(yx_), yy(yy_) {}
+  Mat2T(T value) : xx(value), xy(value), yx(value), yy(value) {}
 
-  ~Mat2x2() {}
+  ~Mat2T() {}
 
   /// returns addition with v
-  Mat2x2 operator+(const Mat2x2& m) const {  return Mat2x2(xx + m.xx, xy + m.xy, yx + m.yx, yy + m.yy); }
+  Mat2T operator+(const Mat2T& m) const {  return Mat2T(xx + m.xx, xy + m.xy, yx + m.yx, yy + m.yy); }
 
   /// returns this minus m
-  Mat2x2 operator-(const Mat2x2& m) const { return Mat2x2(xx - m.xx, xy - m.xy, yx - m.yx, yy - m.yy); }
+  Mat2T operator-(const Mat2T& m) const { return Mat2T(xx - m.xx, xy - m.xy, yx - m.yx, yy - m.yy); }
 
-  Vec2<T> operator*(const Vec2<T>& v) const { return Vec2<T>(xx * v.x + xy * v.y, yx * v.x + yy * v.y); }
+  Vec2T<T> operator*(const Vec2T<T>& v) const { return Vec2T<T>(xx * v.x + xy * v.y, yx * v.x + yy * v.y); }
 
   /// return this multiplied by m
-  Mat2x2 operator*(const Mat2x2& m) const { return Mat2x2(xx * m.xx + xy * m.yx, xx * m.xy + xy * m.yy,
+  Mat2T operator*(const Mat2T& m) const { return Mat2T(xx * m.xx + xy * m.yx, xx * m.xy + xy * m.yy,
                                                           yx * m.xx + yy * m.yx, yx * m.xy + yy * m.yy); }
 
   /// multiplies vector with a scalar
-  Mat2x2 operator*(T s) const { return Mat2x2(xx * s, xy * s, yx * s, yy * s); }
+  Mat2T operator*(T s) const { return Mat2T(xx * s, xy * s, yx * s, yy * s); }
 
   /// divides matrix by scalar
-  Mat2x2 operator/(T s) const { return Mat2x2(xx / s, xy / s, yx / s, yy / s); }
+  Mat2T operator/(T s) const { return Mat2T(xx / s, xy / s, yx / s, yy / s); }
 
   /// multiplies vector with a scalar
-  friend Mat2x2 operator*(T s, const Mat2x2& m) { return Mat2x2(m.xx * s, m.xy * s, m.yx * s, m.yy * s); }
+  friend Mat2T operator*(T s, const Mat2T& m) { return Mat2T(m.xx * s, m.xy * s, m.yx * s, m.yy * s); }
 
-  static Mat2x2 identity() { return Mat2x2(1, 0, 0, 1); }
+  static Mat2T identity() { return Mat2T(1, 0, 0, 1); }
 
   // serialize matrix to stream
-  friend std::ostream& operator<< (std::ostream& out, const Mat2x2& m) {
+  friend std::ostream& operator<< (std::ostream& out, const Mat2T& m) {
       out << "[ " << m.m[0] << " " << m.m[1] << std::endl
           << "  " << m.m[2] << " " << m.m[3] << " " << " ]";
       return out;
@@ -210,65 +212,65 @@ public:
 // --------------------------------------------------------------------------------
 
 template<typename T>
-class Mat3x3
+class Mat3T
 {
 
 public:
-  Mat3x3() {}
+  Mat3T() {}
 
-  Mat3x3(T xx_, T xy_, T xz_, T yx_, T yy_, T yz_, T zx_, T zy_, T zz_)
+  Mat3T(T xx_, T xy_, T xz_, T yx_, T yy_, T yz_, T zx_, T zy_, T zz_)
     : xx(xx_), xy(xy_), xz(xz_), yx(yx_), yy(yy_), yz(yz_), zx(zx_), zy(zy_), zz(zz_) {}
 
-  Mat3x3(T value) : xx(value), xy(value), xz(value), yx(value), yy(value), yz(value), zx(value), zy(value), zz(value) {}
+  Mat3T(T value) : xx(value), xy(value), xz(value), yx(value), yy(value), yz(value), zx(value), zy(value), zz(value) {}
 
-  Mat3x3(T* values) { memcpy(m, values, 9 * sizeof(T)); }
+  Mat3T(T* values) { memcpy(m, values, 9 * sizeof(T)); }
 
-  ~Mat3x3() {}
+  ~Mat3T() {}
 
   /// returns addition with v
-  Mat3x3 operator+(const Mat3x3& m) const { return Mat3x3(xx + m.xx, xy + m.xy, yx + m.yx,
+  Mat3T operator+(const Mat3T& m) const { return Mat3T(xx + m.xx, xy + m.xy, yx + m.yx,
                                                           yx + m.yx, yy + m.yy, yz + m.yz,
                                                           zx + m.zx, zy + m.zy, zz + m.zz); }
 
   /// returns this minus m
-  Mat3x3 operator-(const Mat3x3& m) const { return Mat3x3(xx - m.xx, xy - m.xy, yx - m.yx,
+  Mat3T operator-(const Mat3T& m) const { return Mat3T(xx - m.xx, xy - m.xy, yx - m.yx,
                                                           yx - m.yx, yy - m.yy, yz - m.yz,
                                                           zx - m.zx, zy - m.zy, zz - m.zz); }
 
-  Vec3<T> operator*(const Vec3<T>& v) const {
-      return Vec3<T>(xx * v.x + xy * v.y + xz * v.z,
+  Vec3T<T> operator*(const Vec3T<T>& v) const {
+      return Vec3T<T>(xx * v.x + xy * v.y + xz * v.z,
                      yx * v.x + yy * v.y + yz * v.z,
                      zx * v.x + zy * v.y + zz * v.z); }
 
 
-  Mat3x3 operator*(const Mat3x3& m) const {
-      return Mat3x3(xx * m.xx + xy * m.yx + xz * m.zx, xx * m.xy + xy * m.yy + xz * m.zy, xx * m.xz + xy * m.yz + xz * m.zz,
+  Mat3T operator*(const Mat3T& m) const {
+      return Mat3T(xx * m.xx + xy * m.yx + xz * m.zx, xx * m.xy + xy * m.yy + xz * m.zy, xx * m.xz + xy * m.yz + xz * m.zz,
                     yx * m.xx + yy * m.yx + yz * m.zx, yx * m.xy + yy * m.yy + yz * m.zy, yx * m.xz + yy * m.yz + yz * m.zz,
                     zx * m.xx + zy * m.yx + zz * m.zx, zx * m.xy + zy * m.yy + zz * m.zy, zx * m.xz + zy * m.yz + zz * m.zz); }
 
   /// multiplies vector with a scalar
-  Mat3x3 operator*(T s) const { return Mat3x3(xx * s, xy * s, xz * s,
+  Mat3T operator*(T s) const { return Mat3T(xx * s, xy * s, xz * s,
                                               yx * s, yy * s, yz * s,
                                               zx * s, zy * s, zz * s); }
 
   /// divides matrix by scalar
-  Mat3x3 operator/(T s) const { return Mat3x3(xx / s, xy / s, xz / s,
+  Mat3T operator/(T s) const { return Mat3T(xx / s, xy / s, xz / s,
                                               yx / s, yy / s, yz / s,
                                               zx / s, zy / s, zz / s); }
 
   /// multiplies vector with a scalar
-  friend Mat3x3 operator*(T s, const Mat3x3& m) { return Mat3x3(m.xx * s, m.xy * s, m.xz * s,
+  friend Mat3T operator*(T s, const Mat3T& m) { return Mat3T(m.xx * s, m.xy * s, m.xz * s,
                                                                 m.yx * s, m.yy * s, m.yz * s,
                                                                 m.zx * s, m.zy * s, m.zz * s); }
 
-  Mat3x3 transpose() const {
-      return Mat3x3(xx, yx, zx,
+  Mat3T transpose() const {
+      return Mat3T(xx, yx, zx,
                     xy, yy, zy,
                     xz, yz, zz);
   }
 
-  Vec3<T> getRow(int i) const {
-      return Vec3<T>(m[i*3], m[i*3+1], m[i*3+2]);
+  Vec3T<T> getRow(int i) const {
+      return Vec3T<T>(m[i*3], m[i*3+1], m[i*3+2]);
   }
 
   void setRPY(T roll, T pitch, T yaw) {
@@ -288,8 +290,8 @@ public:
       m[6] = -sj;     m[7] = cj * si;      m[8] = cj * ci ;
   }
 
-  static Mat3x3 identity() {
-      return Mat3x3(1, 0, 0, 0, 1, 0, 0, 0, 1);
+  static Mat3T identity() {
+      return Mat3T(1, 0, 0, 0, 1, 0, 0, 0, 1);
   }
 
   void getRotation(QuaternionT<T>& q) const {
@@ -332,7 +334,7 @@ public:
   }
 
   // Serialize matrix to stream
-  friend std::ostream& operator<< (std::ostream& out, const Mat3x3& m) {
+  friend std::ostream& operator<< (std::ostream& out, const Mat3T& m) {
       out << "[ " << m.m[0] << " " << m.m[1] << " " << m.m[2] << std::endl
           << "  " << m.m[3] << " " << m.m[4] << " " << m.m[5] << std::endl
           << "  " << m.m[6] << " " << m.m[7] << " " << m.m[8] << " ]";
@@ -348,89 +350,92 @@ public:
 // --------------------------------------------------------------------------------
 
 template<typename T>
-class Transform3 {
+class Transform3T {
 
 public:
 
-    Transform3() {}
+    Transform3T() {}
 
-    Transform3(T x, T y, T z, T roll = 0, T pitch = 0, T yaw = 0) : v_(x, y, z) {
+    Transform3T(T x, T y, T z, T roll = 0, T pitch = 0, T yaw = 0) : t(x, y, z) {
         setRPY(roll, pitch, yaw);
     }
 
-    Transform3(const Mat3x3<T>& r, const Vec3<T>& v) : R_(r), v_(v) {
+    Transform3T(const Mat3T<T>& r, const Vec3T<T>& v) : R(r), t(v) {
     }
 
-    inline Vec3<T> operator*(const Vec3<T>& v) const {
-        return R_ * v + v_;
+    inline Vec3T<T> operator*(const Vec3T<T>& v) const {
+        return R * v + t;
     }
 
-    inline Transform3 operator*(const Transform3& t) const {
-        return Transform3(R_ * t.R_, R_ * t.v_ + v_);
+    inline Transform3T operator*(const Transform3T& tr) const {
+        return Transform3T(R * tr.R, R * tr.t + t);
     }
 
-    inline const Vec3<T>& getOrigin() const {
-        return v_;
+    inline const Vec3T<T>& getOrigin() const {
+        return t;
     }
 
     QuaternionT<T> getQuaternion() const {
         QuaternionT<T> q;
-        R_.getRotation(q);
+        R.getRotation(q);
     }
 
-    inline const Mat3x3<T>& getBasis() const {
-        return R_;
+    inline const Mat3T<T>& getBasis() const {
+        return R;
     }
 
-    void setOrigin(const Vec3<T>& v) { v_ = v; }
-    void setBasis(const Mat3x3<T>& r) { R_ = r; }
+    void setOrigin(const Vec3T<T>& v) { t = v; }
+    void setBasis(const Mat3T<T>& r) { R = r; }
 
-    inline Transform3 inverse() const {
-        return Transform3(R_.transpose(), -v_);
+    inline Transform3T inverse() const {
+        return Transform3T(R.transpose(), -t);
     }
 
     void setRPY(T roll, T pitch, T yaw)  {
-        R_.setRPY(roll, pitch, yaw);
+        R.setRPY(roll, pitch, yaw);
     }
 
-    friend std::ostream& operator<< (std::ostream& out, const Transform3& t) {
-        out << t.R_ << std::endl << t.v_;
+    friend std::ostream& operator<< (std::ostream& out, const Transform3T& t) {
+        out << t.R << std::endl << t.t;
         return out;
     }
 
-protected:
-
-    Mat3x3<T> R_;
-    Vec3<T> v_;
+    Mat3T<T> R;
+    Vec3T<T> t;
 
 };
 
 // --------------------------------------------------------------------------------
 
-typedef Vec2<float> Vec2f;
-typedef Vec2<double> Vec2d;
-typedef Vec2<int> Vec2i;
-typedef Vec2<unsigned int> Vec2u;
+typedef Vec2T<real> Vec2;
+typedef Vec2T<float> Vec2f;
+typedef Vec2T<double> Vec2d;
+typedef Vec2T<int> Vec2i;
+typedef Vec2T<unsigned int> Vec2u;
 
-typedef Vec3<float> Vec3f;
-typedef Vec3<double> Vec3d;
-typedef Vec3<int> Vec3i;
-typedef Vec3<unsigned int> Vec3u;
+typedef Vec3T<real> Vec3;
+typedef Vec3T<float> Vec3f;
+typedef Vec3T<double> Vec3d;
+typedef Vec3T<int> Vec3i;
+typedef Vec3T<unsigned int> Vec3u;
 
-typedef Mat2x2<float> Mat2x2f;
-typedef Mat2x2<double> Mat2x2d;
-typedef Mat2x2<int> Mat2x2i;
-typedef Mat2x2<unsigned int> Mat2x2u;
+typedef Mat2T<real> Mat2;
+typedef Mat2T<float> Mat2f;
+typedef Mat2T<double> Mat2d;
+typedef Mat2T<int> Mat2i;
+typedef Mat2T<unsigned int> Mat2u;
 
-typedef Mat3x3<float> Mat3x3f;
-typedef Mat3x3<double> Mat3x3d;
-typedef Mat3x3<int> Mat3x3i;
-typedef Mat3x3<unsigned int> Mat3x3u;
+typedef Mat3T<real> Mat3;
+typedef Mat3T<float> Mat3f;
+typedef Mat3T<double> Mat3d;
+typedef Mat3T<int> Mat3i;
+typedef Mat3T<unsigned int> Mat3u;
 
-typedef Transform3<float> Transform3f;
-typedef Transform3<double> Transform3d;
-typedef Transform3<int> Transform3i;
-typedef Transform3<unsigned int> Transform3u;
+typedef Transform3T<real> Transform3;
+typedef Transform3T<float> Transform3f;
+typedef Transform3T<double> Transform3d;
+typedef Transform3T<int> Transform3i;
+typedef Transform3T<unsigned int> Transform3u;
 
 }
 

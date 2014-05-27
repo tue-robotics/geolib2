@@ -127,7 +127,7 @@ public:
     typedef Transform3d Transform;
     typedef Transform3d Pose3D;
     typedef Vec3d Vector3;
-    typedef Mat3x3d Matrix3;
+    typedef Mat3d Matrix3;
     typedef QuaternionT<double> Quaternion;
 #endif
 
