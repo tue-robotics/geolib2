@@ -62,24 +62,4 @@ bool HeightMapNode::intersect(const Ray& r, float t0, float t1, double& distance
     return false;
 }
 
-/*
-void HeightMapNode::add(const tf::Vector3& p) {
-
-}
-
-void HeightMapNode::getCubes(std::vector<Box>& cubes, const tf::Vector3& offset) const {
-
-}
-
-
-
-bool HeightMapNode::intersect(const tf::Vector3& p) const {
-
-}
-
-bool HeightMapNode::intersect(const Box& b) const {
-
-}
-*/
-
 }

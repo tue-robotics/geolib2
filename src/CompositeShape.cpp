@@ -20,13 +20,9 @@ bool CompositeShape::intersect(const Ray& r, float t0, float t1, double& distanc
     bool hit = false;
     double min_distance = t1;
 
-#ifdef GEOLIB_USE_TF
-    for(std::vector<std::pair<ShapePtr, tf::Transform> >::const_iterator it = shapes_.begin(); it != shapes_.end(); ++it) {
-        const tf::Transform& pose_inv = it->second;
-#else
+
     for(std::vector<std::pair<ShapePtr, Transform> >::const_iterator it = shapes_.begin(); it != shapes_.end(); ++it) {
         const Transform& pose_inv = it->second;
-#endif
 
         const Shape& shape = *it->first;
 
@@ -53,11 +49,7 @@ double CompositeShape::getMaxRadius() const {
 
 void CompositeShape::addShape(const Shape& shape, const Pose3D& pose) {
     // add to shapes
-#ifdef GEOLIB_USE_TF
-    shapes_.push_back(std::pair<ShapePtr, tf::Transform>(ShapePtr(shape.clone()), pose.inverse()));
-#else
     shapes_.push_back(std::pair<ShapePtr, Transform>(ShapePtr(shape.clone()), pose.inverse()));
-#endif
 
     // add to mesh
     const std::vector<Triangle>& triangles = shape.getMesh().getTriangles();
@@ -79,14 +71,7 @@ void CompositeShape::addShape(const Shape& shape, const Pose3D& pose) {
         max_.z = std::max(max_.getZ(), std::max(p1.z, std::max(p2.z, p3.z)));
     }
 
-#ifdef GEOLIB_USE_TF
-    geo::Transform t;
-    t.setOrigin(pose.getOrigin());
-    t.setRotation(pose.getRotation());
-    mesh_.add(shape.getMesh().getTransformed(t));
-#else
     mesh_.add(shape.getMesh().getTransformed(pose));
-#endif
 
     bb_ = Box(min_, max_);
 }

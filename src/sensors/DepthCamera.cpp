@@ -33,12 +33,7 @@ DepthCamera::~DepthCamera() {
 
 RasterizeResult DepthCamera::rasterize(const Shape& shape, const Pose3D& cam_pose, const Pose3D& obj_pose, cv::Mat& image,
                                        PointerMap& pointer_map, void* pointer, TriangleMap& triangle_map) const {
-#ifdef GEOLIB_USE_TF
-    tf::Transform t = cam_pose.inverse() * obj_pose;
-    return rasterize(shape, geo::Pose3D(t.getOrigin(), t.getRotation()), image, pointer_map, pointer);
-#else
     return rasterize(shape, cam_pose.inverse() * obj_pose, image, pointer_map, pointer);
-#endif
 }
 
 // -------------------------------------------------------------------------------
@@ -72,18 +67,11 @@ void DepthCamera::render(const RenderOptions& opt, RenderResult& res) const {
     const Mesh& mesh = *opt.mesh_;
     const Pose3D& pose = opt.pose_;
 
-#ifdef GEOLIB_USE_TF
-    tf::Transform pose_in = pose;
-#else
     Transform pose_in = pose;
-#endif
 
     if (mesh.getMaxRadius() < pose_in.getOrigin().z) {
         return;
     }
-
-    //pose_in.setOrigin(-pose.getOrigin());
-    //tf::Transform pose_in = Pose3D(0, 0, -5, 2.3, 0.3, 0.3);//pose.inverse();
 
     double near_clip_z = -0.1;
 
@@ -300,19 +288,6 @@ void DepthCamera::drawTrianglePart(int y_start, int y_end,
             float depth = 1.0f / d;
 
             res.renderPixel(x, y, depth, i_triangle);
-
-//            float old_depth = image.at<float>(y, x);
-
-//            if (old_depth == 0 || old_depth > depth) {
-//                image.at<float>(y, x) = depth;
-//                if (pointer) {
-//                    pointer_map[x][y] = pointer;
-//                }
-
-//                if (!triangle_map.empty()) {
-//                    triangle_map[x][y] = i_triangle;
-//                }
-//            }
             d += d_delta;
         }
 

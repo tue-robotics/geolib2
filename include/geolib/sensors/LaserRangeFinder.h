@@ -51,8 +51,6 @@ public:
 
     virtual ~LaserRangeFinder();
 
-    RenderResult raytrace(const Shape& shape, const Pose3D& cam_pose, const Pose3D& obj_pose, std::vector<double>& ranges) const;
-
     void render(const LaserRangeFinder::RenderOptions& options, LaserRangeFinder::RenderResult& res) const;
 
     RenderResult render(const Shape& shape, const Pose3D& cam_pose, const Pose3D& obj_pose, std::vector<double>& ranges) const;

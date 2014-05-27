@@ -6,7 +6,7 @@
 
 namespace geo {
 
-typedef float real;
+typedef double real;
 
 // --------------------------------------------------------------------------------
 
@@ -203,6 +203,11 @@ public:
 
     T length2() const { return x*x + y*y + z*z + w*w; }
 
+    friend std::ostream& operator<< (std::ostream& out, const QuaternionT& q) {
+        out << "[ " << q.x << " " << q.y << " " << q.z << " " << q.w << " ]";
+        return out;
+    }
+
     union {
         struct { T x, y, z, w; };
         T m[4];
@@ -315,8 +320,8 @@ public:
           s = 0.5 / s;
 
           q.m[3] = (m[k*3+j] - m[j*3+k]) * s;
-          q.m[j] = (m[j*3+i] - m[i*3+j]) * s;
-          q.m[k] = (m[k*3+i] - m[i*3+k]) * s;
+          q.m[j] = (m[j*3+i] + m[i*3+j]) * s;
+          q.m[k] = (m[k*3+i] + m[i*3+k]) * s;
       }
   }
 
@@ -383,6 +388,7 @@ public:
     QuaternionT<T> getQuaternion() const {
         QuaternionT<T> q;
         R.getRotation(q);
+        return q;
     }
 
     inline const Mat3T<T>& getBasis() const {

@@ -1,4 +1,5 @@
-#include <geolib/matrix.h>
+#include <geolib/math_types.h>
+#include <geolib/ros/tf_conversions.h>
 #include <iostream>
 
 #include <profiling/Timer.h>
@@ -7,7 +8,25 @@
 
 #include <tf/transform_datatypes.h>
 
-#ifdef USE_TF
+#include <stdlib.h>     /* srand, rand */
+#include <time.h>       /* time */
+
+// ----------------------------------------------------------------------------------------------------
+
+double random(double min, double max) {
+    return ((double)rand() / RAND_MAX) * (max - min) + min;
+}
+
+// ----------------------------------------------------------------------------------------------------
+
+tf::Transform randomTransform() {
+    tf::Matrix3x3 b;
+    b.setEulerYPR(random(0, 6.283), random(0, 6.283), random(0, 6.283));
+    return tf::Transform(b, tf::Vector3(random(-10, 10), random(-10, 10), random(-10, 10)));
+}
+
+// ----------------------------------------------------------------------------------------------------
+
 void print(const tf::Matrix3x3& m) {
     std::cout << "[ " << m[0][0] << " " << m[0][1] << " " << m[0][2] << std::endl;
     std::cout << "  " << m[1][0] << " " << m[1][1] << " " << m[1][2] << std::endl;
@@ -21,73 +40,71 @@ void print(const tf::Transform& t) {
     print(t.getBasis());
     print(t.getOrigin());
 }
-#else
-void print(const geo::Matrix3x3& m) {
-    std::cout << m << std::endl;
-}
-void print(const geo::Vector3& v) {
-    std::cout << v << std::endl;
+
+// ----------------------------------------------------------------------------------------------------
+
+bool equals(double a, double b) {
+    return std::abs(a - b) < 1e-10;
 }
 
-void print(const geo::Transform& t) {
-    std::cout << t << std::endl;
+bool equals(const geo::Transform3& T, const tf::Transform& T_tf) {
+    if (    !equals(T.t.x, T_tf.getOrigin().getX()) ||
+            !equals(T.t.y, T_tf.getOrigin().getY()) ||
+            !equals(T.t.z, T_tf.getOrigin().getZ())) {
+        return false;
+    }
+
+    geo::Quaternion q = T.getQuaternion();
+    tf::Quaternion q_tf = T_tf.getRotation();
+
+    if (    !equals(q.x, q_tf.getX()) ||
+            !equals(q.y, q_tf.getY()) ||
+            !equals(q.z, q_tf.getZ()) ||
+            !equals(q.w, q_tf.getW())) {
+        return false;
+    }
+
+    return true;
 }
-#endif
+
+bool equals(const geo::Transform3& T, const tf::Transform& T_tf, const std::string& msg) {
+    if (!equals(T, T_tf)) {
+        std::cout << "ERROR\t" << msg << std::endl;
+        std::cout << "TF: " << std::endl;
+        print(T_tf);
+        std::cout << std::endl;
+        std::cout << "GEOLIB:" << std::endl << T << std::endl;
+        return false;
+    } else {
+        std::cout << "OK\t" << msg << std::endl;
+        return true;
+    }
+}
+
+// ----------------------------------------------------------------------------------------------------
 
 int main(int argc, char **argv) {
 
-    tf::Matrix3x3 tf_rot1;
-    tf_rot1.setEulerYPR(1.57, -2, 0.3);
-    tf::Vector3 tf_v1(1, 2, -3);
+    // initialize random seed
+    srand (time(NULL));
 
-    tf::Matrix3x3 tf_rot2;
-    tf_rot2.setEulerYPR(-0.6, 4, -8.2);
-    tf::Vector3 tf_v2(-0.3, 2, -1.7);
+    tf::Transform t1_tf = randomTransform();
+    tf::Transform t2_tf = randomTransform();
 
-    tf::Vector3 tf_v(5, 6, 7);
+    geo::Transform3 t1, t2;
+    geo::convert(t1_tf, t1);
+    geo::convert(t2_tf, t2);
 
-#ifdef USE_TF
-    tf::Transform t1(tf_rot1, tf_v1);
-    tf::Transform t2(tf_rot2, tf_v2);
-    tf::Vector3 v = tf_v;
+    if (    !equals(t1, t1_tf, "equals(Transform, Transform)") ||
+            !equals(t1 * t2, t1_tf * t2_tf, "Transform * Transform") ||
+            !equals(t1.inverse() * t2, t1_tf.inverse() * t2_tf, "Transform.inverse() * Transform") ||
+            !equals(t1.inverseTimes(t2), t1_tf.inverseTimes(t2_tf), "Transform.inverseTimes(Transform)")) {
 
-    tf::Transform t3;
-    std::vector<tf::Vector3> result(10000000);
-#else
-    geo::Matrix3x3 rot1(tf_rot1[0][0], tf_rot1[0][1], tf_rot1[0][2],
-                        tf_rot1[1][0], tf_rot1[1][1], tf_rot1[1][2],
-                        tf_rot1[2][0], tf_rot1[2][1], tf_rot1[2][2]);
-
-    geo::Transform t1(rot1, geo::Vector3(tf_v1.x(), tf_v1.y(), tf_v1.z()));
-
-    geo::Matrix3x3 rot2(tf_rot2[0][0], tf_rot2[0][1], tf_rot2[0][2],
-                        tf_rot2[1][0], tf_rot2[1][1], tf_rot2[1][2],
-                        tf_rot2[2][0], tf_rot2[2][1], tf_rot2[2][2]);
-
-    geo::Transform t2(rot2, geo::Vector3(tf_v2.x(), tf_v2.y(), tf_v2.z()));
-
-    geo::Vector3 v(tf_v.x(), tf_v.y(), tf_v.z());
-
-    geo::Transform t3;
-    std::vector<geo::Vector3> result(10000000);
-#endif
-
-    t3 = t1 * t2;
-
-    Timer timer;
-    timer.start();
-    for(unsigned int i = 0; i < 10000000; ++i) {
-        result[i] = t3 * v;
+        std::cout << "ERROR" << std::endl;
+        return -1;
     }
-    timer.stop();
-    std::cout << timer.getElapsedTimeInMilliSec() << " ms" << std::endl;
 
-    print(t1);
-    std::cout << std::endl;
-    print(t2);
-    std::cout << std::endl;
-    print(t3);
-    std::cout << std::endl;
+    std::cout << "All OK" << std::endl;
 
     return 0;
 }

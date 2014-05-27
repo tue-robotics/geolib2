@@ -11,90 +11,6 @@ LaserRangeFinder::~LaserRangeFinder() {
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 //
-//                                        RAYTRACING
-//
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
-
-LaserRangeFinder::RenderResult LaserRangeFinder::raytrace(const Shape& shape, const Pose3D& cam_pose, const Pose3D& obj_pose, std::vector<double>& ranges) const {
-    LaserRangeFinder::RenderResult res;
-    res.min_i = 0;
-    res.max_i = 0;
-
-#ifdef GEOLIB_USE_TF
-    tf::Transform t = obj_pose.inverse() * cam_pose;
-#else
-    Transform t = obj_pose.inverse() * cam_pose;
-#endif
-
-    if (ranges.size() != ray_dirs_.size()) {
-        ranges.resize(ray_dirs_.size(), 0);
-    }
-
-    int i_min = 0;
-    int i_max = (int)ray_dirs_.size();
-
-    double max_radius = shape.getMaxRadius();
-    if (max_radius > 0) {
-#ifdef GEOLIB_USE_TF
-        tf::Transform t_inv = t.inverse();
-#else
-        Transform t_inv = t.inverse();
-#endif
-        // If object is to far above or below the laser plane, do not render
-        if (std::abs(t_inv.getOrigin().getZ()) > max_radius) {
-            return res;
-        }
-
-        double dist = t_inv.getOrigin().length();
-
-        if (dist > max_radius) {
-            // If nearest object point is certainly further away than max_range, do not render
-            if (dist - max_radius > range_max_) {
-                return res;
-            }
-
-            double a = getAngle(t_inv.getOrigin().x, t_inv.getOrigin().y);
-            double a_limit = asin(max_radius / dist);
-            double a_min = a - a_limit;
-            double a_max = a + a_limit;
-
-            i_min = std::max(0, (int)((a_min - a_min_) / getAngleIncrement()));
-            i_max = std::min((int)ray_dirs_.size(), (int)((a_max - a_min_) / getAngleIncrement()));
-        }
-    }
-
-    res.min_i = -1;
-
-    for(int i = i_min; i < i_max; ++i) {
-        geo::Vector3 dir_t = t.getBasis() * ray_dirs_[i];
-        Ray r_t(t.getOrigin(), dir_t);
-
-        double t1 = range_max_;
-        if (ranges[i] > 0 && ranges[i] < range_max_) {
-            t1 = ranges[i];
-        }
-
-        double distance = 0;
-        if (shape.intersect(r_t, range_min_, t1, distance)) {
-            if (ranges[i] == 0 || distance < ranges[i]) {
-                ranges[i] = distance;
-                if (res.min_i < 0) {
-                    res.min_i = i;
-                }
-                res.max_i = i;
-            }
-        }
-    }
-
-    if (res.min_i < 0) {
-        res.min_i = 0;
-    }
-
-    return res;
-}
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
-//
 //                                        RENDERING
 //
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -228,15 +144,9 @@ LaserRangeFinder::RenderResult LaserRangeFinder::render(const Shape& shape, cons
 
     LaserRangeFinder::RenderOptions options;
 
-#ifdef GEOLIB_USE_TF
-    tf::Transform t = obj_pose.inverse() * cam_pose;
-    tf::Transform t_inv = t.inverse();
-    options.setMesh(shape.getMesh(), geo::Pose3D(t_inv.getOrigin(), t_inv.getRotation()));
-#else
     Transform t = obj_pose.inverse() * cam_pose;
     Transform t_inv = t.inverse();
     options.setMesh(shape.getMesh(), t_inv);
-#endif
 
     LaserRangeFinder::RenderResult res;
     res.ranges = ranges;
