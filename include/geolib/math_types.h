@@ -371,6 +371,11 @@ public:
         return Transform3T(R * tr.R, R * tr.t + t);
     }
 
+    inline Transform3T inverseTimes(const Transform3T& tr) const {
+        // TODO: more efficient
+        return inverse() * tr;
+    }
+
     inline const Vec3T<T>& getOrigin() const {
         return t;
     }
