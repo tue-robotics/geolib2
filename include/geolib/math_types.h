@@ -203,6 +203,14 @@ public:
 
     T length2() const { return x*x + y*y + z*z + w*w; }
 
+    /// returns dot product
+    T dot(const QuaternionT& q) const { return x * q.x + y * q.y + z * q.z + w * q.w; }
+
+    T getX() const { return x; }
+    T getY() const { return y; }
+    T getZ() const { return z; }
+    T getW() const { return w; }
+
     friend std::ostream& operator<< (std::ostream& out, const QuaternionT& q) {
         out << "[ " << q.x << " " << q.y << " " << q.z << " " << q.w << " ]";
         return out;
