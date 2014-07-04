@@ -52,12 +52,7 @@ class RenderResult {
 
 public:
 
-    RenderResult(cv::Mat& image) : image_(image), stop_(false) {
-        //RasterizeResult res;
-        min_x = image.cols;
-        min_y = image.rows;
-        max_x = 0;
-        max_y = 0;
+    RenderResult(int width, int height) : stop_(false), width_(width), height_(height) {
     }
 
     virtual ~RenderResult() {}
@@ -66,13 +61,15 @@ public:
 
     void stop() { stop_ = true; }
 
-    int min_x, min_y;
-    int max_x, max_y;
+    int getWidth() const { return width_; }
 
-protected:
+    int getHeight() const { return height_; }
 
-    cv::Mat& image_;
-    bool stop_;    
+private:
+
+    bool stop_;
+
+    int width_, height_;
 
 };
 
@@ -83,7 +80,7 @@ class DefaultRenderResult : public RenderResult {
 public:
 
     DefaultRenderResult(cv::Mat& image, void* pointer, PointerMap& pointer_map, TriangleMap& triangle_map)
-        : RenderResult(image), pointer_(pointer), pointer_map_(pointer_map), triangle_map_(triangle_map) {
+        : geo::RenderResult(image.cols, image.rows), image_(image), pointer_(pointer), pointer_map_(pointer_map), triangle_map_(triangle_map) {
 
         // reserve pointer map
         if (pointer_) {
@@ -106,10 +103,9 @@ public:
 
     virtual void renderPixel(int x, int y, float depth, int i_triangle);
 
-    void stop() { stop_ = true; }
-
 protected:
 
+    cv::Mat& image_;
     void* pointer_;
     PointerMap& pointer_map_;
     TriangleMap& triangle_map_;

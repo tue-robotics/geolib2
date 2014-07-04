@@ -49,10 +49,6 @@ RasterizeResult DepthCamera::rasterize(const Shape& shape, const Pose3D& pose, c
     render(opt, res);
 
     RasterizeResult res2;
-    res2.min_x = res.min_x;
-    res2.max_x = res.max_x;
-    res2.min_y = res.min_y;
-    res2.max_y = res.max_y;
 
     image = res.image_;
     pointer_map = res.pointer_map_;
@@ -205,11 +201,7 @@ void DepthCamera::drawTriangle2D(const Vec3f& p1, const Vec3f& p2, const Vec3f& 
         int min_x = std::min<int>(p1.x, std::min<int>(p2.x, p3.x));
         int max_x = std::max<int>(p1.x, std::max<int>(p2.x, p3.x));
 
-        if (min_x < res.image_.cols && max_x > 0 && min_y < res.image_.rows && max_y > 0) {
-            res.min_x = std::max(0, std::min<int>(res.min_x, min_x));
-            res.min_y = std::max(0, std::min<int>(res.min_y, min_y));
-            res.max_x = std::min(res.image_.cols - 1, std::max<int>(res.max_x, max_x));
-            res.max_y = std::min(res.image_.rows - 1, std::max<int>(res.max_y, max_y));
+        if (min_x < res.getWidth() && max_x > 0 && min_y < res.getHeight() && max_y > 0) {
 
             if (min_y == max_y) {
                 Vec3f p_min, p_mid, p_max;
@@ -258,7 +250,7 @@ void DepthCamera::drawTrianglePart(int y_start, int y_end,
                                    float d_start, float d_start_delta, float d_end, float d_end_delta,
                                    const RenderOptions& opt, RenderResult& res, int i_triangle) const {
 
-    cv::Mat& image = res.image_;
+//    cv::Mat& image = res.image_;
 
     if (y_start < 0) {
         d_start += d_start_delta * -y_start;
@@ -268,7 +260,7 @@ void DepthCamera::drawTrianglePart(int y_start, int y_end,
         y_start = 0;
     }
 
-    y_end = std::min(image.rows - 1, y_end);
+    y_end = std::min(res.getHeight() - 1, y_end);
 
     for(int y = y_start; y <= y_end; ++y) {
         float d = d_start;
@@ -282,7 +274,7 @@ void DepthCamera::drawTrianglePart(int y_start, int y_end,
             x_start2 = x_start;
         }
 
-        int x_end2 = std::min(image.cols - 1, (int)x_end);
+        int x_end2 = std::min(res.getWidth() - 1, (int)x_end);
 
         for(int x = x_start2; x <= x_end2; ++x) {
             float depth = 1.0f / d;
