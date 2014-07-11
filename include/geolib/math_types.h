@@ -86,7 +86,7 @@ public:
   T dot(const Vec3T& v) const { return x * v.x + y * v.y + z * v.z; }
 
   /// returns cross product
-  T cross(const Vec3T& v) const { return Vec3T(y * v.z - z * v.y, z * v.x - x * v.z, x * v.y - y * v.x ); }
+  Vec3T cross(const Vec3T& v) const { return Vec3T(y * v.z - z * v.y, z * v.x - x * v.z, x * v.y - y * v.x ); }
 
   /// returns addition with v
   Vec3T operator+(const Vec3T& v) const {  return Vec3T(x + v.x, y + v.y, z + v.z); }
