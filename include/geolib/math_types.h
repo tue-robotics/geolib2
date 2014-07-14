@@ -176,8 +176,8 @@ public:
 
   // serialize matrix to stream
   friend std::ostream& operator<< (std::ostream& out, const Mat2T& m) {
-      out << "[ " << m.m[0] << " " << m.m[1] << std::endl
-          << "  " << m.m[2] << " " << m.m[3] << " " << " ]";
+      out << "[ " << m.m[0] << " " << m.m[1] << " ; "
+                  << m.m[2] << " " << m.m[3] << " " << " ]";
       return out;
   }
 
@@ -348,9 +348,9 @@ public:
 
   // Serialize matrix to stream
   friend std::ostream& operator<< (std::ostream& out, const Mat3T& m) {
-      out << "[ " << m.m[0] << " " << m.m[1] << " " << m.m[2] << std::endl
-          << "  " << m.m[3] << " " << m.m[4] << " " << m.m[5] << std::endl
-          << "  " << m.m[6] << " " << m.m[7] << " " << m.m[8] << " ]";
+      out << "[ " << m.m[0] << " " << m.m[1] << " " << m.m[2] << " ; "
+                  << m.m[3] << " " << m.m[4] << " " << m.m[5] << " ; "
+                  << m.m[6] << " " << m.m[7] << " " << m.m[8] << " ]";
       return out;
   }
 
@@ -416,7 +416,7 @@ public:
     }
 
     friend std::ostream& operator<< (std::ostream& out, const Transform3T& t) {
-        out << t.R << std::endl << t.t;
+        out << "t: " << t.t << "\tR: " << t.R;
         return out;
     }
 
