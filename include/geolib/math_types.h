@@ -286,6 +286,10 @@ public:
       return Vec3T<T>(m[i*3], m[i*3+1], m[i*3+2]);
   }
 
+  Vec3T<T> getColumn(int i) const {
+      return Vec3T<T>(m[i], m[3+i], m[6+i]);
+  }
+
   void setRPY(T roll, T pitch, T yaw) {
       T ci = cos(roll);
       T cj = cos(pitch);
