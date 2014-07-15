@@ -56,8 +56,8 @@ ShapePtr Importer::readMeshFile(const std::string& filename, double scale) {
                     i_map[j] = ip;
 
                     if (first) {
-                        std::cout << scale * v.x << " " << scale * v.y << " " << scale * v.z << std::endl;
-                        std::cout << shape->mesh_.getPoints()[0] << std::endl;
+                        // std::cout << scale * v.x << " " << scale * v.y << " " << scale * v.z << std::endl;
+                        // std::cout << shape->mesh_.getPoints()[0] << std::endl;
                         first = false;
                     }
 
@@ -95,7 +95,7 @@ ShapePtr Importer::readMeshFile(const std::string& filename, double scale) {
         }
     }
 
-    std::cout << shape->mesh_.getPoints()[0] << std::endl;
+    // std::cout << shape->mesh_.getPoints()[0] << std::endl;
 
 
     return shape;
