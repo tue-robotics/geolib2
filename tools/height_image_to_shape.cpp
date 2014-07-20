@@ -55,7 +55,7 @@ int main(int argc, char **argv) {
     geo::HeightMap hmap = geo::HeightMap::fromGrid(map, resolution);
 
     // Transform according to given origin
-    geo::Pose3D transform(-origin_x, -origin_y, 0, 0, 0, 0);
+    geo::Pose3D transform(origin_x, origin_y, 0, 0, 0, 0);
     geo::Mesh mesh_transformed = hmap.getMesh().getTransformed(transform);
 
     geo::Shape shape;
