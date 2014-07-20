@@ -59,7 +59,17 @@ target_link_libraries(geolib assimp)
 rosbuild_add_executable(show src/show.cpp)
 target_link_libraries(show geolib)
 
-# Tests
+# ------------------------------------------------------------------------------------------------
+#                                                TOOLS
+# ------------------------------------------------------------------------------------------------
+
+rosbuild_add_executable(height-map-to-shape tools/height_image_to_shape.cpp)
+target_link_libraries(height-map-to-shape geolib)
+
+# ------------------------------------------------------------------------------------------------
+#                                                TESTS
+# ------------------------------------------------------------------------------------------------
+
 rosbuild_add_executable(test_geolib test/test_geolib.cpp)
 target_link_libraries(test_geolib geolib assimp)
 

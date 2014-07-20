@@ -17,11 +17,16 @@ public:
 
     static bool serialize(ShapeConstPtr shape, std::ostream& output);
 
+    static bool serialize(const Shape& shape, std::ostream& output);
+
     static ShapePtr deserialize(std::istream& input);
 
     static ShapePtr fromFile(const std::string& filename);
 
     static void toFile(ShapeConstPtr shape, const std::string& filename);
+
+    static void toFile(const Shape& shape, const std::string& filename);
+
 
     template<typename T>
     static void registerDeserializer() {

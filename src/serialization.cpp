@@ -19,6 +19,10 @@ bool serialization::serialize(ShapeConstPtr shape, std::ostream& output) {
     return shape->write(output);
 }
 
+bool serialization::serialize(const Shape& shape, std::ostream& output) {
+    return shape.write(output);
+}
+
 ShapePtr serialization::deserialize(std::istream& input) {
     char shape_type[8];
     input.read(shape_type, 8);
@@ -53,5 +57,11 @@ void serialization::toFile(ShapeConstPtr shape, const std::string& filename) {
     geo::serialization::serialize(shape, out);
     out.close();
 }
+
+void serialization::toFile(const Shape& shape, const std::string& filename) {
+    std::ofstream out;
+    out.open(filename.c_str(), std::ifstream::binary);
+    geo::serialization::serialize(shape, out);
+    out.close();}
 
 }
