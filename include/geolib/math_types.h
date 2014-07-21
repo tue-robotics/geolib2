@@ -419,6 +419,8 @@ public:
         R.setRPY(roll, pitch, yaw);
     }
 
+    static Transform3T identity() { return Transform3T(Mat3T<T>::identity(), Vec3T<T>(0, 0, 0));  }
+
     friend std::ostream& operator<< (std::ostream& out, const Transform3T& t) {
         out << "t: " << t.t << "\tR: " << t.R;
         return out;

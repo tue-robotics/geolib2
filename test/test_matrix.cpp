@@ -98,7 +98,8 @@ int main(int argc, char **argv) {
     if (    !equals(t1, t1_tf, "equals(Transform, Transform)") ||
             !equals(t1 * t2, t1_tf * t2_tf, "Transform * Transform") ||
             !equals(t1.inverse() * t2, t1_tf.inverse() * t2_tf, "Transform.inverse() * Transform") ||
-            !equals(t1.inverseTimes(t2), t1_tf.inverseTimes(t2_tf), "Transform.inverseTimes(Transform)")) {
+            !equals(t1.inverseTimes(t2), t1_tf.inverseTimes(t2_tf), "Transform.inverseTimes(Transform)") ||
+            !equals(geo::Transform3::identity() * t1, t1_tf, "Transform.identity() * Transform")) {
 
         std::cout << "ERROR" << std::endl;
         return -1;
