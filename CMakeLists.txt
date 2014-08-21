@@ -8,6 +8,8 @@ find_package(catkin REQUIRED COMPONENTS
   tf
 )
 
+find_package(OpenCV REQUIRED)
+
 catkin_package(
   INCLUDE_DIRS include
   LIBRARIES geolib
@@ -21,7 +23,9 @@ catkin_package(
 include_directories(
   include
   ${catkin_INCLUDE_DIRS}
+
 )
+include_directories(${OpenCV_INCLUDE_DIRS})
 
 # to show header files in Qt Creator
 file(GLOB_RECURSE HEADER_FILES include/*.h)
@@ -49,7 +53,7 @@ add_library(geolib   src/Box.cpp
                      
                      ${HEADER_FILES})
 
-target_link_libraries(geolib assimp ${catkin_LIBRARIES})
+target_link_libraries(geolib assimp ${catkin_LIBRARIES} ${OpenCV_LIBRARIES})
 
 add_executable(show src/show.cpp)
 target_link_libraries(show geolib)
