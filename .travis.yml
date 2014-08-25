@@ -1,0 +1,39 @@
+language:
+  - cpp
+  - python
+python:
+  - "2.7"
+compiler:
+  - gcc
+env:
+  - ROS_DISTRO=groovy
+  - ROS_DISTRO=hydro
+
+before_install:
+  - export CI_SOURCE_PATH=$(pwd)
+  - export REPOSITORY_NAME=${PWD##*/}
+  - echo "Testing branch $TRAVIS_BRANCH of $REPOSITORY_NAME"
+  - sudo sh -c 'echo "deb http://packages.ros.org/ros/ubuntu precise main" > /etc/apt/sources.list.d/ros-latest.list'
+  - wget http://packages.ros.org/ros.key -O - | sudo apt-key add -
+  - sudo apt-get update -qq
+  - sudo apt-get install -qq -y python-catkin-pkg python-rosdep python-wstool ros-$ROS_DISTRO-ros
+  - sudo rosdep init
+  - rosdep update
+
+install:
+  - mkdir -p ~/ros/ws_${REPOSITORY_NAME}/src
+  - cd ~/ros/ws_${REPOSITORY_NAME}/src
+  - wstool init .
+  - wstool set -y code_profiler --git https://github.com/Rayman/code_profiler.git
+  - wstool update
+  - rm -rf $REPOSITORY_NAME
+  - ln -s $CI_SOURCE_PATH . # Link the repo we are testing to the new workspace
+  - cd ../
+  - rosdep install --from-paths src --ignore-src --rosdistro $ROS_DISTRO -y
+
+before_script:
+  - source /opt/ros/$ROS_DISTRO/setup.bash
+
+script:
+  - catkin_make
+  - catkin_make install
