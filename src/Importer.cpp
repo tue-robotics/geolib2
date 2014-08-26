@@ -1,7 +1,7 @@
 #include "geolib/Importer.h"
 
-#include <assimp/assimp.hpp>
-#include <assimp/aiScene.h>
+#include <assimp/Importer.hpp>
+#include <assimp/scene.h>
 
 namespace geo {
 
