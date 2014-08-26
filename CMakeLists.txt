@@ -30,6 +30,10 @@ include_directories(${OpenCV_INCLUDE_DIRS})
 # to show header files in Qt Creator
 file(GLOB_RECURSE HEADER_FILES include/*.h)
 
+if(EXISTS "/usr/include/assimp/Importer.hpp")
+    add_definitions(-DASSIMP_VERSION_3)
+endif()
+
 ## Declare a cpp library
 add_library(geolib   src/Box.cpp
                      src/datatypes.cpp

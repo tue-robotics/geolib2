@@ -1,12 +1,16 @@
 #include "geolib/Importer.h"
 
-#include <assimp/Importer.hpp>
-#include <assimp/scene.h>
+#ifdef ASSIMP_VERSION_3
+    #include <assimp/Importer.hpp>
+    #include <assimp/scene.h>
+#else
+    #include <assimp/assimp.hpp>
+    #include <assimp/aiScene.h>
+#endif
 
 namespace geo {
 
 Importer::Importer() {
-
 }
 
 Importer::~Importer() {
