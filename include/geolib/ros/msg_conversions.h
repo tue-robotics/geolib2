@@ -3,12 +3,17 @@
 
 #include "geolib/datatypes.h"
 #include <geometry_msgs/Pose.h>
+#include <geometry_msgs/Point32.h>
 
 namespace geo {
 
 // ------------------------------ TO ROS ------------------------------
 
 inline void convert(const geo::Vector3& v, geometry_msgs::Point& msg) {
+    msg.x = v.x; msg.y = v.y; msg.z = v.z;
+}
+
+inline void convert(const geo::Vector3& v, geometry_msgs::Point32& msg) {
     msg.x = v.x; msg.y = v.y; msg.z = v.z;
 }
 
@@ -33,9 +38,12 @@ inline void convert(const geometry_msgs::Point& msg, geo::Vector3& v) {
    v.x = msg.x; v.y = msg.y; v.z = msg.z;
 }
 
+inline void convert(const geometry_msgs::Point32& msg, geo::Vector3& v) {
+   v.x = msg.x; v.y = msg.y; v.z = msg.z;
+}
+
 inline void convert(const geometry_msgs::Quaternion& msg, geo::Quaternion& q) {
     q.x = msg.x; q.y = msg.y; q.z = msg.z; q.w = msg.w;
-
 }
 
 inline void convert(const geometry_msgs::Quaternion& msg, geo::Matrix3& r) {
