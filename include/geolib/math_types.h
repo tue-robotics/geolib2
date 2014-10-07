@@ -78,7 +78,7 @@ public:
   Vec3T() {}
   Vec3T(T x_, T y_, T z_) : x(x_), y(y_), z(z_) {}
   Vec3T(T value) : x(value), y(value), z(value) {}
-  Vec3T(T* values) { memcpy(m, values, 3 * sizeof(T)); }
+  Vec3T(const T* values) { memcpy(m, values, 3 * sizeof(T)); }
 
   ~Vec3T() {}
 
@@ -236,7 +236,7 @@ public:
 
   Mat3T(T value) : xx(value), xy(value), xz(value), yx(value), yy(value), yz(value), zx(value), zy(value), zz(value) {}
 
-  Mat3T(T* values) { memcpy(m, values, 9 * sizeof(T)); }
+  Mat3T(const T* values) { memcpy(m, values, 9 * sizeof(T)); }
 
   ~Mat3T() {}
 
