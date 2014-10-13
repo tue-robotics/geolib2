@@ -31,8 +31,6 @@ void constructMesh(const aiScene* scene, aiNode* node, const geo::Pose3D& parent
     p.t = geo::Vector3(t.a4, t.b4, t.c4);
     p.R = geo::Matrix3(t.a1, t.a2, t.a3, t.b1, t.b2, t.b3, t.c1, t.c2, t.c3);
 
-    std::cout << node << ": " << p << std::endl;
-
     geo::Pose3D pose = parent_pose * p;
 
     for(unsigned int i = 0; i < node->mNumChildren; ++i)
@@ -117,8 +115,6 @@ ShapePtr Importer::readMeshFile(const std::string& filename, double scale)
     Assimp::Importer I;
     const aiScene* scene = I.ReadFile(filename, 0);
 
-    std::cout << "---- " << filename << " -------" << std::endl;
-
     if (!scene)
         return ShapePtr();
 
@@ -134,8 +130,6 @@ ShapePtr Importer::readMeshFile(const std::string& filename, double scale)
     Mesh mesh;
     constructMesh(scene, scene->mRootNode, geo::Pose3D::identity(), scale, transform, &mesh);
     shape->setMesh(mesh);
-
-    std::cout << "------------" << std::endl;
 
     return shape;
 }
