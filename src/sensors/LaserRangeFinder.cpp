@@ -140,19 +140,16 @@ void LaserRangeFinder::render(const LaserRangeFinder::RenderOptions& opt, LaserR
 
 }
 
-LaserRangeFinder::RenderResult LaserRangeFinder::render(const Shape& shape, const Pose3D& cam_pose, const Pose3D& obj_pose, std::vector<double>& ranges) const {
+LaserRangeFinder::RenderResult LaserRangeFinder::render(const Shape& shape, const Pose3D& cam_pose, const Pose3D& obj_pose, std::vector<double>& ranges) const
+{
 
     LaserRangeFinder::RenderOptions options;
-
-    Transform t = obj_pose.inverse() * cam_pose;
-    Transform t_inv = t.inverse();
-    options.setMesh(shape.getMesh(), t_inv);
+    options.setMesh(shape.getMesh(), cam_pose.inverse() * obj_pose);
 
     LaserRangeFinder::RenderResult res;
+
     res.ranges = ranges;
-
     render(options, res);
-
     ranges = res.ranges;
 
     return res;
