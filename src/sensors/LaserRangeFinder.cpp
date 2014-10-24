@@ -26,6 +26,16 @@ void LaserRangeFinder::RenderResult::renderLine(const Vector3& p1, const Vector3
     int i_min = lrf_->getAngleUpperIndex(a_min);
     int i_max = lrf_->getAngleUpperIndex(a_max);
 
+//    int i_p1 = lrf_->getAngleUpperIndex(p1.x, p1.y);
+//    int i_p2 = lrf_->getAngleUpperIndex(p2.x, p2.y);
+
+//    int i_min = std::min(i_p1, i_p2);
+//    int i_max = std::max(i_p1, i_p2);
+
+//    std::cout << i_min << "   " << i_min2 << std::endl;
+//    std::cout << i_max << "   " << i_max2 << std::endl;
+//    std::cout << std::endl;
+
     min_i = std::min(min_i, (int)i_min);
     max_i = std::max(max_i, (int)i_max);
 
@@ -35,6 +45,7 @@ void LaserRangeFinder::RenderResult::renderLine(const Vector3& p1, const Vector3
     //   = (q1 x s) / (r x s)
 
     if (a_max - a_min < M_PI) {
+//    if (i_min > lrf_->i_left_ || i_max < lrf_->i_right_) {
         // line is in front of sensor
         for(unsigned int i = i_min; (int)i < i_max; ++i) {
             const Vector3& r = lrf_->ray_dirs_[i];
@@ -187,6 +198,10 @@ void LaserRangeFinder::calculateRays() {
     xyratio_to_index_pos_.clear();
     xyratio_to_index_neg_.clear();
 
+    slope_factor_ = 1 / tan(getAngleIncrement());
+    for(unsigned int i = 0; i < 8; ++i)
+        slope_to_index_[i].resize((int)slope_factor_ + 1, -1);
+
     double a_incr = getAngleIncrement();
     double a = a_min_;
     for(int i = 0; i < num_beams_; ++i) {
@@ -198,8 +213,64 @@ void LaserRangeFinder::calculateRays() {
         } else {
             xyratio_to_index_neg_[dir.x / dir.y] = i;
         }
+
+        double x_abs = std::abs(dir.x);
+        double y_abs = std::abs(dir.y);
+
+        // Calculcate slope
+        double slope;
+        if (x_abs < y_abs)
+            slope = x_abs / y_abs;
+        else
+            slope = y_abs / x_abs;
+
+        // Calculate region number (0 - 7)
+        int j = (x_abs < y_abs ? 0 : 1) + (dir.x < 0 ? 0 : 2) + (dir.y < 0 ? 0 : 4);
+
+//        std::cout << i << " " << a << " " << slope << ": " << (int)(slope_factor_ * slope) << " " << j << std::endl;
+
+        int k = slope_factor_ * slope;
+        slope_to_index_[j][k] = i;
+
+
+//        std::cout << i << ": " << dir.x / dir.y << std::endl;
+
         a += a_incr;
     }
+
+    for(int j = 0; j < 8; ++j)
+    {
+        int last_value = -1;
+        for(unsigned int k = 0; k < slope_to_index_[j].size(); ++k)
+        {
+            last_value = slope_to_index_[j][k];
+            if (last_value >= 0)
+                break;
+        }
+
+        for(unsigned int k = 0; k < slope_to_index_[j].size(); ++k)
+        {
+            if (slope_to_index_[j][k] == -1)
+                slope_to_index_[j][k] = last_value;
+            else
+                last_value = slope_to_index_[j][k];
+        }
+    }
+
+//    for(int j = 0; j < 8; ++j)
+//    {
+//        for(unsigned int k = 0; k < slope_to_index_[j].size(); ++k)
+//        {
+//            std::cout << j << ", " << k << ": " << slope_to_index_[j][k] << std::endl;
+//        }
+//    }
+
+    i_left_ = getAngleUpperIndex(0, -1);
+    i_right_ = getAngleUpperIndex(0, 1);
+
+    std::cout << "LEFT RIGHT " << i_left_ << " " << i_right_ << std::endl;
+
+
 }
 
 double LaserRangeFinder::getAngleMin() const {
@@ -223,20 +294,25 @@ int LaserRangeFinder::getAngleUpperIndex(double angle) const {
     return std::min(num_beams_, std::max(0, i));
 }
 
-int LaserRangeFinder::getAngleUpperIndex(double x, double y) const {
-    if (y >= 0) {
-        std::map<double, int>::const_iterator it = xyratio_to_index_pos_.lower_bound(x / y);
-        if (it == xyratio_to_index_pos_.end()) {
-            return num_beams_ / 2 + 1;
-        }
-        return it->second + 1;
-    } else {
-        std::map<double, int>::const_iterator it = xyratio_to_index_neg_.lower_bound(x / y);
-        if (it == xyratio_to_index_neg_.end()) {
-            return num_beams_ / 2 + 1;
-        }
-        return it->second + 1;
-    }
+int LaserRangeFinder::getAngleUpperIndex(double x, double y) const
+{
+
+    double x_abs = std::abs(x);
+    double y_abs = std::abs(y);
+
+    // Calculcate slope
+    double slope;
+    if (x_abs < y_abs)
+        slope = x_abs / y_abs;
+    else
+        slope = y_abs / x_abs;
+
+    int k = slope_factor_ * slope;
+
+    // Calculate region number (0 - 7)
+    int j = (x_abs < y_abs ? 0 : 1) + (x < 0 ? 0 : 2) + (y < 0 ? 0 : 4);
+
+    return slope_to_index_[j][k];
 }
 
 double LaserRangeFinder::getRangeMin() const {
