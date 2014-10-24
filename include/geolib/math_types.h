@@ -367,6 +367,71 @@ public:
 // --------------------------------------------------------------------------------
 
 template<typename T>
+class Transform2T {
+
+public:
+
+    Transform2T() {}
+
+    Transform2T(T x, T y, T yaw = 0) : t(x, y) {
+        T c = cos(yaw);
+        T s = sin(yaw);
+
+        R.xx = c; R.xy = -s;
+        R.yx = s; R.yy = c;
+    }
+
+    Transform2T(const Mat2T<T>& r, const Vec2T<T>& v) : R(r), t(v) {
+    }
+
+    inline Vec2T<T> operator*(const Vec2T<T>& v) const {
+        return R * v + t;
+    }
+
+    inline Transform2T operator*(const Transform2T& tr) const {
+        return Transform3T(R * tr.R, R * tr.t + t);
+    }
+
+    inline Transform2T inverseTimes(const Transform2T& tr) const {
+        // TODO: more efficient
+        return inverse() * tr;
+    }
+
+    inline const Vec2T<T>& getOrigin() const {
+        return t;
+    }
+
+    inline const Mat2T<T>& getBasis() const {
+        return R;
+    }
+
+    void setOrigin(const Vec2T<T>& v) { t = v; }
+    void setBasis(const Mat2T<T>& r) { R = r; }
+
+    inline Transform2T inverse() const {
+        Mat2T<T> inv = R.transpose();
+        return Transform2T(inv, inv * -t);
+    }
+
+    void setRPY(T roll, T pitch, T yaw)  {
+        R.setRPY(roll, pitch, yaw);
+    }
+
+    static Transform2T identity() { return Transform2T(Mat2T<T>::identity(), Vec2T<T>(0, 0));  }
+
+    friend std::ostream& operator<< (std::ostream& out, const Transform2T& t) {
+        out << "t: " << t.t << "\tR: " << t.R;
+        return out;
+    }
+
+    Mat2T<T> R;
+    Vec2T<T> t;
+
+};
+
+// --------------------------------------------------------------------------------
+
+template<typename T>
 class Transform3T {
 
 public:
@@ -456,6 +521,12 @@ typedef Mat3T<float> Mat3f;
 typedef Mat3T<double> Mat3d;
 typedef Mat3T<int> Mat3i;
 typedef Mat3T<unsigned int> Mat3u;
+
+typedef Transform2T<real> Transform2;
+typedef Transform2T<float> Transform2f;
+typedef Transform2T<double> Transform2d;
+typedef Transform2T<int> Transform2i;
+typedef Transform2T<unsigned int> Transform2u;
 
 typedef Transform3T<real> Transform3;
 typedef Transform3T<float> Transform3f;

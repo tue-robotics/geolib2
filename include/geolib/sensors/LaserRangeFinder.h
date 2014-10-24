@@ -91,6 +91,8 @@ public:
 
     static double getAngle(double x, double y);
 
+    inline const std::vector<Vector3>& rayDirections() const { return ray_dirs_; }
+
 protected:
 
     double a_min_, a_max_;
