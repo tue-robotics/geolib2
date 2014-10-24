@@ -93,6 +93,8 @@ public:
 
     inline const std::vector<Vector3>& rayDirections() const { return ray_dirs_; }
 
+    int i_left_, i_right_;
+
 protected:
 
     double a_min_, a_max_;
@@ -105,7 +107,6 @@ protected:
 
     std::vector<geo::Vector3> ray_dirs_;
 
-    int i_left_, i_right_;
     double slope_factor_;
     std::vector<int> slope_to_index_[8];
 
