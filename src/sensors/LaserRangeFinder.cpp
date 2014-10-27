@@ -23,8 +23,18 @@ void LaserRangeFinder::RenderResult::renderLine(const Vector3& p1, const Vector3
     double a_min = std::min(a1, a2);
     double a_max = std::max(a1, a2);
 
+
+//    int i_p1 = lrf_->getAngleUpperIndex(a1);
+//    int i_p2 = lrf_->getAngleUpperIndex(a2);
+//    if (i_p1 > i_p2)
+//        return;
+
     int i_min = lrf_->getAngleUpperIndex(a_min);
     int i_max = lrf_->getAngleUpperIndex(a_max);
+
+//    std::cout << p1 << " - " << p2 << ": " << i_p1 << ", " << i_p2 << std::endl;
+
+
 
 //    int i_p1 = lrf_->getAngleUpperIndex(p1.x, p1.y);
 //    int i_p2 = lrf_->getAngleUpperIndex(p2.x, p2.y);
@@ -135,14 +145,39 @@ void LaserRangeFinder::render(const LaserRangeFinder::RenderOptions& opt, LaserR
 
             Vector3 q1, q2;
             if (p2_under_plane == p3_under_plane) {
-                q1 = (p1_3d * z2 + p2_3d * z1) / (z1 + z2);
-                q2 = (p1_3d * z3 + p3_3d * z1) / (z1 + z3);
+                if (p2_under_plane)
+                {
+                    q2 = (p1_3d * z2 + p2_3d * z1) / (z1 + z2);
+                    q1 = (p1_3d * z3 + p3_3d * z1) / (z1 + z3);
+                }
+                else
+                {
+                    q1 = (p1_3d * z2 + p2_3d * z1) / (z1 + z2);
+                    q2 = (p1_3d * z3 + p3_3d * z1) / (z1 + z3);
+                }
             } else if (p1_under_plane == p3_under_plane) {
-                q1 = (p2_3d * z1 + p1_3d * z2) / (z2 + z1);
-                q2 = (p2_3d * z3 + p3_3d * z2) / (z2 + z3);
+                if (p1_under_plane)
+                {
+                    q1 = (p2_3d * z1 + p1_3d * z2) / (z2 + z1);
+                    q2 = (p2_3d * z3 + p3_3d * z2) / (z2 + z3);
+                }
+                else
+                {
+                    q1 = (p2_3d * z3 + p3_3d * z2) / (z2 + z3);
+                    q2 = (p2_3d * z1 + p1_3d * z2) / (z2 + z1);
+                }
             } if (p1_under_plane == p2_under_plane) {
-                q1 = (p3_3d * z1 + p1_3d * z3) / (z3 + z1);
-                q2 = (p3_3d * z2 + p2_3d * z3) / (z3 + z2);
+                if (p1_under_plane)
+                {
+                    q1 = (p3_3d * z2 + p2_3d * z3) / (z3 + z2);
+                    q2 = (p3_3d * z1 + p1_3d * z3) / (z3 + z1);
+                }
+                else
+                {
+                    q1 = (p3_3d * z1 + p1_3d * z3) / (z3 + z1);
+                    q2 = (p3_3d * z2 + p2_3d * z3) / (z3 + z2);
+
+                }
             }
 
             res.renderLine(q1, q2);
