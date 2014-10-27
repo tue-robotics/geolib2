@@ -93,15 +93,13 @@ public:
 
     inline const std::vector<Vector3>& rayDirections() const { return ray_dirs_; }
 
-    int i_left_, i_right_;
-
 protected:
 
     double a_min_, a_max_;
 
     double range_min_, range_max_;
 
-    int num_beams_;    
+    int num_beams_;
 
     std::vector<double> angles_;
 
@@ -109,9 +107,7 @@ protected:
 
     double slope_factor_;
     std::vector<int> slope_to_index_[8];
-
-    std::map<double, int> xyratio_to_index_pos_;
-    std::map<double, int> xyratio_to_index_neg_;
+    int i_half_circle_;
 
     void calculateRays();
 

@@ -322,6 +322,7 @@ int main(int argc, char **argv) {
         std::vector<double> ranges;
         lrf.render(*shape1, Pose3D(0, 0, 0), pose1, ranges);
         lrf.render(shape2, Pose3D(0, 0, 0), pose2, ranges);
+        lrf.render(Box(Vector3(-0.5, -3.5, -0.5), Vector3(0.5, 3.5, 0.5)), Pose3D(0, 0, 0), geo::Pose3D(-2, 0, 0), ranges);
 
         cv::Mat lrf_image = cv::Mat(CANVAS_HEIGHT, CANVAS_WIDTH, CV_32FC1, 0.0);
 

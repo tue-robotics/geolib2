@@ -15,77 +15,80 @@ LaserRangeFinder::~LaserRangeFinder() {
 //
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 
-void LaserRangeFinder::RenderResult::renderLine(const Vector3& p1, const Vector3& p2) {
+// ----------------------------------------------------------------------------------------------------
 
-    double a1 = lrf_->getAngle(p1.getX(), p1.getY());
-    double a2 = lrf_->getAngle(p2.getX(), p2.getY());
+void LaserRangeFinder::RenderResult::renderLine(const Vector3& p1, const Vector3& p2)
+{
 
-    double a_min = std::min(a1, a2);
-    double a_max = std::max(a1, a2);
+    int i_p1 = lrf_->getAngleUpperIndex(p1.x, p1.y);
+    int i_p2 = lrf_->getAngleUpperIndex(p2.x, p2.y);
 
+    int i_min = std::min(i_p1, i_p2);
+    int i_max = std::max(i_p1, i_p2);
 
-//    int i_p1 = lrf_->getAngleUpperIndex(a1);
-//    int i_p2 = lrf_->getAngleUpperIndex(a2);
-//    if (i_p1 > i_p2)
-//        return;
+    int i_min1, i_max1, i_min2, i_max2;
 
-    int i_min = lrf_->getAngleUpperIndex(a_min);
-    int i_max = lrf_->getAngleUpperIndex(a_max);
+    if (i_max - i_min < lrf_->i_half_circle_)
+    {
+        // Both points in LRF blind spot, so don't render a line
+        if (i_min >= lrf_->num_beams_)
+            return;
 
-//    std::cout << p1 << " - " << p2 << ": " << i_p1 << ", " << i_p2 << std::endl;
+        i_min1 = i_min;
+        i_max1 = std::min(lrf_->num_beams_, i_max);
 
+        // No second part
+        i_min2 = 0;
+        i_max2 = 0;
 
+        min_i = std::min(min_i, (int)i_min);
+        max_i = std::max(max_i, (int)i_max);
+    }
+    else
+    {
+        i_min1 = i_max;
+        i_max1 = lrf_->num_beams_;
 
-//    int i_p1 = lrf_->getAngleUpperIndex(p1.x, p1.y);
-//    int i_p2 = lrf_->getAngleUpperIndex(p2.x, p2.y);
+        i_min2 = 0;
+        i_max2 = std::min(lrf_->num_beams_, i_min);
 
-//    int i_min = std::min(i_p1, i_p2);
-//    int i_max = std::max(i_p1, i_p2);
-
-//    std::cout << i_min << "   " << i_min2 << std::endl;
-//    std::cout << i_max << "   " << i_max2 << std::endl;
-//    std::cout << std::endl;
-
-    min_i = std::min(min_i, (int)i_min);
-    max_i = std::max(max_i, (int)i_max);
-
-    Vector3 s = p2 - p1;
+        min_i = 0;
+        max_i = lrf_->num_beams_;
+    }
 
     // d = (q1 - ray_start) x s / (r x s)
     //   = (q1 x s) / (r x s)
+    Vector3 s = p2 - p1;
 
-    if (a_max - a_min < M_PI) {
-//    if (i_min > lrf_->i_left_ || i_max < lrf_->i_right_) {
-        // line is in front of sensor
-        for(unsigned int i = i_min; (int)i < i_max; ++i) {
-            const Vector3& r = lrf_->ray_dirs_[i];
-            double d = (p1.getX() * s.getY() - p1.getY() * s.getX()) / (r.getX() * s.getY() - r.getY() * s.getX());
-            if (d > 0)
-                renderPoint(i, d);
-        }
-    } else {
-        // line is behind sensor
-        for(unsigned int i = 0; (int)i < i_min; ++i) {
-            const Vector3& r = lrf_->ray_dirs_[i];
-            double d = (p1.getX() * s.getY() - p1.getY() * s.getX()) / (r.getX() * s.getY() - r.getY() * s.getX());
-            if (d > 0)
-                renderPoint(i, d);
-        }
+    // Draw part 1
+    for(int i = i_min1; i < i_max1; ++i)
+    {
+        const Vector3& r = lrf_->ray_dirs_[i];
+        double d = (p1.x * s.y - p1.y * s.x) / (r.x * s.y - r.y * s.x);
+        if (d > 0)
+            renderPoint(i, d);
+    }
 
-        for(unsigned int i = i_max; i < lrf_->ray_dirs_.size(); ++i) {
-            const Vector3& r = lrf_->ray_dirs_[i];
-            double d = (p1.getX() * s.getY() - p1.getY() * s.getX()) / (r.getX() * s.getY() - r.getY() * s.getX());
-            if (d > 0)
-                renderPoint(i, d);
-        }
+    // Draw part 2
+    for(int i = i_min2; i < i_max2; ++i)
+    {
+        const Vector3& r = lrf_->ray_dirs_[i];
+        double d = (p1.x * s.y - p1.y * s.x) / (r.x * s.y - r.y * s.x);
+        if (d > 0)
+            renderPoint(i, d);
     }
 }
 
-void LaserRangeFinder::RenderResult::renderPoint(int i, float d) {
+// ----------------------------------------------------------------------------------------------------
+
+void LaserRangeFinder::RenderResult::renderPoint(int i, float d)
+{
     if (ranges[i] == 0 || d < ranges[i]) {
         ranges[i] = d;
     }
 }
+
+// ----------------------------------------------------------------------------------------------------
 
 void LaserRangeFinder::render(const LaserRangeFinder::RenderOptions& opt, LaserRangeFinder::RenderResult& res) const {
     res.min_i = 0;
@@ -230,12 +233,6 @@ void LaserRangeFinder::setNumBeams(int num_beams) {
 void LaserRangeFinder::calculateRays() {
     ray_dirs_.clear();
     angles_.clear();
-    xyratio_to_index_pos_.clear();
-    xyratio_to_index_neg_.clear();
-
-    slope_factor_ = 1 / tan(getAngleIncrement());
-    for(unsigned int i = 0; i < 8; ++i)
-        slope_to_index_[i].resize((int)slope_factor_ + 1, -1);
 
     double a_incr = getAngleIncrement();
     double a = a_min_;
@@ -243,69 +240,58 @@ void LaserRangeFinder::calculateRays() {
         Vector3 dir = polarTo2D(a, 1);
         ray_dirs_.push_back(dir);
         angles_.push_back(a);
-        if (dir.y >= 0) {
-            xyratio_to_index_pos_[dir.x / dir.y] = i;
-        } else {
-            xyratio_to_index_neg_[dir.x / dir.y] = i;
-        }
-
-        double x_abs = std::abs(dir.x);
-        double y_abs = std::abs(dir.y);
-
-        // Calculcate slope
-        double slope;
-        if (x_abs < y_abs)
-            slope = x_abs / y_abs;
-        else
-            slope = y_abs / x_abs;
-
-        // Calculate region number (0 - 7)
-        int j = (x_abs < y_abs ? 0 : 1) + (dir.x < 0 ? 0 : 2) + (dir.y < 0 ? 0 : 4);
-
-//        std::cout << i << " " << a << " " << slope << ": " << (int)(slope_factor_ * slope) << " " << j << std::endl;
-
-        int k = slope_factor_ * slope;
-        slope_to_index_[j][k] = i;
-
-
-//        std::cout << i << ": " << dir.x / dir.y << std::endl;
-
         a += a_incr;
     }
 
+    slope_factor_ = 1 / tan(getAngleIncrement()) * 10;
+    int N = (int)slope_factor_ + 1;
+
+    for(unsigned int i = 0; i < 8; ++i)
+        slope_to_index_[i].resize(N);
+
     for(int j = 0; j < 8; ++j)
     {
-        int last_value = -1;
-        for(unsigned int k = 0; k < slope_to_index_[j].size(); ++k)
+        slope_to_index_[j].resize(N);
+        for(int k = 0; k < N; ++k)
         {
-            last_value = slope_to_index_[j][k];
-            if (last_value >= 0)
-                break;
-        }
+            double slope = (double)k / slope_factor_;
 
-        for(unsigned int k = 0; k < slope_to_index_[j].size(); ++k)
-        {
-            if (slope_to_index_[j][k] == -1)
-                slope_to_index_[j][k] = last_value;
+            double x, y;
+            if (j&1)
+            {
+                // x_abs > y_abs
+                x = 1;
+                y = slope + 1e-16; // Necessary because of 0-check in getAngle
+            }
             else
-                last_value = slope_to_index_[j][k];
+            {
+                // x_abs < y_abs
+                x = slope + 1e-16; // Necessary because of 0-check in getAngle
+                y = 1;
+            }
+
+            if (!(j&2))
+            {
+                // x < 0
+                x = -x;
+            }
+
+            if (!(j&4))
+            {
+                // y < 0
+                y = -y;
+            }
+
+            double a = getAngle(x, y);
+            double a_temp = a - a_min_;
+            if (a_temp < 0)
+                a_temp += 2 * M_PI;
+
+            slope_to_index_[j][k] = a_temp / (a_max_ - a_min_) * num_beams_ + 1;
         }
     }
 
-//    for(int j = 0; j < 8; ++j)
-//    {
-//        for(unsigned int k = 0; k < slope_to_index_[j].size(); ++k)
-//        {
-//            std::cout << j << ", " << k << ": " << slope_to_index_[j][k] << std::endl;
-//        }
-//    }
-
-    i_left_ = getAngleUpperIndex(0, -1);
-    i_right_ = getAngleUpperIndex(0, 1);
-
-    std::cout << "LEFT RIGHT " << i_left_ << " " << i_right_ << std::endl;
-
-
+    i_half_circle_ = M_PI / getAngleIncrement();
 }
 
 double LaserRangeFinder::getAngleMin() const {
@@ -346,6 +332,10 @@ int LaserRangeFinder::getAngleUpperIndex(double x, double y) const
 
     // Calculate region number (0 - 7)
     int j = (x_abs < y_abs ? 0 : 1) + (x < 0 ? 0 : 2) + (y < 0 ? 0 : 4);
+
+//    std::cout << "    j = " << j << ", k = " << k << std::endl;
+
+//    std::cout << "    " << x << ", " << y << " --> " << slope_to_index_[j][k] << std::endl;
 
     return slope_to_index_[j][k];
 }
