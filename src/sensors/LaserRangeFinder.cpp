@@ -18,8 +18,7 @@ LaserRangeFinder::~LaserRangeFinder() {
 // ----------------------------------------------------------------------------------------------------
 
 void LaserRangeFinder::RenderResult::renderLine(const Vec2& p1, const Vec2& p2)
-{
-
+{    
     // Get the angle / beam indices based on the slope
     int i_p1 = lrf_->getAngleUpperIndex(p1.x, p1.y);
     int i_p2 = lrf_->getAngleUpperIndex(p2.x, p2.y);
@@ -212,7 +211,6 @@ void LaserRangeFinder::render(const LaserRangeFinder::RenderOptions& opt, LaserR
                 {
                     q1 = (p3_3d * z1_abs + p1_3d * z3_abs) / (z3_abs + z1_abs);
                     q2 = (p3_3d * z2_abs + p2_3d * z3_abs) / (z3_abs + z2_abs);
-
                 }
             }
 
@@ -242,6 +240,7 @@ LaserRangeFinder::RenderResult LaserRangeFinder::render(const Shape& shape, cons
 void LaserRangeFinder::renderLine(const geo::Vec2& p1, const geo::Vec2& p2, std::vector<double>& ranges) const
 {
     LaserRangeFinder::RenderResult res(ranges);
+    res.lrf_ = this;
     res.renderLine(p1, p2);
 }
 
