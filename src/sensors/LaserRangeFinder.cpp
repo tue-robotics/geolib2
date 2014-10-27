@@ -17,7 +17,7 @@ LaserRangeFinder::~LaserRangeFinder() {
 
 // ----------------------------------------------------------------------------------------------------
 
-void LaserRangeFinder::RenderResult::renderLine(const Vector3& p1, const Vector3& p2)
+void LaserRangeFinder::RenderResult::renderLine(const Vec2& p1, const Vec2& p2)
 {
 
     // Get the angle / beam indices based on the slope
@@ -75,7 +75,7 @@ void LaserRangeFinder::RenderResult::renderLine(const Vector3& p1, const Vector3
 
     // d = (q1 - ray_start) x s / (r x s)
     //   = (q1 x s) / (r x s)
-    Vector3 s = p2 - p1;
+    Vec2 s = p2 - p1;
 
     // For all beam regions found above (1 or 2 regions), calculate the intersection
     // of each beam with the line
@@ -148,73 +148,82 @@ void LaserRangeFinder::render(const LaserRangeFinder::RenderOptions& opt, LaserR
     for(unsigned int i = 0; i < points.size(); ++i)
         zs_t[i] = Rz.dot(points[i]) + z_offset;
 
+    Vector3 Rx = pose.getBasis().getRow(0);
+    Vector3 Ry = pose.getBasis().getRow(1);
+
     // Iterate over all triangles
     for(std::vector<TriangleI>::const_iterator it_tri = triangles.begin(); it_tri != triangles.end(); ++it_tri)
     {
-        bool p1_under_plane = zs_t[it_tri->i1_] < 0;
-        bool p2_under_plane = zs_t[it_tri->i2_] < 0;
-        bool p3_under_plane = zs_t[it_tri->i3_] < 0;
+        double z1 = zs_t[it_tri->i1_];
+        double z2 = zs_t[it_tri->i2_];
+        double z3 = zs_t[it_tri->i3_];
+
+        bool p1_under_plane = z1 < 0;
+        bool p2_under_plane = z2 < 0;
+        bool p3_under_plane = z3 < 0;
 
         // Check if not all points of the triangle are on the same side of the plane
         if (p1_under_plane != p2_under_plane || p2_under_plane != p3_under_plane)
         {
             // Transform the vertices to the sensor frame
-            Vector3 p1_3d = pose * points[it_tri->i1_];
-            Vector3 p2_3d = pose * points[it_tri->i2_];
-            Vector3 p3_3d = pose * points[it_tri->i3_];
+            Vec2 p1_3d(Rx.dot(points[it_tri->i1_]) + pose.t.x, Ry.dot(points[it_tri->i1_]) + pose.t.y);
+            Vec2 p2_3d(Rx.dot(points[it_tri->i2_]) + pose.t.x, Ry.dot(points[it_tri->i2_]) + pose.t.y);
+            Vec2 p3_3d(Rx.dot(points[it_tri->i3_]) + pose.t.x, Ry.dot(points[it_tri->i3_]) + pose.t.y);
 
             // Calculate the distances of the vertices to the plane
-            double z1 = std::abs(p1_3d.getZ());
-            double z2 = std::abs(p2_3d.getZ());
-            double z3 = std::abs(p3_3d.getZ());
+            double z1_abs = std::abs(z1);
+            double z2_abs = std::abs(z2);
+            double z3_abs = std::abs(z3);
 
             // Calculate the intersections of the triangle edges with the plane,
             // respecting the orientation of the triangle (normal is towards or away from sensor)
             // such that later on we can do back-face culling.
 
-            Vector3 q1, q2;
+            Vec2 q1, q2;
             if (p2_under_plane == p3_under_plane) {
                 if (p2_under_plane)
                 {
-                    q2 = (p1_3d * z2 + p2_3d * z1) / (z1 + z2);
-                    q1 = (p1_3d * z3 + p3_3d * z1) / (z1 + z3);
+                    q2 = (p1_3d * z2_abs + p2_3d * z1_abs) / (z1_abs + z2_abs);
+                    q1 = (p1_3d * z3_abs + p3_3d * z1_abs) / (z1_abs + z3_abs);
                 }
                 else
                 {
-                    q1 = (p1_3d * z2 + p2_3d * z1) / (z1 + z2);
-                    q2 = (p1_3d * z3 + p3_3d * z1) / (z1 + z3);
+                    q1 = (p1_3d * z2_abs + p2_3d * z1_abs) / (z1_abs + z2_abs);
+                    q2 = (p1_3d * z3_abs + p3_3d * z1_abs) / (z1_abs + z3_abs);
                 }
             } else if (p1_under_plane == p3_under_plane) {
                 if (p1_under_plane)
                 {
-                    q1 = (p2_3d * z1 + p1_3d * z2) / (z2 + z1);
-                    q2 = (p2_3d * z3 + p3_3d * z2) / (z2 + z3);
+                    q1 = (p2_3d * z1_abs + p1_3d * z2_abs) / (z2_abs + z1_abs);
+                    q2 = (p2_3d * z3_abs + p3_3d * z2_abs) / (z2_abs + z3_abs);
                 }
                 else
                 {
-                    q1 = (p2_3d * z3 + p3_3d * z2) / (z2 + z3);
-                    q2 = (p2_3d * z1 + p1_3d * z2) / (z2 + z1);
+                    q1 = (p2_3d * z3_abs + p3_3d * z2_abs) / (z2_abs + z3_abs);
+                    q2 = (p2_3d * z1_abs + p1_3d * z2_abs) / (z2_abs + z1_abs);
                 }
             } if (p1_under_plane == p2_under_plane) {
                 if (p1_under_plane)
                 {
-                    q1 = (p3_3d * z2 + p2_3d * z3) / (z3 + z2);
-                    q2 = (p3_3d * z1 + p1_3d * z3) / (z3 + z1);
+                    q1 = (p3_3d * z2_abs + p2_3d * z3_abs) / (z3_abs + z2_abs);
+                    q2 = (p3_3d * z1_abs + p1_3d * z3_abs) / (z3_abs + z1_abs);
                 }
                 else
                 {
-                    q1 = (p3_3d * z1 + p1_3d * z3) / (z3 + z1);
-                    q2 = (p3_3d * z2 + p2_3d * z3) / (z3 + z2);
+                    q1 = (p3_3d * z1_abs + p1_3d * z3_abs) / (z3_abs + z1_abs);
+                    q2 = (p3_3d * z2_abs + p2_3d * z3_abs) / (z3_abs + z2_abs);
 
                 }
             }
 
             // Render the line
-            res.renderLine(q1, q2);
+            res.renderLine(geo::Vec2(q1.x, q1.y), geo::Vec2(q2.x, q2.y));
         }
     }
 
 }
+
+// ----------------------------------------------------------------------------------------------------
 
 LaserRangeFinder::RenderResult LaserRangeFinder::render(const Shape& shape, const Pose3D& cam_pose, const Pose3D& obj_pose, std::vector<double>& ranges) const
 {
@@ -222,13 +231,18 @@ LaserRangeFinder::RenderResult LaserRangeFinder::render(const Shape& shape, cons
     LaserRangeFinder::RenderOptions options;
     options.setMesh(shape.getMesh(), cam_pose.inverse() * obj_pose);
 
-    LaserRangeFinder::RenderResult res;
-
-    res.ranges = ranges;
+    LaserRangeFinder::RenderResult res(ranges);
     render(options, res);
-    ranges = res.ranges;
 
     return res;
+}
+
+// ----------------------------------------------------------------------------------------------------
+
+void LaserRangeFinder::renderLine(const geo::Vec2& p1, const geo::Vec2& p2, std::vector<double>& ranges) const
+{
+    LaserRangeFinder::RenderResult res(ranges);
+    res.renderLine(p1, p2);
 }
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *

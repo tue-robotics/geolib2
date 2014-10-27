@@ -34,14 +34,16 @@ public:
 
     public:
 
-        virtual void renderLine(const Vector3& p1, const Vector3& p2);
+        RenderResult(std::vector<double>& ranges_) : ranges(ranges_) {}
+
+        virtual void renderLine(const Vec2& p1, const Vec2& p2);
 
         virtual void renderPoint(int index, float depth);
 
         int min_i;
         int max_i;
 
-        std::vector<double> ranges;
+        std::vector<double>& ranges;
 
         const LaserRangeFinder* lrf_;
 
@@ -54,6 +56,8 @@ public:
     void render(const LaserRangeFinder::RenderOptions& options, LaserRangeFinder::RenderResult& res) const;
 
     RenderResult render(const Shape& shape, const Pose3D& cam_pose, const Pose3D& obj_pose, std::vector<double>& ranges) const;
+
+    void renderLine(const geo::Vec2& p1, const geo::Vec2& p2, std::vector<double>& ranges) const;
 
     void setAngleLimits(double min, double max);
 
