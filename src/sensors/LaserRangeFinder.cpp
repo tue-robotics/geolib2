@@ -62,7 +62,7 @@ void LaserRangeFinder::RenderResult::renderLine(const Vector3& p1, const Vector3
         if (i_p2 > i_p1)
             return;
 
-        // We may need to draw two parts, because the line can be occluded by the sensor
+        // We may need to draw two parts, because the line can be 'occluded' by the blind spot of the sensor
         i_min1 = i_max;
         i_max1 = lrf_->num_beams_;
 
