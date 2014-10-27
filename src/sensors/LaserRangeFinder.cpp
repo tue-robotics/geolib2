@@ -30,6 +30,10 @@ void LaserRangeFinder::RenderResult::renderLine(const Vector3& p1, const Vector3
 
     if (i_max - i_min < lrf_->i_half_circle_)
     {
+        // Back-face culling
+        if (i_p1 > i_p2)
+            return;
+
         // Both points in LRF blind spot, so don't render a line
         if (i_min >= lrf_->num_beams_)
             return;
@@ -46,6 +50,10 @@ void LaserRangeFinder::RenderResult::renderLine(const Vector3& p1, const Vector3
     }
     else
     {
+        // Back-face culling
+        if (i_p2 > i_p1)
+            return;
+
         i_min1 = i_max;
         i_max1 = lrf_->num_beams_;
 
