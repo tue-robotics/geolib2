@@ -48,6 +48,8 @@ public:
   /// Returns the normalized version of the vector
   Vec2T normalized() const { T len = length(); return Vec2T(x / len, y / len); }
 
+  friend Vec2T operator-(const Vec2T& v) { return Vec2T(-v.x, -v.y); }
+
   Vec2T &operator+=(const Vec2T& v) { x += v.x; y += v.y; return *this; }
   Vec2T &operator-=(const Vec2T& v) { x -= v.x; y -= v.y; return *this; }
   Vec2T &operator*=(const Vec2T& v) { x *= v.x; y *= v.y; return *this; }
@@ -162,6 +164,11 @@ public:
   /// return this multiplied by m
   Mat2T operator*(const Mat2T& m) const { return Mat2T(xx * m.xx + xy * m.yx, xx * m.xy + xy * m.yy,
                                                           yx * m.xx + yy * m.yx, yx * m.xy + yy * m.yy); }
+
+  Mat2T transpose() const {
+      return Mat2T(xx, yx,
+                   xy, yy);
+  }
 
   /// multiplies vector with a scalar
   Mat2T operator*(T s) const { return Mat2T(xx * s, xy * s, yx * s, yy * s); }
@@ -374,11 +381,7 @@ public:
     Transform2T() {}
 
     Transform2T(T x, T y, T yaw = 0) : t(x, y) {
-        T c = cos(yaw);
-        T s = sin(yaw);
-
-        R.xx = c; R.xy = -s;
-        R.yx = s; R.yy = c;
+        setRotation(yaw);
     }
 
     Transform2T(const Mat2T<T>& r, const Vec2T<T>& v) : R(r), t(v) {
@@ -389,7 +392,7 @@ public:
     }
 
     inline Transform2T operator*(const Transform2T& tr) const {
-        return Transform3T(R * tr.R, R * tr.t + t);
+        return Transform2T(R * tr.R, R * tr.t + t);
     }
 
     inline Transform2T inverseTimes(const Transform2T& tr) const {
@@ -413,8 +416,16 @@ public:
         return Transform2T(inv, inv * -t);
     }
 
-    void setRPY(T roll, T pitch, T yaw)  {
-        R.setRPY(roll, pitch, yaw);
+    void setRotation(T yaw)  {
+        T c = cos(yaw);
+        T s = sin(yaw);
+
+        R.xx = c; R.xy = -s;
+        R.yx = s; R.yy = c;
+    }
+
+    T rotation() const {
+        return atan2(R.yx , R.xx);
     }
 
     static Transform2T identity() { return Transform2T(Mat2T<T>::identity(), Vec2T<T>(0, 0));  }
