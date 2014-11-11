@@ -18,7 +18,11 @@ LaserRangeFinder::~LaserRangeFinder() {
 // ----------------------------------------------------------------------------------------------------
 
 void LaserRangeFinder::RenderResult::renderLine(const Vec2& p1, const Vec2& p2)
-{    
+{
+    // Get rid of null cases
+    if ((p1.x == 0 && p1.y == 0) || (p2.x == 0 && p2.y == 0))
+        return;
+
     // Get the angle / beam indices based on the slope
     int i_p1 = lrf_->getAngleUpperIndex(p1.x, p1.y);
     int i_p2 = lrf_->getAngleUpperIndex(p2.x, p2.y);
