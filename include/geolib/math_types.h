@@ -48,6 +48,9 @@ public:
   /// Returns the normalized version of the vector
   Vec2T normalized() const { T len = length(); return Vec2T(x / len, y / len); }
 
+  /// Normalizes the vector
+  void normalize() { T l = length(); x /= l; y /= l; }
+
   friend Vec2T operator-(const Vec2T& v) { return Vec2T(-v.x, -v.y); }
 
   Vec2T &operator+=(const Vec2T& v) { x += v.x; y += v.y; return *this; }
@@ -113,6 +116,9 @@ public:
 
   /// Returns the normalized version of the vector
   Vec3T normalized() const { T len = length(); return Vec3T(x / len, y / len, z / len); }
+
+  /// Normalizes the vector
+  void normalize() { T l = length(); x /= l; y /= l; z /= l; }
 
   friend Vec3T operator-(const Vec3T& v) { return Vec3T(-v.x, -v.y, -v.z); }
 
@@ -208,15 +214,35 @@ public:
 
     ~QuaternionT() {}
 
-    T length2() const { return x*x + y*y + z*z + w*w; }
-
     /// returns dot product
     T dot(const QuaternionT& q) const { return x * q.x + y * q.y + z * q.z + w * q.w; }
+
+    /// returns addition with v
+    QuaternionT operator+(const QuaternionT& q) const { return QuaternionT(x + q.x, y + q.y, z + q.z, w + q.w); }
+
+    /// returns this minus v
+    QuaternionT operator-(const QuaternionT& q) const { return QuaternionT(x - q.x, y - q.y, z - q.z, w - q.w); }
 
     T getX() const { return x; }
     T getY() const { return y; }
     T getZ() const { return z; }
     T getW() const { return w; }
+
+    friend QuaternionT operator*(T s, const QuaternionT& q) { return QuaternionT(q.x * s, q.y * s, q.z * s, q.w * s); }
+
+    QuaternionT operator*(T s) const { return QuaternionT(x * s, y * s, z * s, w * s); }
+
+    /// Returns the length of the vector
+    T length() const { return sqrt(x * x + y * y + z * z + w * w); }
+
+    /// Returns the squared length of the vector
+    T length2() const { return x * x + y * y + z * z + w * w; }
+
+    /// Returns the normalized version of the vector
+    QuaternionT normalized() const { T len = length(); return QuaternionT(x / len, y / len, z / len, w / len); }
+
+    /// Normalizes the quaternion
+    void normalize() { T l = length(); x /= l; y /= l; z /= l; w /= l; }
 
     friend std::ostream& operator<< (std::ostream& out, const QuaternionT& q) {
         out << "[ " << q.x << " " << q.y << " " << q.z << " " << q.w << " ]";
