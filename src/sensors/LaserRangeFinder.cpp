@@ -3,7 +3,7 @@
 
 namespace geo {
 
-LaserRangeFinder::LaserRangeFinder() : a_min_(0), a_max_(0), num_beams_(0) {
+LaserRangeFinder::LaserRangeFinder() : a_min_(0), a_max_(0), range_min_(0), range_max_(0), num_beams_(0) {
 }
 
 LaserRangeFinder::~LaserRangeFinder() {
@@ -19,9 +19,33 @@ LaserRangeFinder::~LaserRangeFinder() {
 
 void LaserRangeFinder::RenderResult::renderLine(const Vec2& p1, const Vec2& p2)
 {
+    Vec2 diff = p2 - p1;
+    double line_length_sq = diff.length2();
+
     // Get rid of null cases
-    if ((p1.x == 0 && p1.y == 0) || (p2.x == 0 && p2.y == 0))
+    if ((p1.x == 0 && p1.y == 0) || (p2.x == 0 && p2.y == 0) || line_length_sq == 0)
         return;
+
+
+    if (lrf_->range_max_ > 0)
+    {
+        // Calculate distance to the line
+
+        double t = p1.dot(diff) / -line_length_sq;
+
+        double distance_sq;
+
+        if (t < 0)
+            distance_sq = p1.length2();
+        else if (t > 1)
+            distance_sq = p2.length2();
+        else
+            distance_sq = (p1 + t * diff).length2();
+
+        // If too far, skip
+        if (distance_sq > lrf_->range_max_ * lrf_->range_max_)
+            return;
+    }
 
     // Get the angle / beam indices based on the slope
     int i_p1 = lrf_->getAngleUpperIndex(p1.x, p1.y);
