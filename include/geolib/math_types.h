@@ -317,12 +317,12 @@ public:
   }
 
   /// returns addition with v
-  Mat3T operator+(const Mat3T& m) const { return Mat3T(xx + m.xx, xy + m.xy, yx + m.yx,
+  Mat3T operator+(const Mat3T& m) const { return Mat3T(xx + m.xx, xy + m.xy, xz + m.xz,
                                                           yx + m.yx, yy + m.yy, yz + m.yz,
                                                           zx + m.zx, zy + m.zy, zz + m.zz); }
 
   /// returns this minus m
-  Mat3T operator-(const Mat3T& m) const { return Mat3T(xx - m.xx, xy - m.xy, yx - m.yx,
+  Mat3T operator-(const Mat3T& m) const { return Mat3T(xx - m.xx, xy - m.xy, xz - m.xz,
                                                           yx - m.yx, yy - m.yy, yz - m.yz,
                                                           zx - m.zx, zy - m.zy, zz - m.zz); }
 
