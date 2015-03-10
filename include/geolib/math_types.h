@@ -21,6 +21,14 @@ public:
 
   ~Vec2T() {}
 
+  bool operator==(const Vec2T& v) const {
+      return (x == v.x && y == v.y);
+  }
+
+  bool operator!=(const Vec2T& v) const {
+      return !(*this == v);
+  }
+
   /// returns dot product
   T dot(const Vec2T& v) const { return x * v.x + y * v.y; }
 
@@ -86,6 +94,14 @@ public:
   Vec3T(const T* values) { memcpy(m, values, 3 * sizeof(T)); }
 
   ~Vec3T() {}
+
+  bool operator==(const Vec3T& v) const {
+      return (x == v.x && y == v.y && z == v.z);
+  }
+
+  bool operator!=(const Vec3T& v) const {
+      return !(*this == v);
+  }
 
   /// returns dot product
   T dot(const Vec3T& v) const { return x * v.x + y * v.y + z * v.z; }
@@ -159,6 +175,15 @@ public:
 
   ~Mat2T() {}
 
+  bool operator==(const Mat2T& m) const {
+      return (xx == m.xx && xy == m.xy &&
+              yx == m.yx && yy == m.yy );
+  }
+
+  bool operator!=(const Mat2T& m) const {
+      return !(*this == m);
+  }
+
   /// returns addition with v
   Mat2T operator+(const Mat2T& m) const {  return Mat2T(xx + m.xx, xy + m.xy, yx + m.yx, yy + m.yy); }
 
@@ -213,6 +238,14 @@ public:
     QuaternionT(T x_, T y_, T z_, T w_) : x(x_), y(y_), z(z_), w(w_) {}
 
     ~QuaternionT() {}
+
+    bool operator==(const QuaternionT& q) const {
+        return (x == q.x && y == q.y && z == q.z && w == q.w);
+    }
+
+    bool operator!=(const QuaternionT& q) const {
+        return !(*this == q);
+    }
 
     /// returns dot product
     T dot(const QuaternionT& q) const { return x * q.x + y * q.y + z * q.z + w * q.w; }
@@ -272,6 +305,16 @@ public:
   Mat3T(const T* values) { memcpy(m, values, 9 * sizeof(T)); }
 
   ~Mat3T() {}
+
+  bool operator==(const Mat3T& m) const {
+      return (xx == m.xx && xy == m.xy && xz == m.xz &&
+              yx == m.yx && yy == m.yy && yz == m.yz &&
+              zx == m.zx && zy == m.zy && zz == m.zz);
+  }
+
+  bool operator!=(const Mat3T& m) const {
+      return !(*this == m);
+  }
 
   /// returns addition with v
   Mat3T operator+(const Mat3T& m) const { return Mat3T(xx + m.xx, xy + m.xy, xz + m.xz,
@@ -480,6 +523,14 @@ public:
     }
 
     Transform3T(const Mat3T<T>& r, const Vec3T<T>& v) : R(r), t(v) {
+    }
+
+    inline bool operator==(const Transform3T& tr) const{
+        return (R == tr.R && t == tr.t);
+    }
+
+    inline bool operator!=(const Transform3T& tr) const{
+        return !(*this == tr);
     }
 
     inline Vec3T<T> operator*(const Vec3T<T>& v) const {
