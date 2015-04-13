@@ -201,6 +201,14 @@ public:
                    xy, yy);
   }
 
+  T& operator()(int i, int j) {
+      return m[i * 2  + j];
+  }
+
+  const T& operator()(int i, int j) const {
+      return m[i * 2  + j];
+  }
+
   /// multiplies vector with a scalar
   Mat2T operator*(T s) const { return Mat2T(xx * s, xy * s, yx * s, yy * s); }
 
@@ -346,6 +354,14 @@ public:
   Mat3T operator/(T s) const { return Mat3T(xx / s, xy / s, xz / s,
                                               yx / s, yy / s, yz / s,
                                               zx / s, zy / s, zz / s); }
+
+  T& operator()(int i, int j) {
+      return m[i * 3  + j];
+  }
+
+  const T& operator()(int i, int j) const {
+      return m[i * 3  + j];
+  }
 
   /// multiplies vector with a scalar
   friend Mat3T operator*(T s, const Mat3T& m) { return Mat3T(m.xx * s, m.xy * s, m.xz * s,
