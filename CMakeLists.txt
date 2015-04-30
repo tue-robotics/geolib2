@@ -78,4 +78,8 @@ target_link_libraries(height-map-to-shape geolib)
 add_executable(test_geolib test/test_geolib.cpp)
 target_link_libraries(test_geolib geolib assimp)
 
+add_executable(test_geolib_jos test/test_geolib_jos.cpp)
+target_link_libraries(test_geolib_jos geolib assimp)
+
+
 add_executable(test_matrix test/test_matrix.cpp)
