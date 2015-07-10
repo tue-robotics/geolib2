@@ -588,6 +588,12 @@ public:
         R.setRPY(roll, pitch, yaw);
     }
 
+    double getYaw()  {
+        QuaternionT<T> q;
+        R.getRotation(q);
+        return atan2(2.0*(q.y*q.z + q.w*q.x), q.w*q.w - q.x*q.x - q.y*q.y + q.z*q.z);
+    }
+
     static Transform3T identity() { return Transform3T(Mat3T<T>::identity(), Vec3T<T>(0, 0, 0));  }
 
     friend std::ostream& operator<< (std::ostream& out, const Transform3T& t) {
