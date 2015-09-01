@@ -30,10 +30,6 @@ public:
 
     void add(const Mesh& mesh);
 
-//    void removeTriangles(const std::set<int>& indices);
-
-    void copyAndRemoveTriangles(const std::set<int>& indices, geo::Mesh& target) const;
-
     /**
      * Test whether the mesh is empty.
      * @return True if there are no triangles in the mesh (else false).
@@ -73,18 +69,6 @@ protected:
     std::vector<TriangleI> triangles_i_; ///< Triangles of the mesh.
 
     mutable std::vector<Triangle> triangles_; ///< Cached output result.
-
-    inline int foo(int i, const std::vector<geo::Vector3>& vertices, std::vector<int>& vertex_mapping, std::vector<geo::Vector3>& vertices_new) const {
-        if (vertex_mapping[i] >= 0) {
-            return vertex_mapping[i];
-        } else {
-            int i_new = vertices_new.size();
-            vertices_new.push_back(vertices[i]);
-            vertex_mapping[i] = i_new;
-            return i_new;
-        }
-    }
-
 };
 
 }
