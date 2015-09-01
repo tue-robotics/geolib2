@@ -229,7 +229,9 @@ void LaserRangeFinder::render(const LaserRangeFinder::RenderOptions& opt, LaserR
                     q1 = (p2_3d * z3_abs + p3_3d * z2_abs) / (z2_abs + z3_abs);
                     q2 = (p2_3d * z1_abs + p1_3d * z2_abs) / (z2_abs + z1_abs);
                 }
-            } if (p1_under_plane == p2_under_plane) {
+            }
+
+            if (p1_under_plane == p2_under_plane) {
                 if (p1_under_plane)
                 {
                     q1 = (p3_3d * z2_abs + p2_3d * z3_abs) / (z3_abs + z2_abs);
@@ -342,7 +344,7 @@ void LaserRangeFinder::calculateRays() {
             // based on the slope. Determine the part of the unit circle in which (x, y) lies
             // base on j
             double x, y;
-            if (j&1)
+            if (j & 1)
             {
                 // x_abs > y_abs
                 x = 1;
@@ -355,13 +357,13 @@ void LaserRangeFinder::calculateRays() {
                 y = 1;
             }
 
-            if (!(j&2))
+            if (!(j & 2))
             {
                 // x < 0
                 x = -x;
             }
 
-            if (!(j&4))
+            if (!(j & 4))
             {
                 // y < 0
                 y = -y;
