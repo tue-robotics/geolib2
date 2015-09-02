@@ -3,7 +3,7 @@
 
 namespace geo {
 
-Mesh::Mesh() : max_radius_(0) {
+Mesh::Mesh() : max_radius_cache_(0) {
 }
 
 Mesh::~Mesh() {
@@ -28,7 +28,7 @@ int Mesh::addPoint(double x, double y, double z) {
 int Mesh::addPoint(const geo::Vector3& p) {
     int i = points_.size();
     points_.push_back(p);
-    triangles_.clear();
+    triangles_cache_.clear();
     return i;
 }
 
@@ -40,7 +40,7 @@ int Mesh::addPoint(const geo::Vector3& p) {
  */
 void Mesh::addTriangle(int i1, int i2, int i3) {
     triangles_i_.push_back(TriangleI(i1, i2, i3));
-    triangles_.clear();
+    triangles_cache_.clear();
 }
 
 /**
@@ -55,7 +55,7 @@ void Mesh::add(const Mesh& mesh) {
         triangles_i_.push_back(TriangleI(it->i1_ + i_start, it->i2_ + i_start, it->i3_ + i_start));
     }
 
-    triangles_.clear();
+    triangles_cache_.clear();
 }
 
 /**
@@ -79,12 +79,12 @@ const std::vector<TriangleI>& Mesh::getTriangleIs() const {
  * @return The triangles of the mesh with points in space.
  */
 const std::vector<Triangle>& Mesh::getTriangles() const {
-    if (triangles_.empty()) {
+    if (triangles_cache_.empty()) {
         for(std::vector<TriangleI>::const_iterator it = triangles_i_.begin(); it != triangles_i_.end(); ++it) {
-            triangles_.push_back(Triangle(points_[it->i1_], points_[it->i2_], points_[it->i3_]));
+            triangles_cache_.push_back(Triangle(points_[it->i1_], points_[it->i2_], points_[it->i3_]));
         }
     }
-    return triangles_;
+    return triangles_cache_;
 }
 
 /**
@@ -155,14 +155,14 @@ void Mesh::filterOverlappingVertices() {
  * @return The maximum radius of the mesh.
  */
 double Mesh::getMaxRadius() const {
-    if (max_radius_ == 0) {
+    if (max_radius_cache_ == 0) {
         double max_radius_sq = 0;
         for(std::vector<Vector3>::const_iterator it = points_.begin(); it != points_.end(); ++it) {
             max_radius_sq = std::max(max_radius_sq, (double)it->length2());
         }
-        max_radius_ = sqrt(max_radius_sq);
+        max_radius_cache_ = sqrt(max_radius_sq);
     }
-    return max_radius_;
+    return max_radius_cache_;
 }
 
 }
