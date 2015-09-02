@@ -61,10 +61,12 @@ public:
     void filterOverlappingVertices();
 
     double getMaxRadius() const;
+    double getSquaredMaxRadius() const;
 
 protected:
 
     mutable double max_radius_cache_; ///< Cached maximum radius.
+    mutable double max_radius_squared_cache_; ///< Cached squared maximum radius.
 
     std::vector<geo::Vector3> points_; ///< Points of the mesh.
 
@@ -75,6 +77,7 @@ protected:
     /** Clear cached computed results, as they have become invalid. */
     void invalidateCache() {
         triangles_cache_.clear();
+        max_radius_squared_cache_ = 0;
         max_radius_cache_ = 0;
     }
 };
