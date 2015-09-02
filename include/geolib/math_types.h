@@ -19,6 +19,14 @@ public:
     Vec2T(T x_, T y_) : x(x_), y(y_) {}
     Vec2T(T value) : x(value), y(value) {}
 
+    Vec2T &operator=(const Vec2T &v) {
+        if (this != &v) {
+            x = v.x;
+            y = v.y;
+        }
+        return *this;
+    }
+
     ~Vec2T() {}
 
     bool operator==(const Vec2T& v) const {
@@ -92,6 +100,15 @@ public:
     Vec3T(T x_, T y_, T z_) : x(x_), y(y_), z(z_) {}
     Vec3T(T value) : x(value), y(value), z(value) {}
     Vec3T(const T* values) { memcpy(m, values, 3 * sizeof(T)); }
+
+    Vec3T &operator=(const Vec3T &v) {
+        if (this != &v) {
+            x = v.x;
+            y = v.y;
+            z = v.z;
+        }
+        return *this;
+    }
 
     ~Vec3T() {}
 
@@ -173,6 +190,16 @@ public:
     Mat2T(T xx_, T xy_, T yx_, T yy_) : xx(xx_), xy(xy_), yx(yx_), yy(yy_) {}
     Mat2T(T value) : xx(value), xy(value), yx(value), yy(value) {}
 
+    Mat2T &operator=(const Mat2T &v) {
+        if (this != &v) {
+            xx = v.xx;
+            xy = v.xy;
+            yx = v.yx;
+            yy = v.yy;
+        }
+        return *this;
+    }
+
     ~Mat2T() {}
 
     bool operator==(const Mat2T& m) const {
@@ -245,6 +272,16 @@ public:
     QuaternionT() {}
     QuaternionT(T x_, T y_, T z_, T w_) : x(x_), y(y_), z(z_), w(w_) {}
 
+    QuaternionT &operator=(const QuaternionT &q) {
+        if (this != &q) {
+            x = q.x;
+            y = q.y;
+            z = q.z;
+            w = q.w;
+        }
+        return *this;
+    }
+
     ~QuaternionT() {}
 
     bool operator==(const QuaternionT& q) const {
@@ -258,10 +295,10 @@ public:
     /// returns dot product
     T dot(const QuaternionT& q) const { return x * q.x + y * q.y + z * q.z + w * q.w; }
 
-    /// returns addition with v
+    /// returns addition with q
     QuaternionT operator+(const QuaternionT& q) const { return QuaternionT(x + q.x, y + q.y, z + q.z, w + q.w); }
 
-    /// returns this minus v
+    /// returns this minus q
     QuaternionT operator-(const QuaternionT& q) const { return QuaternionT(x - q.x, y - q.y, z - q.z, w - q.w); }
 
     T getX() const { return x; }
@@ -311,6 +348,15 @@ public:
     Mat3T(T value) : xx(value), xy(value), xz(value), yx(value), yy(value), yz(value), zx(value), zy(value), zz(value) {}
 
     Mat3T(const T* values) { memcpy(m, values, 9 * sizeof(T)); }
+
+    Mat3T &operator=(const Mat3T &m) {
+        if (this != &m) {
+            xx = m.xx; xy = m.xy; xz = m.xz;
+            yx = m.yx; yy = m.yy; yz = m.yz;
+            zx = m.zx; zy = m.zy; zz = m.zz;
+        }
+        return *this;
+    }
 
     ~Mat3T() {}
 
@@ -472,6 +518,14 @@ public:
     Transform2T(const Mat2T<T>& r, const Vec2T<T>& v) : R(r), t(v) {
     }
 
+    Transform2T &operator=(const Transform2T &tr) {
+        if (this != &tr) {
+            R = tr.R;
+            t = tr.t;
+        }
+        return *this;
+    }
+
     inline Vec2T<T> operator*(const Vec2T<T>& v) const {
         return R * v + t;
     }
@@ -539,6 +593,14 @@ public:
     }
 
     Transform3T(const Mat3T<T>& r, const Vec3T<T>& v) : R(r), t(v) {
+    }
+
+    Transform3T &operator=(const Transform3T &tr) {
+        if (this != &tr) {
+            R = tr.R;
+            t = tr.t;
+        }
+        return *this;
     }
 
     inline bool operator==(const Transform3T& tr) const{
