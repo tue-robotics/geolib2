@@ -151,16 +151,26 @@ void Mesh::filterOverlappingVertices() {
 }
 
 /**
+ * Get the squared maximum radius.
+ * @return The squared maximum radius of the mesh.
+ */
+double Mesh::getSquaredMaxRadius() const {
+    if (max_radius_squared_cache_ == 0) {
+        for(std::vector<Vector3>::const_iterator it = points_.begin(); it != points_.end(); ++it) {
+            max_radius_squared_cache_ = std::max(max_radius_squared_cache_, (double)it->length2());
+        }
+    }
+    return max_radius_squared_cache_;
+}
+
+/**
  * Get the maximum radius.
+ * @deprecated Use #getSquaredMaxRadius instead, as it is cheaper.
  * @return The maximum radius of the mesh.
  */
 double Mesh::getMaxRadius() const {
     if (max_radius_cache_ == 0) {
-        double max_radius_sq = 0;
-        for(std::vector<Vector3>::const_iterator it = points_.begin(); it != points_.end(); ++it) {
-            max_radius_sq = std::max(max_radius_sq, (double)it->length2());
-        }
-        max_radius_cache_ = sqrt(max_radius_sq);
+        max_radius_cache_ = sqrt(getSquaredMaxRadius());
     }
     return max_radius_cache_;
 }
