@@ -46,6 +46,8 @@ public:
     inline void clear() {
         triangles_i_.clear();
         points_.clear();
+
+        invalidateCache();
     }
 
     Mesh getTransformed(const geo::Transform t) const;
@@ -69,6 +71,12 @@ protected:
     std::vector<TriangleI> triangles_i_; ///< Triangles of the mesh.
 
     mutable std::vector<Triangle> triangles_cache_; ///< Cached output result.
+
+    /** Clear cached computed results, as they have become invalid. */
+    void invalidateCache() {
+        triangles_cache_.clear();
+        max_radius_cache_ = 0;
+    }
 };
 
 }

@@ -28,7 +28,7 @@ int Mesh::addPoint(double x, double y, double z) {
 int Mesh::addPoint(const geo::Vector3& p) {
     int i = points_.size();
     points_.push_back(p);
-    triangles_cache_.clear();
+    invalidateCache();
     return i;
 }
 
@@ -40,7 +40,7 @@ int Mesh::addPoint(const geo::Vector3& p) {
  */
 void Mesh::addTriangle(int i1, int i2, int i3) {
     triangles_i_.push_back(TriangleI(i1, i2, i3));
-    triangles_cache_.clear();
+    invalidateCache();
 }
 
 /**
@@ -55,7 +55,7 @@ void Mesh::add(const Mesh& mesh) {
         triangles_i_.push_back(TriangleI(it->i1_ + i_start, it->i2_ + i_start, it->i3_ + i_start));
     }
 
-    triangles_cache_.clear();
+    invalidateCache();
 }
 
 /**
