@@ -1,4 +1,5 @@
 #include "geolib/Mesh.h"
+#include "geolib/math_types.h"
 
 namespace geo {
 
@@ -102,37 +103,42 @@ Mesh Mesh::getTransformed(const geo::Transform t) const {
     return m;
 }
 
+/**
+ * Custom compare "<" class vor 3D integer vectors.
+ * http://stackoverflow.com/questions/5733254/create-an-own-comparator-for-map
+ * http://en.cppreference.com/w/cpp/concept/Compare
+ */
+struct CompareVec3i {
+    /** Comparator function. */
+    bool operator() (const Vec3i &a, const Vec3i &b) const {
+        if (a.x != b.x) return a.x < b.x;
+        if (a.y != b.y) return a.y < b.y;
+        return a.y < b.y;
+    }
+};
+
 /** Filter overlapping vertices from the mesh. */
 void Mesh::filterOverlappingVertices() {
     std::vector<Vector3> old_points = points_;
     points_.clear();
 
-    std::map<int, std::map<int, std::map<int, int> > > xyz_map;
+    std::map<Vec3i, int, CompareVec3i> xyz_map;
     std::vector<int> i_map(old_points.size());
 
     for(unsigned int j = 0; j < old_points.size(); ++j) {
-        const Vector3& v = old_points[j];
+        const Vector3 &v = old_points[j];
 
         int ix = 1000 * v.x;
         int iy = 1000 * v.y;
         int iz = 1000 * v.z;
 
-        bool match = false;
-        std::map<int, std::map<int, std::map<int, int> > >::iterator it1 = xyz_map.find(ix);
-        if (it1 != xyz_map.end()) {
-            std::map<int, std::map<int, int> >::iterator it2 = it1->second.find(iy);
-            if (it2 != it1->second.end()) {
-                std::map<int, int>::iterator it3 = it2->second.find(iz);
-                if (it3 != it2->second.end()) {
-                    i_map[j] = it3->second;
-                    match = true;
-                }
-            }
-        }
-
-        if (!match) {
-            int ip = this->addPoint(v.x, v.y, v.z);
-            xyz_map[ix][iy][iz] = ip;
+        Vec3i v3int(ix, iy, iz);
+        std::map<Vec3i, int>::iterator iter = xyz_map.find(v3int);
+        if (iter != xyz_map.end()) {
+            i_map[j] = iter->second;
+        } else {
+            int ip = this->addPoint(v);
+            xyz_map[v3int] = ip;
             i_map[j] = ip;
         }
     }
