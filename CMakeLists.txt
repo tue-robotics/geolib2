@@ -47,6 +47,8 @@ add_library(geolib   src/Box.cpp
                      src/HeightMap.cpp
                      src/HeightMapNode.cpp
 
+                     src/shapes.cpp
+
                      src/sensors/DepthCamera.cpp
                      src/sensors/LaserRangeFinder.cpp
 
