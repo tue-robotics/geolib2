@@ -113,7 +113,7 @@ struct CompareVec3i {
     bool operator() (const Vec3i &a, const Vec3i &b) const {
         if (a.x != b.x) return a.x < b.x;
         if (a.y != b.y) return a.y < b.y;
-        return a.y < b.y;
+        return a.z < b.z;
     }
 };
 
