@@ -1,35 +1,17 @@
-language:
-  - cpp
-  - python
-python:
-  - "2.7"
-compiler:
-  - gcc
-env:
-  - ROS_DISTRO=hydro
+sudo: true
+
+language: cpp
+
+services:
+  - docker
 
 before_install:
-  - export CI_SOURCE_PATH=$(pwd)
-  - export REPOSITORY_NAME=${PWD##*/}
-  - echo "Testing branch $TRAVIS_BRANCH of $REPOSITORY_NAME"
+  - wget https://raw.githubusercontent.com/tue-robotics/tue-env/master/ci/install-package.sh
+  - wget https://raw.githubusercontent.com/tue-robotics/tue-env/master/ci/build-package.sh
+  - export PACKAGE=${TRAVIS_REPO_SLUG#*/}
 
 install:
-  - export TUE_ENV=$ROS_DISTRO
-  - source <(wget -O- https://raw.githubusercontent.com/tue-robotics/tue-env/master/installer/scripts/bootstrap)
-  - tue-get install ros-${REPOSITORY_NAME}
+  - bash install-package.sh --package=$PACKAGE --branch=$TRAVIS_BRANCH --commit=$TRAVIS_COMMIT --pullrequest=$TRAVIS_PULL_REQUEST
 
-before_script:
-  - source ~/.tue/setup.bash # source ROS
-  - cd ${TUE_SYSTEM_DIR}/src
-
-  # Link the repo we are testing to the new workspace
-  - rm -rf $REPOSITORY_NAME
-  - ln -s $CI_SOURCE_PATH .
-  - ls -l
-  - cd .. # go to the catkin workspace
-
-script:
-  - catkin_make
-  - catkin_make install   # installing the package
-  - catkin_make tests     # build the tests
-  - catkin_make run_tests # and run them
+script: 
+  - bash build-package.sh --package=$PACKAGE
