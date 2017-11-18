@@ -3,12 +3,13 @@
 #include "geolib/sensors/LaserRangeFinder.h"
 
 // OpenCV
-#include "opencv2/highgui/highgui.hpp"
+#include <opencv2/highgui/highgui.hpp>
+#include <opencv2/imgproc/imgproc.hpp>
 
 #include <vector>
 
 // LRF
-unsigned int N_BEAMS = 3;
+unsigned int N_BEAMS = 7;
 double ANGLE_MIN = -90.0/180.0*3.141592;
 double ANGLE_MAX = 90.0/180.0*3.141592;
 

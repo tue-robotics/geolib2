@@ -64,8 +64,6 @@ void LaserRangeFinder::RenderResult::renderLine(const Vec2& p1, const Vec2& p2)
     int i_min1, i_max1, i_min2, i_max2;
     if (i_max - i_min < lrf_->i_half_circle_)
     {
-        std::cout << "Less" << std::endl;
-
         // Back-face culling: if the normal is pointing outwards, ommit this line
         if (i_p1 > i_p2)
             return;
@@ -82,15 +80,11 @@ void LaserRangeFinder::RenderResult::renderLine(const Vec2& p1, const Vec2& p2)
         i_min2 = 0;
         i_max2 = 0;
 
-        std::cout << i_min1 << " - " << i_max1 << std::endl;
-
         min_i = std::min(min_i, (int)i_min);
         max_i = std::max(max_i, (int)i_max);
     }
     else
     {
-        std::cout << "More" << std::endl;
-
         // Back-face culling: if the normal is pointing outwards, ommit this line
         if (i_p2 > i_p1)
             return;
@@ -383,10 +377,6 @@ void LaserRangeFinder::calculateRays() {
 
             // Calculate the ray index based on the angle
             slope_to_index_[j][k] = a_temp / (a_max_ - a_min_) * num_beams_ + 1;
-
-            std::cout << x << ", " << y << std::endl;
-
-            std::cout << j << ", " << k << ": " << a_temp << " " << slope_to_index_[j][k] << std::endl;
         }
     }
 
