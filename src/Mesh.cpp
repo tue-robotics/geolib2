@@ -3,7 +3,8 @@
 
 namespace geo {
 
-Mesh::Mesh() : max_radius_cache_(0) {
+Mesh::Mesh() {
+    invalidateCache();
 }
 
 Mesh::~Mesh() {
