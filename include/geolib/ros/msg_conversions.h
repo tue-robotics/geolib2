@@ -3,8 +3,11 @@
 
 #include "geolib/datatypes.h"
 #include <geometry_msgs/Pose.h>
+#include <geometry_msgs/Point.h>
 #include <geometry_msgs/Point32.h>
 #include <geometry_msgs/Transform.h>
+#include <geolib/Mesh.h>
+#include <shape_msgs/Mesh.h>
 
 namespace geo {
 
@@ -40,6 +43,31 @@ inline void convert(const geo::Transform& t, geometry_msgs::Pose& msg) {
 inline void convert(const geo::Transform& t, geometry_msgs::Transform& msg) {
     convert(t.getOrigin(), msg.translation);
     convert(t.getBasis(), msg.rotation);
+}
+
+inline void convert(const TriangleI& t, shape_msgs::MeshTriangle& msg) {
+    msg.vertex_indices[0] = t.i1_;
+    msg.vertex_indices[1] = t.i2_;
+    msg.vertex_indices[2] = t.i3_;
+}
+
+void convert(const geo::Mesh& m, shape_msgs::Mesh& msg) {
+    std::vector<Vector3> points = m.getPoints();
+    std::vector<TriangleI> triangles = m.getTriangleIs();
+
+    for (std::vector<Vector3>::const_iterator it = points.begin(); it != points.end(); ++it)
+    {
+        geometry_msgs::Point point;
+        convert(*it, point);
+        msg.vertices.push_back(point);
+    }
+
+    for (std::vector<TriangleI>::const_iterator it = triangles.begin(); it != triangles.end(); ++it)
+    {
+        shape_msgs::MeshTriangle MeshTriangle;
+        convert(*it, MeshTriangle);
+        msg.triangles.push_back(MeshTriangle);
+    }
 }
 
 // ------------------------------ FROM ROS ------------------------------
