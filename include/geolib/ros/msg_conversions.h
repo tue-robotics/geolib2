@@ -2,11 +2,11 @@
 #define GEOLIB_ROS_MSG_CONVERSIONS_H_
 
 #include "geolib/datatypes.h"
+#include <geolib/Mesh.h>
 #include <geometry_msgs/Pose.h>
 #include <geometry_msgs/Point.h>
 #include <geometry_msgs/Point32.h>
 #include <geometry_msgs/Transform.h>
-#include <geolib/Mesh.h>
 #include <shape_msgs/Mesh.h>
 
 namespace geo {
@@ -64,9 +64,9 @@ void convert(const geo::Mesh& m, shape_msgs::Mesh& msg) {
 
     for (std::vector<TriangleI>::const_iterator it = triangles.begin(); it != triangles.end(); ++it)
     {
-        shape_msgs::MeshTriangle MeshTriangle;
-        convert(*it, MeshTriangle);
-        msg.triangles.push_back(MeshTriangle);
+        shape_msgs::MeshTriangle meshtriangle;
+        convert(*it, meshtriangle);
+        msg.triangles.push_back(meshtriangle);
     }
 }
 
