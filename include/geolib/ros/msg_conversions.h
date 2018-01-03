@@ -52,8 +52,8 @@ inline void convert(const TriangleI& t, shape_msgs::MeshTriangle& msg) {
 }
 
 void convert(const geo::Mesh& m, shape_msgs::Mesh& msg) {
-    std::vector<Vector3> points = m.getPoints();
-    std::vector<TriangleI> triangles = m.getTriangleIs();
+    const std::vector<Vector3>& points = m.getPoints();
+    const std::vector<TriangleI>& triangles = m.getTriangleIs();
 
     for (std::vector<Vector3>::const_iterator it = points.begin(); it != points.end(); ++it)
     {
