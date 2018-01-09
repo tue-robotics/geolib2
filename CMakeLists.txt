@@ -52,6 +52,8 @@ add_library(geolib   src/Box.cpp
                      src/sensors/DepthCamera.cpp
                      src/sensors/LaserRangeFinder.cpp
 
+                     src/ros/msg_conversions.cpp
+
                      src/Importer.cpp
                      
                      src/serialization.cpp
