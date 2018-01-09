@@ -2,6 +2,12 @@
 
 namespace geo {
 
+/**
+ * @brief converts a geo::Mesh to shape_msgs::Mesh
+ * Both use a very similar structure based on points and triangles.
+ * @param m geo::Mesh as input
+ * @param msg filled shape_msgs::Mesh message as output
+ */
 void convert(const geo::Mesh& m, shape_msgs::Mesh& msg) {
     const std::vector<Vector3>& points = m.getPoints();
     const std::vector<TriangleI>& triangles = m.getTriangleIs();
