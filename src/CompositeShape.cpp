@@ -2,7 +2,7 @@
 
 namespace geo {
 
-CompositeShape::CompositeShape() : max_radius_(0), min_(1e10, 1e10, 1e10), max_(-1e10, -1e10, -1e10), bb_(-min_, -max_) {
+CompositeShape::CompositeShape() : Shape(), max_radius_(0), min_(1e10, 1e10, 1e10), max_(-1e10, -1e10, -1e10), bb_(-min_, -max_) {
 }
 
 CompositeShape::~CompositeShape() {

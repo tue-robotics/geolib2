@@ -6,7 +6,7 @@ namespace geo {
 
 const std::string Shape::TYPE = "mesh";
 
-Shape::Shape() {
+Shape::Shape(): mesh_() {
 }
 
 Shape::~Shape() {
