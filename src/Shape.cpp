@@ -42,9 +42,9 @@ bool Shape::write(std::ostream& output) const {
     output.write((char*)&p_size, sizeof(p_size));
     for(std::vector<geo::Vector3>::const_iterator it = points.begin(); it != points.end(); ++it) {
         const geo::Vector3& v = *it;
-        float x = v.x;
-        float y = v.y;
-        float z = v.z;
+        double x = v.x;
+        double y = v.y;
+        double z = v.z;
 
         output.write((char*)&x, sizeof(x));
         output.write((char*)&y, sizeof(y));
@@ -71,7 +71,7 @@ ShapePtr Shape::read(std::istream& input) {
     input.read((char*)&p_size, sizeof(p_size));
 
     for(int i = 0; i < p_size; ++i) {
-        float x, y, z;
+        double x, y, z;
         input.read((char*)&x, sizeof(x));
         input.read((char*)&y, sizeof(y));
         input.read((char*)&z, sizeof(z));
