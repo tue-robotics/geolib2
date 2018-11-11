@@ -4,17 +4,18 @@ project(geolib2)
 find_package(catkin REQUIRED COMPONENTS
   code_profiler
   cv_bridge
-  roscpp
   tf
   shape_msgs
 )
 
+find_package(Boost REQUIRED)
 find_package(OpenCV REQUIRED)
 
 catkin_package(
   INCLUDE_DIRS include
   LIBRARIES geolib
-  CATKIN_DEPENDS code_profiler cv_bridge roscpp tf shape_msgs
+  CATKIN_DEPENDS cv_bridge tf shape_msgs
+  DEPENDS Boost OpenCV
 )
 
 ###########
@@ -23,10 +24,10 @@ catkin_package(
 
 include_directories(
   include
+  ${Boost_INCLUDE_DIRS}
+  ${OpenCV_INCLUDE_DIRS}
   ${catkin_INCLUDE_DIRS}
-
 )
-include_directories(${OpenCV_INCLUDE_DIRS})
 
 # to show header files in Qt Creator
 file(GLOB_RECURSE HEADER_FILES include/*.h)
@@ -62,7 +63,7 @@ add_library(geolib   src/Box.cpp
                      
                      ${HEADER_FILES})
 
-target_link_libraries(geolib assimp ${catkin_LIBRARIES} ${OpenCV_LIBRARIES})
+target_link_libraries(geolib assimp ${Boost_LIBRARIES} ${OpenCV_LIBRARIES} ${catkin_LIBRARIES})
 
 add_executable(show src/show.cpp)
 target_link_libraries(show geolib)
@@ -79,9 +80,9 @@ target_link_libraries(height-map-to-shape geolib)
 # ------------------------------------------------------------------------------------------------
 
 add_executable(test_geolib test/test_geolib.cpp)
-target_link_libraries(test_geolib geolib assimp)
+target_link_libraries(test_geolib geolib)
 
 add_executable(test_geolib_lrf test/test_geolib_lrf.cpp)
-target_link_libraries(test_geolib_lrf geolib assimp)
+target_link_libraries(test_geolib_lrf geolib)
 
 add_executable(test_matrix test/test_matrix.cpp)
