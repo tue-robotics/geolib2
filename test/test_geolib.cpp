@@ -2,14 +2,17 @@
 #include <geolib/Box.h>
 #include <geolib/HeightMap.h>
 
+#include <geolib/Importer.h>
+#include <geolib/serialization.h>
+
 #include <geolib/sensors/DepthCamera.h>
 #include <geolib/sensors/LaserRangeFinder.h>
 
-#include <opencv2/highgui/highgui.hpp>
-
 #include <profiling/Timer.h>
 
-#include <geolib/Importer.h>
+#include <opencv2/highgui/highgui.hpp>
+
+#include <fstream>
 
 double CANVAS_WIDTH = 640;
 double CANVAS_HEIGHT = 480;
@@ -84,8 +87,6 @@ double renderLRF(cv::Mat& image, const Shape& shape, bool rasterize, bool show) 
     return timer.getElapsedTimeInMilliSec() / N;
 }
 
-#include <geolib/serialization.h>
-#include <fstream>
 
 int main(int argc, char **argv) {
 
