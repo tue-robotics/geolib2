@@ -27,13 +27,7 @@ typedef boost::shared_ptr<const CompositeShape> CompositeShapeConstPtr;
 
 class Box;
 typedef boost::shared_ptr<Box> BoxPtr;
-
-class Plugin;
-typedef boost::shared_ptr<Plugin> PluginPtr;
-
-class WorldView;
-typedef boost::shared_ptr<WorldView> WorldViewPtr;
-typedef boost::shared_ptr<const WorldView> WorldViewConstPtr;
+typedef boost::shared_ptr<const Box> BoxConstPtr;
 
 class Octree;
 typedef boost::shared_ptr<Octree> OctreePtr;
