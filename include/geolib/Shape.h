@@ -37,6 +37,12 @@ public:
 
     static const std::string TYPE;
 
+    /**
+     * @brief empty Test whether the shape(mesh) is empty.
+     * @return True if the mesh is empty
+     */
+    inline virtual bool empty() const { return mesh_.empty(); }
+
 protected:
 
     Mesh mesh_;
