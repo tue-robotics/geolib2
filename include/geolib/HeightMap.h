@@ -1,5 +1,5 @@
-#ifndef GEOLIB_HeightMap_H_
-#define GEOLIB_HeightMap_H_
+#ifndef GEOLIB_Height_Map_H_
+#define GEOLIB_Height_Map_H_
 
 #include "Shape.h"
 #include "HeightMapNode.h"
