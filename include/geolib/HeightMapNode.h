@@ -1,5 +1,5 @@
-#ifndef GEOLIB_HEIGHT_MAP_H_
-#define GEOLIB_HEIGHT_MAP_H_
+#ifndef GEOLIB_HEIGHT_MAP_NODE_H_
+#define GEOLIB_HEIGHT_MAP_NODE_H_
 
 #include "Ray.h"
 #include "Box.h"
