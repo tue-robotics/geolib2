@@ -13,10 +13,6 @@ namespace geo {
 
 typedef double Time;
 
-class Object;
-typedef boost::shared_ptr<Object> ObjectPtr;
-typedef boost::shared_ptr<const Object> ObjectConstPtr;
-
 class Shape;
 typedef boost::shared_ptr<Shape> ShapePtr;
 typedef boost::shared_ptr<const Shape> ShapeConstPtr;
