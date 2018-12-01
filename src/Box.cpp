@@ -95,7 +95,7 @@ bool Box::intersect(const Vector3& p) const {
             && p.getZ() > bounds[0].getZ() && p.getY() < bounds[1].getZ());
 }
 
-Box Box::getBoundingBox() const {
+const Box Box::getBoundingBox() const {
     return *this;
 }
 
@@ -132,6 +132,14 @@ Vector3 Box::getSize() const {
 
 Vector3 Box::getCenter() const {
     return (bounds[0] + bounds[1]) / 2;
+}
+
+Vector3 Box::getMin() const {
+    return bounds[0];
+}
+
+Vector3 Box::getMax() const {
+    return bounds[1];
 }
 
 }

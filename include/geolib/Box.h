@@ -21,13 +21,17 @@ public:
 
     bool intersect(const Vector3& p) const;
 
-    Box getBoundingBox() const;
+    const Box getBoundingBox() const;
 
     void enclose(const Box& box, const Pose3D& pose);
 
     Vector3 getSize() const;
 
     Vector3 getCenter() const;
+
+    Vector3 getMin() const;
+
+    Vector3 getMax() const;
 
     Vector3 bounds[2];
 

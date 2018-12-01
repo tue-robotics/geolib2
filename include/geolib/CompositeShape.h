@@ -24,6 +24,8 @@ public:
 
     void addShape(const Shape& shape, const Pose3D& pose);
 
+    const Box getBoundingBox() const;
+
 protected:
 
     std::vector<std::pair<ShapePtr, Transform> > shapes_;

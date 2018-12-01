@@ -1,4 +1,5 @@
 #include "geolib/Shape.h"
+#include "geolib/Box.h"
 
 #include <geolib/serialization.h>
 
@@ -6,7 +7,7 @@ namespace geo {
 
 const std::string Shape::TYPE = "mesh";
 
-Shape::Shape() : mesh_() {
+Shape::Shape() : mesh_(), bounding_box_cache_valid_(false){
 }
 
 Shape::~Shape() {
@@ -25,7 +26,30 @@ const Mesh& Shape::getMesh() const {
     return mesh_;
 }
 
+const Box Shape::getBoundingBox() const {
+    if (!bounding_box_cache_valid_)
+    {
+        const std::vector<geo::Vector3>& points = mesh_.getPoints();
+        double x_min, y_min, z_min = 1e9;
+        double x_max, y_max, z_max = -1e9;
+        for (std::vector<geo::Vector3>::const_iterator it = points.begin(); it != points.end(); ++it)
+        {
+            x_min = std::min<double>(it->x, x_min);
+            x_max = std::max<double>(it->x, x_max);
+            y_min = std::min<double>(it->y, y_min);
+            y_max = std::max<double>(it->y, y_max);
+            z_min = std::min<double>(it->z, z_min);
+            z_max = std::max<double>(it->z, z_max);
+        }
+        bounding_box_min_cache_ = geo::Vector3(x_min, y_min, z_min);
+        bounding_box_max_cache_ = geo::Vector3(x_max, y_max, z_max);
+        bounding_box_cache_valid_ = true;
+    }
+    return Box(bounding_box_min_cache_, bounding_box_max_cache_);
+}
+
 void Shape::setMesh(const Mesh& mesh) {
+    bounding_box_cache_valid_ = false;
     mesh_ = mesh;
 }
 
