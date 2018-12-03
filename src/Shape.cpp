@@ -7,7 +7,7 @@ namespace geo {
 
 const std::string Shape::TYPE = "mesh";
 
-Shape::Shape() : mesh_(), bounding_box_cache_valid_(false){
+Shape::Shape() : mesh_(), bounding_box_cache_valid_(false) {
 }
 
 Shape::~Shape() {
