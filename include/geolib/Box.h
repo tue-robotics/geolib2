@@ -21,7 +21,7 @@ public:
 
     bool intersect(const Vector3& p) const;
 
-    const Box getBoundingBox() const;
+    Box getBoundingBox() const;
 
     void enclose(const Box& box, const Pose3D& pose);
 

@@ -26,12 +26,12 @@ const Mesh& Shape::getMesh() const {
     return mesh_;
 }
 
-const Box Shape::getBoundingBox() const {
+Box Shape::getBoundingBox() const {
     if (!bounding_box_cache_valid_)
     {
         const std::vector<geo::Vector3>& points = mesh_.getPoints();
-        double x_min, y_min, z_min = 1e9;
-        double x_max, y_max, z_max = -1e9;
+        double x_min = 1e9, y_min = 1e9, z_min = 1e9;
+        double x_max = -1e9, y_max = -1e9, z_max = -1e9;
         for (std::vector<geo::Vector3>::const_iterator it = points.begin(); it != points.end(); ++it)
         {
             x_min = std::min<double>(it->x, x_min);

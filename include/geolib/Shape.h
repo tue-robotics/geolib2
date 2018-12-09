@@ -30,7 +30,7 @@ public:
 
     virtual const Mesh& getMesh() const;
 
-    virtual const Box getBoundingBox() const;
+    virtual Box getBoundingBox() const;
 
     void setMesh(const Mesh& mesh);
 
