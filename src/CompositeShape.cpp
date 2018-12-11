@@ -77,7 +77,7 @@ void CompositeShape::addShape(const Shape& shape, const Pose3D& pose) {
 }
 
 Box CompositeShape::getBoundingBox() const {
-    return Box(bb_);
+    return bb_;
 }
 
 }
