@@ -80,4 +80,8 @@ Box CompositeShape::getBoundingBox() const {
     return bb_;
 }
 
+std::vector<std::pair<ShapePtr, Transform> > CompositeShape::getShapes() const {
+    return shapes_;
+}
+
 }

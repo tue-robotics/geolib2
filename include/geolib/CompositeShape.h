@@ -26,6 +26,9 @@ public:
 
     Box getBoundingBox() const;
 
+    std::vector<std::pair<ShapePtr, Transform> > getShapes() const;
+
+
 protected:
 
     std::vector<std::pair<ShapePtr, Transform> > shapes_;
