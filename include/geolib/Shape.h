@@ -52,9 +52,9 @@ protected:
 
 private:
 
-    mutable bool  bounding_box_cache_valid_;
-    mutable Vector3 bounding_box_min_cache_;
-    mutable Vector3 bounding_box_max_cache_;
+    mutable bool  bounding_box_cache_valid_;    // keeps track if the cached values of the bounding box are valid
+    mutable Vector3 bounding_box_min_cache_;    // cached value of the min corner of a bounding box
+    mutable Vector3 bounding_box_max_cache_;    // cached value of the max corner of a bounding box
 
 };
 

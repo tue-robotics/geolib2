@@ -95,6 +95,10 @@ bool Box::intersect(const Vector3& p) const {
             && p.getZ() > bounds[0].getZ() && p.getY() < bounds[1].getZ());
 }
 
+/**
+ * @brief Box::getBoundingBox return a bounding box, which is the same as the object itself.
+ * @return itself
+ */
 Box Box::getBoundingBox() const {
     return *this;
 }

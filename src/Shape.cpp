@@ -26,6 +26,11 @@ const Mesh& Shape::getMesh() const {
     return mesh_;
 }
 
+/**
+ * @brief Shape::getBoundingBox returns the smallest box which includes all mesh points. Box is not rotated, but matches
+ * the axis of the Shape
+ * @return geo::Box of the bounding box.
+ */
 Box Shape::getBoundingBox() const {
     if (!bounding_box_cache_valid_)
     {
