@@ -504,7 +504,7 @@ public:
         T m[9];
     };
 
-    Mat3T normalize() {
+    void normalize() {
         T len_x = getColumn(0).length();
         T len_y = getColumn(1).length();
         T len_z = getColumn(2).length();
