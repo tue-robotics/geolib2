@@ -128,7 +128,12 @@ ShapePtr Importer::readMeshFile(const std::string& filename, double scale)
     ShapePtr shape(new Shape());
 
     Mesh mesh;
-    constructMesh(scene, scene->mRootNode, geo::Pose3D::identity(), scale, transform, &mesh);
+    const aiMatrix4x4& t = scene->mRootNode->mTransformation;
+    geo::Pose3D p;
+    p.t = geo::Vector3(t.a4, t.b4, t.c4);
+    p.R = geo::Matrix3(t.a1, t.a2, t.a3, t.b1, t.b2, t.b3, t.c1, t.c2, t.c3).normalized();
+
+    constructMesh(scene, scene->mRootNode, p.inverse(), scale, transform, &mesh);
     shape->setMesh(mesh);
 
     return shape;
