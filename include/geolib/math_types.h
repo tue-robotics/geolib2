@@ -503,6 +503,20 @@ public:
         struct { T xx, xy, xz, yx, yy, yz, zx, zy, zz; };
         T m[9];
     };
+
+    Mat3T normalize() {
+        T len_x = getColumn(0).length();
+        T len_y = getColumn(1).length();
+        T len_z = getColumn(2).length();
+        xx /= len_x; xy /= len_y; xz /= len_z; yx /= len_x; yy /= len_y; yz /= len_z; zx /= len_x; zy /= len_y; zz /= len_z;
+    }
+
+    Mat3T normalized() {
+        Vec3T<T> x = getColumn(0);
+        Vec3T<T> y = getColumn(1);
+        Vec3T<T> z = getColumn(2);
+        return Mat3T<T>(x.normalized(), y.normalized(), z.normalized());
+    }
 };
 
 // --------------------------------------------------------------------------------
