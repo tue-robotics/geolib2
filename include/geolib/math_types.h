@@ -349,6 +349,9 @@ public:
 
     Mat3T(const T* values) { memcpy(m, values, 9 * sizeof(T)); }
 
+    Mat3T(Vec3T<T> x, Vec3T<T> y, Vec3T<T> z)
+        : xx(x.x), yx(x.y), zx(x.z), xy(y.x), yy(y.y), zy(y.z), xz(z.x), yz(z.y), zz(z.z) {}
+
     Mat3T &operator=(const Mat3T &m) {
         if (this != &m) {
             xx = m.xx; xy = m.xy; xz = m.xz;
