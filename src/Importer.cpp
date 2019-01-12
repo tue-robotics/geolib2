@@ -48,9 +48,9 @@ void constructMesh(const aiScene* scene, aiNode* node, const geo::Pose3D& parent
         for(unsigned int j = 0; j < m->mNumVertices; ++j) {
             const aiVector3D& v = m->mVertices[j];
 
-            int ix = int(1000 * scale * v.x);
-            int iy = int(1000 * scale * v.y);
-            int iz = int(1000 * scale * v.z);
+            int ix = 1000 * scale * v.x;
+            int iy = 1000 * scale * v.y;
+            int iz = 1000 * scale * v.z;
 
             bool match = false;
             std::map<int, std::map<int, std::map<int, int> > >::iterator it1 = xyz_map.find(ix);
