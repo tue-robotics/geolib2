@@ -29,6 +29,10 @@ public:
 
     Vector3 getCenter() const;
 
+    Vector3 getMin() const;
+
+    Vector3 getMax() const;
+
     Vector3 bounds[2];
 
 protected:

@@ -128,7 +128,21 @@ ShapePtr Importer::readMeshFile(const std::string& filename, double scale)
     ShapePtr shape(new Shape());
 
     Mesh mesh;
-    constructMesh(scene, scene->mRootNode, geo::Pose3D::identity(), scale, transform, &mesh);
+
+    if (filename.substr(filename.size() - 3) == "dae")
+    {
+        // compensate for rotation caused by "UP_AXIS". This is already applied by assimp, so don't need to do it again
+        // in constructMesh, therefore we need the compensation here. Rotation matrix of assimp also containts the
+        // scaling from "UNIT". We don't want to compensate for that, so we normalize the rotation matrix.
+        const aiMatrix4x4& t = scene->mRootNode->mTransformation;
+        geo::Pose3D p;
+        p.t = geo::Vector3(t.a4, t.b4, t.c4);
+        p.R = geo::Matrix3(t.a1, t.a2, t.a3, t.b1, t.b2, t.b3, t.c1, t.c2, t.c3).normalized();
+        constructMesh(scene, scene->mRootNode, p.inverse(), scale, transform, &mesh);
+    }
+    else
+        constructMesh(scene, scene->mRootNode, geo::Pose3D::identity(), scale, transform, &mesh);
+
     shape->setMesh(mesh);
 
     return shape;

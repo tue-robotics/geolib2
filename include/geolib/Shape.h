@@ -4,6 +4,7 @@
 #include "Ray.h"
 #include "Triangle.h"
 #include "Mesh.h"
+#include "datatypes.h"
 
 #include <boost/archive/basic_binary_iarchive.hpp>
 
@@ -29,6 +30,8 @@ public:
 
     virtual const Mesh& getMesh() const;
 
+    virtual Box getBoundingBox() const;
+
     void setMesh(const Mesh& mesh);
 
     virtual bool write(std::ostream& output) const;
@@ -46,6 +49,12 @@ public:
 protected:
 
     Mesh mesh_;
+
+private:
+
+    mutable bool  bounding_box_cache_valid_;    // keeps track if the cached values of the bounding box are valid
+    mutable Vector3 bounding_box_min_cache_;    // cached value of the min corner of a bounding box
+    mutable Vector3 bounding_box_max_cache_;    // cached value of the max corner of a bounding box
 
 };
 
