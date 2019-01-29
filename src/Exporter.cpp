@@ -39,7 +39,6 @@ bool Exporter::writeMeshFile(const std::string& filename, const Shape& shape, do
     const std::vector<Vector3>& points = mesh.getPoints();
     const std::vector<TriangleI>& triangleIs = mesh.getTriangleIs();
 
-
     aMesh.mVertices = new aiVector3D[points.size()];
     aMesh.mNumVertices = points.size();
     for (uint i = 0; i < points.size(); ++i)
@@ -47,7 +46,14 @@ bool Exporter::writeMeshFile(const std::string& filename, const Shape& shape, do
         const Vector3& p = points[i];
         aMesh.mVertices[i] = aiVector3D(p.x, p.y, p.z);
     }
+    std::cout << "#Points: " << points.size() << std::endl;
+    for (uint i = 0; i < points.size(); ++i)
+    {
+        const aiVector3D& p = aMesh.mVertices[i];
+        std::cout << p.x << std::endl;
+    }
 
+    std::cout << "End of vertices" << std::endl;
 
     aMesh.mFaces = new aiFace[triangleIs.size()];
     aMesh.mNumFaces = triangleIs.size();
@@ -61,9 +67,16 @@ bool Exporter::writeMeshFile(const std::string& filename, const Shape& shape, do
         aFace.mIndices[1] = triangleI.i2_;
         aFace.mIndices[2] = triangleI.i3_;
     }
+    for (uint i = 0; i < triangleIs.size(); ++i)
+    {
+        const aiFace& f = aMesh.mFaces[i];
+        std::cout << f.mIndices[0] << std::endl;
+    }
+    std::cout << "End of Faces" << std::endl;
+
 
     Assimp::Exporter aExp;
-    aExp.Export(&aScene, "collada", filename, aiProcess_GenNormals);
+    aExp.Export(&aScene, "collada", filename);
     return true;
 }
 
