@@ -1,22 +1,18 @@
-/*
- * Created by Sjoerd van den Dries (2014)
- */
-
-
 #include <geolib/HeightMap.h>
-#include <geolib/serialization.h>
+#include <geolib/Exporter.h>
 
 #include <opencv2/highgui/highgui.hpp>
 
 int main(int argc, char **argv) {
 
     // Parse command-line arguments
-    if (argc < 2 || argc > 7) {
-        std::cerr << "Usage: height_map_to_shape INPUT_IMAGE RESOLUTION [BLOCK_HEIGHT] [ORIGIN_X ORIGIN_Y]" << std::endl;
+    if (argc < 3 || argc > 7) {
+        std::cerr << "Usage: height_map_to_file INPUT_IMAGE OUTPUT_FILE RESOLUTION [BLOCK_HEIGHT] [ORIGIN_X ORIGIN_Y]" << std::endl;
         return 1;
     }
 
     std::string filename_img = argv[1];
+    std::string output_file = argv[2];
 
     double resolution = 0.2;
     if (argc > 2) {
@@ -61,10 +57,9 @@ int main(int argc, char **argv) {
     geo::Shape shape;
     shape.setMesh(mesh_transformed);
 
-    std::string filename_shape = filename_img + ".geo";
+    geo::Exporter exp;
+    exp.writeMeshFile(output_file, shape);
 
-    geo::serialization::toFile(shape, filename_shape);
-
-    std::cout << hmap.getMesh().getTriangleIs().size() << " triangles saved to '" << filename_shape << "'." << std::endl;
+    std::cout << hmap.getMesh().getTriangleIs().size() << " triangles saved to '" << output_file << "'." << std::endl;
     return 0;
 }

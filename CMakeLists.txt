@@ -57,6 +57,7 @@ add_library(geolib   src/Box.cpp
                      src/ros/msg_conversions.cpp
 
                      src/Importer.cpp
+                     src/Exporter.cpp
                      
                      src/serialization.cpp
                      src/visualization.cpp
@@ -74,6 +75,9 @@ target_link_libraries(show geolib)
 
 add_executable(height-map-to-shape tools/height_image_to_shape.cpp)
 target_link_libraries(height-map-to-shape geolib)
+
+add_executable(height-map-to-file tools/height_image_to_file.cpp)
+target_link_libraries(height-map-to-file geolib)
 
 # ------------------------------------------------------------------------------------------------
 #                                                TESTS
