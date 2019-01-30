@@ -31,9 +31,13 @@ bool Exporter::writeMeshFile(const std::string& filename, const Shape& shape, do
 {
     aiScene aScene;
     aiMesh aMesh;
-    aScene.mMeshes = new aiMesh*[1];
+    aScene.mMeshes = new aiMesh*[ 1 ];
+    aScene.mMeshes[ 0 ] = nullptr;
     aScene.mNumMeshes = 1;
-    aScene.mMeshes[0] = &aMesh;
+
+    aScene.mMeshes[ 0 ] = new aiMesh();
+    aScene.mMeshes[ 0 ]->mMaterialIndex = 0;
+    aScene.mRootNode = new aiNode;
 
     Mesh mesh = shape.getMesh();
     const std::vector<Vector3>& points = mesh.getPoints();
@@ -46,14 +50,6 @@ bool Exporter::writeMeshFile(const std::string& filename, const Shape& shape, do
         const Vector3& p = points[i];
         aMesh.mVertices[i] = aiVector3D(p.x, p.y, p.z);
     }
-    std::cout << "#Points: " << points.size() << std::endl;
-    for (uint i = 0; i < points.size(); ++i)
-    {
-        const aiVector3D& p = aMesh.mVertices[i];
-        std::cout << p.x << std::endl;
-    }
-
-    std::cout << "End of vertices" << std::endl;
 
     aMesh.mFaces = new aiFace[triangleIs.size()];
     aMesh.mNumFaces = triangleIs.size();
@@ -67,16 +63,14 @@ bool Exporter::writeMeshFile(const std::string& filename, const Shape& shape, do
         aFace.mIndices[1] = triangleI.i2_;
         aFace.mIndices[2] = triangleI.i3_;
     }
-    for (uint i = 0; i < triangleIs.size(); ++i)
-    {
-        const aiFace& f = aMesh.mFaces[i];
-        std::cout << f.mIndices[0] << std::endl;
-    }
-    std::cout << "End of Faces" << std::endl;
-
 
     Assimp::Exporter aExp;
-    aExp.Export(&aScene, "collada", filename);
+    aiReturn result = aExp.Export(&aScene, "stl", filename);
+    if (result != AI_SUCCESS)
+    {
+        std::cout << "Error" << std::endl << aExp.GetErrorString() << std::endl;
+        return false;
+    }
     return true;
 }
 
