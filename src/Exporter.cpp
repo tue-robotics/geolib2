@@ -1,5 +1,7 @@
 #include "geolib/Exporter.h"
 
+#include <algorithm>
+
 #ifdef ASSIMP_VERSION_3
     #include <assimp/Exporter.hpp>
     #include <assimp/scene.h>
@@ -9,6 +11,7 @@
     #include <assimp/assimp.hpp>
     #include <assimp/aiScene.h>
     #include <assimp/aiMesh.h>
+    #include <assimp/postprocess.h>
 #endif
 
 namespace geo {
@@ -27,45 +30,80 @@ Exporter::~Exporter()
 
 // ----------------------------------------------------------------------------------------------------
 
-bool Exporter::writeMeshFile(const std::string& filename, const Shape& shape, double scale)
+bool Exporter::writeMeshFile(const std::string& filename, const Shape& shape, std::string format)
 {
     aiScene aScene;
-    aiMesh aMesh;
-    aScene.mMeshes = new aiMesh*[ 1 ];
-    aScene.mMeshes[ 0 ] = nullptr;
+    aScene.mMeshes = new aiMesh*[1];
+    aScene.mMeshes[0] = new aiMesh();
+    auto aMesh = aScene.mMeshes[0];
     aScene.mNumMeshes = 1;
 
-    aScene.mMeshes[ 0 ] = new aiMesh();
-    aScene.mMeshes[ 0 ]->mMaterialIndex = 0;
-    aScene.mRootNode = new aiNode;
+    aScene.mMaterials = new aiMaterial*[1];
+    aScene.mMaterials[0] = new aiMaterial;
+    aScene.mNumMaterials = 1;
+    aMesh->mMaterialIndex = 0;
 
+    aScene.mRootNode = new aiNode;
+    auto aNode = aScene.mRootNode;
+    aNode->mMeshes = new uint[1];
+    aNode->mMeshes[0] = uint(0);
+    aNode->mNumMeshes = 1;
+
+    // Get mesh and its element from shape
     Mesh mesh = shape.getMesh();
     const std::vector<Vector3>& points = mesh.getPoints();
     const std::vector<TriangleI>& triangleIs = mesh.getTriangleIs();
 
-    aMesh.mVertices = new aiVector3D[points.size()];
-    aMesh.mNumVertices = points.size();
-    for (uint i = 0; i < points.size(); ++i)
+    // Transfer points to Assimp mesh
+    aMesh->mVertices = new aiVector3D[ points.size() ];
+    aMesh->mNumVertices = points.size();
+    for (std::vector<Vector3>::const_iterator it = points.cbegin(); it != points.cend(); ++it)
     {
-        const Vector3& p = points[i];
-        aMesh.mVertices[i] = aiVector3D(p.x, p.y, p.z);
+        const Vector3& v = *it;
+        aMesh->mVertices[it - points.begin()] = aiVector3D( v.x, v.y, v.z );
     }
 
-    aMesh.mFaces = new aiFace[triangleIs.size()];
-    aMesh.mNumFaces = triangleIs.size();
-    for (uint i = 0; i < triangleIs.size(); ++i)
+    // Transfer faces to Assimp mesh
+    aMesh->mFaces = new aiFace[triangleIs.size()];
+    aMesh->mNumFaces = triangleIs.size();
+    for (std::vector<TriangleI>::const_iterator it = triangleIs.cbegin(); it != triangleIs.cend(); ++it)
     {
-        aiFace& aFace = aMesh.mFaces[i];
-        const TriangleI& triangleI = triangleIs[i];
-        aFace.mIndices = new uint[3];
-        aFace.mNumIndices = 3;
-        aFace.mIndices[0] = triangleI.i1_;
-        aFace.mIndices[1] = triangleI.i2_;
-        aFace.mIndices[2] = triangleI.i3_;
+                aiFace& aFace = aMesh->mFaces[it - triangleIs.begin()];
+                aFace.mIndices = new uint[ 3 ];
+                aFace.mNumIndices = 3;
+
+                aFace.mIndices[0] = it->i1_;
+                aFace.mIndices[1] = it->i2_;
+                aFace.mIndices[2] = it->i3_;
+    }
+
+
+    //Check format
+    std::transform(format.begin(), format.end(), format.begin(), ::tolower);
+    if (format.empty())
+    {
+        if (filename.substr(filename.size() - 3) == "3ds")
+            format = "3ds";
+        else if (filename.substr(filename.size() - 3) == "3mf")
+            format = "3mf";
+        else if (filename.substr(filename.size() - 3) == "dae")
+            format = "collada";
+        else if (filename.substr(filename.size() - 3) == "ply")
+            format = "ply";
+        else if (filename.substr(filename.size() - 3) == "obj")
+            format = "obj";
+        else if (filename.substr(filename.size() - 3) == "stp")
+            format = "stp";
+        else if (filename.substr(filename.size() - 3) == "stl")
+            format = "stl";
+        else if (filename.substr(filename.size() - 1) == "x")
+            format = "x";
+        else if (filename.substr(filename.size() - 3) == "x3d")
+            format = "x3d";
     }
 
     Assimp::Exporter aExp;
-    aiReturn result = aExp.Export(&aScene, "stl", filename);
+    aiReturn result = aExp.Export(&aScene, format, filename);
     if (result != AI_SUCCESS)
     {
         std::cout << "Error" << std::endl << aExp.GetErrorString() << std::endl;

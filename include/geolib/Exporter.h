@@ -13,7 +13,7 @@ public:
 
     virtual ~Exporter();
 
-    bool writeMeshFile(const std::string& filename, const Shape& shape, double scale = 1.0);
+    bool writeMeshFile(const std::string& filename, const Shape& shape, std::string format = "");
 };
 
 }

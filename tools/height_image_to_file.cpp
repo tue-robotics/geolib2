@@ -60,6 +60,7 @@ int main(int argc, char **argv) {
     geo::Exporter exp;
     exp.writeMeshFile(output_file, shape);
 
-    std::cout << hmap.getMesh().getTriangleIs().size() << " triangles saved to '" << output_file << "'." << std::endl;
+    std::cout << mesh_transformed.getTriangleIs().size() << " triangles and " << mesh_transformed.getPoints().size() <<
+                 " points saved to '" << output_file << "'." << std::endl;
     return 0;
 }
