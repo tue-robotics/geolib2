@@ -15,19 +15,19 @@ int main(int argc, char **argv) {
     std::string output_file = argv[2];
 
     double resolution = 0.2;
-    if (argc > 2) {
-        resolution = atof(argv[2]);
+    if (argc > 3) {
+        resolution = atof(argv[3]);
     }
 
     double block_height = 1;
-    if (argc > 3) {
-        block_height = atof(argv[3]);
+    if (argc > 4) {
+        block_height = atof(argv[4]);
     }
 
     double origin_x = 0, origin_y = 0;
-    if (argc > 5) {
-        origin_x = atof(argv[4]);
-        origin_y = atof(argv[5]);
+    if (argc > 6) {
+        origin_x = atof(argv[5]);
+        origin_y = atof(argv[6]);
     }
 
     cv::Mat image = cv::imread(filename_img, CV_LOAD_IMAGE_GRAYSCALE);   // Read the file

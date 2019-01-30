@@ -6,12 +6,10 @@
     #include <assimp/Exporter.hpp>
     #include <assimp/scene.h>
     #include <assimp/mesh.h>
-    #include <assimp/postprocess.h>
 #else
     #include <assimp/assimp.hpp>
     #include <assimp/aiScene.h>
     #include <assimp/aiMesh.h>
-    #include <assimp/postprocess.h>
 #endif
 
 namespace geo {
