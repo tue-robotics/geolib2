@@ -87,9 +87,9 @@ Box CompositeShape::getBoundingBox() const {
 
 /**
  * @brief CompositeShape::getShapes return all the child shapes.
- * @return the vector of all ShapePtr and Transform(which are the inverse)
+ * @return reference to the vector of all ShapePtr and Transform(which are the inverse)
  */
-std::vector<std::pair<ShapePtr, Transform> > CompositeShape::getShapes() const {
+const std::vector<std::pair<ShapePtr, Transform> > &CompositeShape::getShapes() const {
     return shapes_;
 }
 
