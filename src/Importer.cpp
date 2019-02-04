@@ -116,7 +116,10 @@ ShapePtr Importer::readMeshFile(const std::string& filename, double scale)
     const aiScene* scene = I.ReadFile(filename, 0);
 
     if (!scene)
+    {
+        std::cout << "Assimp failed to load file: " << filename << std::endl;
         return ShapePtr();
+    }
 
     // TODO: get rid of this hack!!!
     bool transform = true;

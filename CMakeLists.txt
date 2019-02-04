@@ -1,6 +1,9 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(geolib2)
 
+## Compile as C++11, supported in ROS Kinetic and newer
+add_compile_options(-std=c++11)
+
 find_package(catkin REQUIRED COMPONENTS
   code_profiler
   cv_bridge
@@ -10,6 +13,7 @@ find_package(catkin REQUIRED COMPONENTS
 
 find_package(Boost REQUIRED)
 find_package(OpenCV REQUIRED)
+find_package(Assimp REQUIRED)
 
 catkin_package(
   INCLUDE_DIRS include
@@ -32,7 +36,7 @@ include_directories(
 # to show header files in Qt Creator
 file(GLOB_RECURSE HEADER_FILES include/*.h)
 
-if(EXISTS "/usr/include/assimp/Importer.hpp")
+if(EXISTS "/usr/include/assimp/Importer.hpp" OR EXISTS "/usr/local/include/assimp/Importer.hpp" )
     add_definitions(-DASSIMP_VERSION_3)
 endif()
 
@@ -57,6 +61,7 @@ add_library(geolib   src/Box.cpp
                      src/ros/msg_conversions.cpp
 
                      src/Importer.cpp
+                     src/Exporter.cpp
                      
                      src/serialization.cpp
                      src/visualization.cpp
@@ -74,6 +79,9 @@ target_link_libraries(show geolib)
 
 add_executable(height-map-to-shape tools/height_image_to_shape.cpp)
 target_link_libraries(height-map-to-shape geolib)
+
+add_executable(height-map-to-file tools/height_image_to_file.cpp)
+target_link_libraries(height-map-to-file geolib)
 
 # ------------------------------------------------------------------------------------------------
 #                                                TESTS
