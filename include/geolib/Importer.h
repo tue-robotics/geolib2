@@ -13,7 +13,17 @@ public:
 
     virtual ~Importer();
 
-    static ShapePtr readMeshFile(const std::string& filename, double scale = 1.0);
+    static ShapePtr readMeshFile(const std::string& filename, geo::Vec3 scale);
+
+    static ShapePtr readMeshFile(const std::string& filename, double scale)
+    {
+        return readMeshFile(filename, geo::Vec3(scale));
+    }
+
+    static ShapePtr readMeshFile(const std::string& filename)
+    {
+        return readMeshFile(filename, geo::Vec3(1.0));
+    }
 
 };
 
