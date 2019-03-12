@@ -24,7 +24,7 @@ Importer::~Importer()
 
 // ----------------------------------------------------------------------------------------------------
 
-void constructMesh(const aiScene* scene, aiNode* node, const geo::Pose3D& parent_pose, double scale, bool transform, geo::Mesh* mesh)
+void constructMesh(const aiScene* scene, aiNode* node, const geo::Pose3D& parent_pose, double scale_x, double scale_y, double scale_z, bool transform, geo::Mesh* mesh)
 {
     const aiMatrix4x4& t = node->mTransformation;
     geo::Pose3D p;
@@ -35,7 +35,7 @@ void constructMesh(const aiScene* scene, aiNode* node, const geo::Pose3D& parent
 
     for(unsigned int i = 0; i < node->mNumChildren; ++i)
     {
-        constructMesh(scene, node->mChildren[i], pose, scale, transform, mesh);
+        constructMesh(scene, node->mChildren[i], pose, scale_x, scale_y, scale_z, transform, mesh);
     }
 
     for(unsigned int i = 0; i < node->mNumMeshes; ++i)
@@ -48,9 +48,9 @@ void constructMesh(const aiScene* scene, aiNode* node, const geo::Pose3D& parent
         for(unsigned int j = 0; j < m->mNumVertices; ++j) {
             const aiVector3D& v = m->mVertices[j];
 
-            int ix = 1000 * scale * v.x;
-            int iy = 1000 * scale * v.y;
-            int iz = 1000 * scale * v.z;
+            int ix = 1000 * scale_x * v.x;
+            int iy = 1000 * scale_y * v.y;
+            int iz = 1000 * scale_z * v.z;
 
             bool match = false;
             std::map<int, std::map<int, std::map<int, int> > >::iterator it1 = xyz_map.find(ix);
@@ -70,7 +70,7 @@ void constructMesh(const aiScene* scene, aiNode* node, const geo::Pose3D& parent
                 if (transform)
                     p = pose * p;
 
-                int ip = mesh->addPoint(scale * p.x, scale * p.y, scale * p.z);
+                int ip = mesh->addPoint(scale_x * p.x, scale_y * p.y, scale_z * p.z);
                 xyz_map[ix][iy][iz] = ip;
                 i_map[j] = ip;
             }
@@ -110,7 +110,7 @@ void constructMesh(const aiScene* scene, aiNode* node, const geo::Pose3D& parent
 
 // ----------------------------------------------------------------------------------------------------
 
-ShapePtr Importer::readMeshFile(const std::string& filename, double scale)
+ShapePtr Importer::readMeshFile(const std::string& filename, geo::Vec3 scale)
 {
     Assimp::Importer I;
     const aiScene* scene = I.ReadFile(filename, 0);
@@ -141,10 +141,10 @@ ShapePtr Importer::readMeshFile(const std::string& filename, double scale)
         geo::Pose3D p;
         p.t = geo::Vector3(t.a4, t.b4, t.c4);
         p.R = geo::Matrix3(t.a1, t.a2, t.a3, t.b1, t.b2, t.b3, t.c1, t.c2, t.c3).normalized();
-        constructMesh(scene, scene->mRootNode, p.inverse(), scale, transform, &mesh);
+        constructMesh(scene, scene->mRootNode, p.inverse(), scale.x, scale.y, scale.z, transform, &mesh);
     }
     else
-        constructMesh(scene, scene->mRootNode, geo::Pose3D::identity(), scale, transform, &mesh);
+        constructMesh(scene, scene->mRootNode, geo::Pose3D::identity(), scale.x, scale.y, scale.z, transform, &mesh);
 
     shape->setMesh(mesh);
 
