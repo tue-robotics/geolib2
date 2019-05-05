@@ -90,7 +90,7 @@ const std::vector<Triangle>& Mesh::getTriangles() const {
 
 /**
  * Apply transformation to the mesh.
- * @param t Transformation t oapply.
+ * @param t Transformation to apply.
  * @return The transformed mesh.
  */
 Mesh Mesh::getTransformed(const geo::Transform t) const {
