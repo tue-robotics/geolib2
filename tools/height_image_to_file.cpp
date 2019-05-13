@@ -30,7 +30,7 @@ int main(int argc, char **argv) {
         origin_y = atof(argv[6]);
     }
 
-    cv::Mat image = cv::imread(filename_img, CV_LOAD_IMAGE_GRAYSCALE);   // Read the file
+    cv::Mat image = cv::imread(filename_img, cv::IMREAD_GRAYSCALE);   // Read the file
 
     std::vector<std::vector<double> > map;
 
