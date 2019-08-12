@@ -392,7 +392,7 @@ double LaserRangeFinder::getAngleMax() const {
 }
 
 double LaserRangeFinder::getAngleIncrement() const {
-    return (a_max_ - a_min_) / (num_beams_ - 1);
+    return (a_max_ - a_min_) / std::max(num_beams_ - 1, 1);
 }
 
 const std::vector<double>& LaserRangeFinder::getAngles() const {
