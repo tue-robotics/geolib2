@@ -69,7 +69,7 @@ bool Shape::intersect(const Vector3& p) const {
 }
 
 double Shape::side_operator(Vector3& p_U, Vector3& p_V, Vector3& q_U, Vector3& q_V){
-    return p_U.dot(p_V) + q_U.dot(q_V);
+    return p_U.dot(q_V) + q_U.dot(p_V);
 }
 
 const Mesh& Shape::getMesh() const {
