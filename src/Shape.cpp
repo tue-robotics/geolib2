@@ -23,8 +23,6 @@ bool Shape::intersect(const Ray &, float t0, float t1, double& distance) const {
 }
 
 bool Shape::intersect(const Vector3& p) const {
-    // WIP
-    return false;
     int intersect_count = 0;
 
     // determine plucker coordinates of line p
@@ -52,11 +50,24 @@ bool Shape::intersect(const Vector3& p) const {
         double S2 = side_operator(p_U, p_V, e2_U, e2_V);
         double S3 = side_operator(p_U, p_V, e3_U, e3_V);
 
-        if (S1<0 && S2<0 && S3<0){
-            intersect_count--;
-        }
-        else if(S1>0 && S2>0 && S3>0){
-            intersect_count++;
+        if ((S1<0 && S2<0 && S3<0) || (S1>0 && S2>0 && S3>0)){ // the line passes through the triangle. now check the line segment
+            Vector3 l1_U = p_out-v1;
+            Vector3 l2_U = v1 - p;
+
+            Vector3 l1_V = p_out.cross(v1);
+            Vector3 l2_V = v1.cross(p);
+
+            double S4 = side_operator(l1_U, l1_V, e2_U, e2_V);
+            double S5 = side_operator(l2_U, l2_V, e2_U, e2_V);
+
+            if ((S4>0 && S5<0) || (S4<0 && S5>0)){
+                if (S1<0 && S2<0 && S3<0){
+                    intersect_count--;
+                }
+                else if(S1>0 && S2>0 && S3>0){
+                    intersect_count++;
+                }
+            }
         }
     }
 
