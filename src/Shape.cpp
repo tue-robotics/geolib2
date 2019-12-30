@@ -22,6 +22,10 @@ bool Shape::intersect(const Ray &, float t0, float t1, double& distance) const {
     return false;
 }
 
+bool Shape::intersect(const Vector3& p) const {
+    return false;
+}
+
 const Mesh& Shape::getMesh() const {
     return mesh_;
 }
