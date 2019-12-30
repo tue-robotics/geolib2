@@ -23,6 +23,10 @@ bool Shape::intersect(const Ray &, float t0, float t1, double& distance) const {
 }
 
 bool Shape::intersect(const Vector3& p) const {
+    if (p.length2() > mesh_.getSquaredMaxRadius){
+        return false;
+    }
+
     int intersect_count = 0;
 
     // determine plucker coordinates of line p
