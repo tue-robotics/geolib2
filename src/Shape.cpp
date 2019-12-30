@@ -61,6 +61,7 @@ bool Shape::intersect(const Vector3& p) const {
     }
 
     if (intersect_count<0){
+        std::cout << "intersect_count lower than 0! Something went wrong!" << std::endl;
         return false;
     }
 
