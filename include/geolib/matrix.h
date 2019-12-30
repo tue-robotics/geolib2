@@ -57,10 +57,6 @@ public:
         return v_[0]*v.v_[0] + v_[1]*v.v_[1] + v_[2]*v.v_[2];
     }
 
-    inline vector3 cross(const Vector3& v) const {
-        return vector3(v_[1]*v.v_[2] - v_[2]*v.v_[1], v_[2]*v.v_[0] - v_[0]*v.v_[2], v_[0]*v.v_[1] - v_[1]*v.v_[0]);
-    }
-
     inline Vector3 operator+(const Vector3& v) const {
         return Vector3(v_[0]+v.v_[0], v_[1]+v.v_[1], v_[2]+v.v_[2]);
     }
