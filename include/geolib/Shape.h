@@ -58,6 +58,7 @@ private:
     mutable Vector3 bounding_box_min_cache_;    // cached value of the min corner of a bounding box
     mutable Vector3 bounding_box_max_cache_;    // cached value of the max corner of a bounding box
 
+    static double side_operator(Vector3& p_U, Vector3& p_V, Vector3& q_U, Vector3& q_V);
 };
 
 }
