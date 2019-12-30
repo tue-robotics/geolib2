@@ -23,7 +23,7 @@ bool Shape::intersect(const Ray &, float t0, float t1, double& distance) const {
 }
 
 bool Shape::intersect(const Vector3& p) const {
-    if (p.length2() > mesh_.getSquaredMaxRadius){
+    if (p.length2() > mesh_.getSquaredMaxRadius()){
         return false;
     }
 
