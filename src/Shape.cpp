@@ -44,7 +44,7 @@ bool Shape::intersect(const Vector3& p) const {
 
         Vector3 e1_U = v1-v2;
         Vector3 e2_U = v2 - v3;
-        Vector3 e3_U = v3-v1;
+        Vector3 e3_U = v3 - v1;
 
         Vector3 e1_V = v1.cross(v2);
         Vector3 e2_V = v2.cross(v3);
