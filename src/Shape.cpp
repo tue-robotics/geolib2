@@ -31,7 +31,7 @@ bool Shape::intersect(const Vector3& p) const {
 
     // determine plucker coordinates of line p
     Vector3 p_out = Vector3(1.1 * mesh_.getMaxRadius(), 0, 0);
-    Vector3 p_U = p-p_out;
+    Vector3 p_U = p - p_out;
     Vector3 p_V = p.cross(p_out);
 
     // load triangles
