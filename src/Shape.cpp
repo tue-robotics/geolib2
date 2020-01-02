@@ -42,7 +42,7 @@ bool Shape::intersect(const Vector3& p) const {
         Vector3 v2 = t_points[it->i2_];
         Vector3 v3 = t_points[it->i3_];
 
-        Vector3 e1_U = v1-v2;
+        Vector3 e1_U = v1 - v2;
         Vector3 e2_U = v2 - v3;
         Vector3 e3_U = v3 - v1;
 
