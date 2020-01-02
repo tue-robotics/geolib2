@@ -80,7 +80,7 @@ bool Shape::intersect(const Vector3& p) const {
         return false;
     }
 
-    return intersect_count>0;
+    return intersect_count > 0;
 }
 
 double Shape::side_operator(Vector3& p_U, Vector3& p_V, Vector3& q_U, Vector3& q_V){
