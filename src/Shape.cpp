@@ -22,16 +22,19 @@ bool Shape::intersect(const Ray &, float t0, float t1, double& distance) const {
     return false;
 }
 
+
+/** @brief Shape::intersect() determines whether a point p lies within the shape.
+ *  @return bool True means point p lies inside the shape.
+ *  @math Let the line segment P connect points p and an arbitrary point p_out outside of the shape
+ *  We count the number of intersections between P and the shape. A positive number means point p is inside the shape.
+ *  We use plucker coordinates to determine whether or not a triangle intersects line segment P
+ **/
+
 bool Shape::intersect(const Vector3& p) const {
     if (p.length2() > mesh_.getSquaredMaxRadius()){
         return false;
     }
 
-    /* This function determines whether a point p lies within the shape
-     * Let the line segment P connect points p and an arbitrary point p_out outside of the shape
-     * We count the number of intersections between P and the shape. A positive number means point p is inside the shape.
-     * We use plucker coordinates to determine whether or not a triangle intersects line segment P
-     */
     int intersect_count = 0;
 
     // determine plucker coordinates of line p
@@ -89,6 +92,7 @@ bool Shape::intersect(const Vector3& p) const {
 }
 
 double Shape::side_operator(Vector3& p_U, Vector3& p_V, Vector3& q_U, Vector3& q_V){
+    // calculate the side-operator of directed lines p and q given their plucker coordinates.
     return p_U.dot(q_V) + q_U.dot(p_V);
 }
 
