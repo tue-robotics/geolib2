@@ -27,6 +27,11 @@ bool Shape::intersect(const Vector3& p) const {
         return false;
     }
 
+    /* This function determines whether a point p lies within the shape
+     * Let the line segment P connect points p and an arbitrary point p_out outside of the shape
+     * We count the number of intersections between P and the shape. A positive number means point p is inside the shape.
+     * We use plucker coordinates to determine whether or not a triangle intersects line segment P
+     */
     int intersect_count = 0;
 
     // determine plucker coordinates of line p
