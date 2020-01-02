@@ -83,8 +83,8 @@ bool Shape::intersect(const Vector3& p) const {
         }
     }
 
-    if (intersect_count < 0) {
-        std::cout << "intersect_count lower than 0! Something went wrong!" << std::endl;
+   if (intersect_count < 0 || intersect_count > 1) {
+        std::cout << "intersect_count is " << intersect_count << ", it should be 0 or 1!" << std::endl;
         return false;
     }
 
