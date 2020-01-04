@@ -23,13 +23,17 @@ bool Shape::intersect(const Ray &, float t0, float t1, double& distance) const {
 }
 
 
+static double side_operator(Vector3& p_U, Vector3& p_V, Vector3& q_U, Vector3& q_V){
+    // calculate the side-operator of directed lines p and q given their plucker coordinates.
+    return p_U.dot(q_V) + q_U.dot(p_V);
+}
+
 /** @brief Shape::intersect() determines whether a point p lies within the shape.
  *  @return bool True means point p lies inside the shape.
  *  @math Let the line segment P connect points p and an arbitrary point p_out outside of the shape
  *  We count the number of intersections between P and the shape. A positive number means point p is inside the shape.
  *  We use plucker coordinates to determine whether or not a triangle intersects line segment P
  **/
-
 bool Shape::intersect(const Vector3& p) const {
     if (p.length2() > mesh_.getSquaredMaxRadius()){
         return false;
@@ -46,9 +50,9 @@ bool Shape::intersect(const Vector3& p) const {
     const std::vector<geo::Vector3>& t_points = mesh_.getPoints();
     const std::vector<TriangleI>& triangles_i = mesh_.getTriangleIs();
     for(std::vector<TriangleI>::const_iterator it = triangles_i.begin(); it != triangles_i.end(); ++it) {
-        Vector3 v1 = t_points[it->i1_];
-        Vector3 v2 = t_points[it->i2_];
-        Vector3 v3 = t_points[it->i3_];
+        const Vector3 &v1 = t_points[it->i1_];
+        const Vector3 &v2 = t_points[it->i2_];
+        const Vector3 &v3 = t_points[it->i3_];
 
         Vector3 e1_U = v1 - v2;
         Vector3 e2_U = v2 - v3;
@@ -89,11 +93,6 @@ bool Shape::intersect(const Vector3& p) const {
     }
 
     return intersect_count > 0;
-}
-
-double Shape::side_operator(Vector3& p_U, Vector3& p_V, Vector3& q_U, Vector3& q_V){
-    // calculate the side-operator of directed lines p and q given their plucker coordinates.
-    return p_U.dot(q_V) + q_U.dot(p_V);
 }
 
 const Mesh& Shape::getMesh() const {
