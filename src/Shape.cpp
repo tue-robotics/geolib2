@@ -28,13 +28,13 @@ static double side_operator(Vector3& p_U, Vector3& p_V, Vector3& q_U, Vector3& q
     return p_U.dot(q_V) + q_U.dot(p_V);
 }
 
-/** @brief Shape::intersect() determines whether a point p lies within the shape.
+/** @brief Shape::contains() determines whether a point p lies within the shape.
  *  @return bool True means point p lies inside the shape.
  *  @math Let the line segment P connect points p and an arbitrary point p_out outside of the shape
  *  We count the number of intersections between P and the shape. A positive number means point p is inside the shape.
  *  We use plucker coordinates to determine whether or not a triangle intersects line segment P
  **/
-bool Shape::intersect(const Vector3& p) const {
+bool Shape::contains(const Vector3& p) const {
     if (p.length2() > mesh_.getSquaredMaxRadius()){
         return false;
     }
