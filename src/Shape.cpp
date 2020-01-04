@@ -62,27 +62,26 @@ bool Shape::intersect(const Vector3& p) const {
         Vector3 e2_V = v2.cross(v3);
         Vector3 e3_V = v3.cross(v1);
 
-        double S1 = side_operator(p_U, p_V, e1_U, e1_V);
-        double S2 = side_operator(p_U, p_V, e2_U, e2_V);
-        double S3 = side_operator(p_U, p_V, e3_U, e3_V);
+        double s1 = side_operator(p_U, p_V, e1_U, e1_V);
+        double s2 = side_operator(p_U, p_V, e2_U, e2_V);
+        double s3 = side_operator(p_U, p_V, e3_U, e3_V);
 
-        if ((S1 < 0 && S2 < 0 && S3 < 0) || (S1 > 0 && S2 > 0 && S3 > 0)) { // the line passes through the triangle. now check the line segment
+        // determine whether v1, v2 and v3 cirle line p (counter) clockwise
+        bool clockwise = s1 < 0 && s2 < 0 && s3 < 0;
+        bool counterclockwise = s1 > 0 && s2 > 0 && s3 > 0;
+
+        if (clockwise || counterclockwise) { // the line passes through the triangle. now check the line segment
             Vector3 l1_U = p_out - v1;
             Vector3 l2_U = v1 - p;
 
             Vector3 l1_V = p_out.cross(v1);
             Vector3 l2_V = v1.cross(p);
 
-            double S4 = side_operator(l1_U, l1_V, e2_U, e2_V);
-            double S5 = side_operator(l2_U, l2_V, e2_U, e2_V);
+            double s4 = side_operator(l1_U, l1_V, e2_U, e2_V);
+            double s5 = side_operator(l2_U, l2_V, e2_U, e2_V);
 
-            if ((S4 > 0 && S5 < 0) || (S4 < 0 && S5 > 0)) {
-                if (S1 < 0 && S2 < 0 && S3 < 0) {
-                    intersect_count--;
-                }
-                else if(S1 > 0 && S2 > 0 && S3 > 0) {
-                    intersect_count++;
-                }
+            if ((s4 > 0 && s5 < 0) || (s4 < 0 && s5 > 0)) {
+                intersect_count+= counter_clockwise-clockwise;
             }
         }
     }
