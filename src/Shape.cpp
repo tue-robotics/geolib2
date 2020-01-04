@@ -81,7 +81,7 @@ bool Shape::contains(const Vector3& p) const {
             double s5 = side_operator(l2_U, l2_V, e2_U, e2_V);
 
             if ((s4 > 0 && s5 < 0) || (s4 < 0 && s5 > 0)) {
-                intersect_count+= counter_clockwise-clockwise;
+                intersect_count+= counterclockwise-clockwise;
             }
         }
     }
