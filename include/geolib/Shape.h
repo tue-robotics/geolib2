@@ -26,6 +26,8 @@ public:
 
     virtual bool intersect(const Ray &, float t0, float t1, double& distance) const;
 
+    virtual bool intersect(const Vector3& p, const double radius) const;
+
     virtual bool contains(const Vector3& p) const;
 
     virtual double getMaxRadius() const;

@@ -23,6 +23,50 @@ bool Shape::intersect(const Ray &, float t0, float t1, double& distance) const {
 }
 
 
+bool Shape::intersect(const Vector3& p, const double radius) const {
+    if (p.length2()-radius > mesh_.getSquaredMaxRadius()){
+        return false;
+    }
+
+    if (radius > 0) {
+        const double radius2 = radius*radius;
+        // load triangles
+        const std::vector<geo::Vector3>& t_points = mesh_.getPoints();
+        const std::vector<TriangleI>& triangles_i = mesh_.getTriangleIs();
+        for(std::vector<TriangleI>::const_iterator it = triangles_i.begin(); it != triangles_i.end(); ++it) {
+            const Vector3 &v1 = t_points[it->i1_];
+            const Vector3 &v2 = t_points[it->i2_];
+            const Vector3 &v3 = t_points[it->i3_];
+
+            Vector3 e1 = v1 - v2;
+            Vector3 e2 = v2 - v3;
+            Vector3 e3 = v3 - v1;
+
+            Vector3 norm = e1.cross(e2);
+            norm = norm/norm.length();
+
+            // check endpoints
+            if ((v1-p).lenght2() > radius2) return true;
+            if ((v2-p).lenght2() > radius2) return true;
+            if ((v3-p).lenght2() > radius2) return true;
+
+
+            double projected_distance = p.dot(norm);
+            if (abs(projected_distance) > radius) {
+                continue;
+            }
+
+            // check intersection with the edges.
+
+
+            // check the projection of p
+            Vector3 projected_point = p - norm * projected_distance;
+
+        }
+    }
+    return contains(p);
+}
+
 static double side_operator(Vector3& p_U, Vector3& p_V, Vector3& q_U, Vector3& q_V){
     // calculate the side-operator of directed lines p and q given their plucker coordinates.
     return p_U.dot(q_V) + q_U.dot(p_V);
