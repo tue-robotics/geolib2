@@ -22,6 +22,14 @@ bool Shape::intersect(const Ray &, float t0, float t1, double& distance) const {
     return false;
 }
 
+
+static double determinant(Vector3& v1, Vector3& v2, Vector3& v3){
+    // calculate the determinant.
+    return v1.getX()*(v2.getY()*v3.getZ() - v2.getZ()*v3.getY())
+         - v1.getY()*(v2.getX()*v3.getZ() - v2.getZ()*v3.getX())
+         + v1.getZ()*(v2.getX()*v3.getY() - v2.getY()*v3.getX());
+}
+
 /** @brief Shape::contains() determines whether the shape intersects a sphere with center p.
  *  @return bool True means the sphere intersects the shape.
  *  @math http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.49.9172&rep=rep1&type=pdf
@@ -76,8 +84,11 @@ bool Shape::intersect(const Vector3& p, const double radius) const {
             double projected_distance = p.dot(norm) / norm.length2();
             if (abs(projected_distance) < radius) {
                 // check that the projection falls within the triangle
-                 Vector3 projected_point = p - norm * projected_distance;
-
+                //Vector3 projected_point = p - norm * projected_distance;
+                double det1  = determinant(v1, v2, p);
+                double det2  = determinant(v2, v3, p);
+                double det3  = determinant(v3, v1, p);
+                if (det1 > 0 && det2 > 0 && det3 > 0 || det1 < 0 && det2 < 0 && det3 < 0) return true;
             }
         }
     }
