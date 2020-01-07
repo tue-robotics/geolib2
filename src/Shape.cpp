@@ -23,7 +23,7 @@ bool Shape::intersect(const Ray &, float t0, float t1, double& distance) const {
 }
 
 
-static double determinant(Vector3& v1, Vector3& v2, Vector3& v3){
+static double determinant(const Vector3& v1, const Vector3& v2, const Vector3& v3){
     // calculate the determinant.
     return v1.getX()*(v2.getY()*v3.getZ() - v2.getZ()*v3.getY())
          - v1.getY()*(v2.getX()*v3.getZ() - v2.getZ()*v3.getX())
@@ -72,8 +72,8 @@ bool Shape::intersect(const Vector3& p, const double radius) const {
                 if (d1-d2 < radius2 && d2 < e1.length2()) return true;
             }
 
-            double d1 = (v2-p).length2();  // distance between v2 and p squared
-            double d2 = e2.dot(v2-p);  // dot product between e2 and v2-p
+            d1 = (v2-p).length2();  // distance between v2 and p squared
+            d2 = e2.dot(v2-p);  // dot product between e2 and v2-p
             if (d2>0) {
                 d2 = d2*d2 / e2.length2(); // distance between v2 and the projection of p on e2
                 if (d1-d2 < radius2 && d2 < e2.length2()) return true;
