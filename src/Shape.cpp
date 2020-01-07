@@ -36,7 +36,7 @@ static double side_operator(Vector3& p_U, Vector3& p_V, Vector3& q_U, Vector3& q
  *  more details https://members.loria.fr/SLazard/ARC-Visi3D/Pant-project/files/Line_Segment_Triangle.html
  **/
 bool Shape::contains(const Vector3& p) const {
-    if (p.length2() > mesh_.getSquaredMaxRadius()){
+    if (p.length2() > mesh_.getSquaredMaxRadius()) {
         return false;
     }
 
