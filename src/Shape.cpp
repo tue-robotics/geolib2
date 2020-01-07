@@ -25,6 +25,7 @@ bool Shape::intersect(const Ray &, float t0, float t1, double& distance) const {
 
 static double side_operator(Vector3& p_U, Vector3& p_V, Vector3& q_U, Vector3& q_V){
     // calculate the side-operator of directed lines p and q given their plucker coordinates.
+    // this indicates whether p and q pass eachother clockwise or counterclockwise
     return p_U.dot(q_V) + q_U.dot(p_V);
 }
 
