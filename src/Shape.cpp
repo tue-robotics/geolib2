@@ -50,7 +50,7 @@ bool Shape::contains(const Vector3& p) const {
     // load triangles
     const std::vector<geo::Vector3>& t_points = mesh_.getPoints();
     const std::vector<TriangleI>& triangles_i = mesh_.getTriangleIs();
-    for(std::vector<TriangleI>::const_iterator it = triangles_i.begin(); it != triangles_i.end(); ++it) {
+    for (std::vector<TriangleI>::const_iterator it = triangles_i.begin(); it != triangles_i.end(); ++it) {
         const Vector3 &v1 = t_points[it->i1_];
         const Vector3 &v2 = t_points[it->i2_];
         const Vector3 &v3 = t_points[it->i3_];
