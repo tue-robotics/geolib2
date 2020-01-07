@@ -37,7 +37,7 @@ static double side_operator(Vector3& p_U, Vector3& p_V, Vector3& q_U, Vector3& q
  *  more details https://members.loria.fr/SLazard/ARC-Visi3D/Pant-project/files/Line_Segment_Triangle.html
  **/
 bool Shape::contains(const Vector3& p) const {
-    if (p.length2() > mesh_.getSquaredMaxRadius()){
+    if (p.length2() > mesh_.getSquaredMaxRadius()) {
         return false;
     }
 
@@ -51,7 +51,7 @@ bool Shape::contains(const Vector3& p) const {
     // load triangles
     const std::vector<geo::Vector3>& t_points = mesh_.getPoints();
     const std::vector<TriangleI>& triangles_i = mesh_.getTriangleIs();
-    for(std::vector<TriangleI>::const_iterator it = triangles_i.begin(); it != triangles_i.end(); ++it) {
+    for (std::vector<TriangleI>::const_iterator it = triangles_i.begin(); it != triangles_i.end(); ++it) {
         const Vector3 &v1 = t_points[it->i1_];
         const Vector3 &v2 = t_points[it->i2_];
         const Vector3 &v3 = t_points[it->i3_];
@@ -68,7 +68,7 @@ bool Shape::contains(const Vector3& p) const {
         double s2 = side_operator(p_U, p_V, e2_U, e2_V);
         double s3 = side_operator(p_U, p_V, e3_U, e3_V);
 
-        // determine whether v1, v2 and v3 cirle line p (counter) clockwise
+        // Determine whether v1, v2 and v3 circle line p (counter) clockwise.
         bool clockwise = s1 < 0 && s2 < 0 && s3 < 0;
         bool counterclockwise = s1 > 0 && s2 > 0 && s3 > 0;
 
