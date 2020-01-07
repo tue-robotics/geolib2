@@ -22,7 +22,10 @@ bool Shape::intersect(const Ray &, float t0, float t1, double& distance) const {
     return false;
 }
 
-
+/** @brief Shape::contains() determines whether the shape intersects a sphere with center p.
+ *  @return bool True means the sphere intersects the shape.
+ *  @math http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.49.9172&rep=rep1&type=pdf
+ **/
 bool Shape::intersect(const Vector3& p, const double radius) const {
     if (p.length2()-radius > mesh_.getSquaredMaxRadius()){
         return false;
@@ -40,28 +43,42 @@ bool Shape::intersect(const Vector3& p, const double radius) const {
 
             Vector3 e1 = v1 - v2;
             Vector3 e2 = v2 - v3;
-            Vector3 e3 = v3 - v1;
-
-            Vector3 norm = e1.cross(e2);
-            norm = norm/norm.length();
+            Vector3 e3 = v1 - v3;
 
             // check endpoints
-            if ((v1-p).lenght2() > radius2) return true;
-            if ((v2-p).lenght2() > radius2) return true;
-            if ((v3-p).lenght2() > radius2) return true;
+            if ((v1-p).length2() < radius2) return true;
+            if ((v2-p).length2() < radius2) return true;
+            if ((v3-p).length2() < radius2) return true;
 
-
-            double projected_distance = p.dot(norm);
-            if (abs(projected_distance) > radius) {
-                continue;
+            // check line segments
+            double d1 = (v1-p).length2();  // distance between v1 and p squared
+            double d2 = e1.dot(v1-p);  // dot product between e1 and v1-p
+            if (d2>0) {
+                d2 = d2*d2 / e1.length2(); // distance between v1 and the projection of p on e1
+                if (d1-d2 < radius2 && d2 < e1.length2()) return true;
             }
 
-            // check intersection with the edges.
+            d2 = e3.dot(v1-p);  // dot product between e3 and v1-p
+            if (d2>0) {
+                d2 = d2*d2 / e3.length2(); // distance between v1 and the projection of p on e3
+                if (d1-d2 < radius2 && d2 < e1.length2()) return true;
+            }
 
+            double d1 = (v2-p).length2();  // distance between v2 and p squared
+            double d2 = e2.dot(v2-p);  // dot product between e2 and v2-p
+            if (d2>0) {
+                d2 = d2*d2 / e2.length2(); // distance between v2 and the projection of p on e2
+                if (d1-d2 < radius2 && d2 < e2.length2()) return true;
+            }
 
-            // check the projection of p
-            Vector3 projected_point = p - norm * projected_distance;
+            // check surface
+            Vector3 norm = e1.cross(e2);
+            double projected_distance = p.dot(norm) / norm.length2();
+            if (abs(projected_distance) < radius) {
+                // check that the projection falls within the triangle
+                 Vector3 projected_point = p - norm * projected_distance;
 
+            }
         }
     }
     return contains(p);
