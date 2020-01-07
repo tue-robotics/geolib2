@@ -67,7 +67,7 @@ bool Shape::contains(const Vector3& p) const {
         double s2 = side_operator(p_U, p_V, e2_U, e2_V);
         double s3 = side_operator(p_U, p_V, e3_U, e3_V);
 
-        // determine whether v1, v2 and v3 cirle line p (counter) clockwise
+        // Determine whether v1, v2 and v3 circle line p (counter) clockwise.
         bool clockwise = s1 < 0 && s2 < 0 && s3 < 0;
         bool counterclockwise = s1 > 0 && s2 > 0 && s3 > 0;
 
