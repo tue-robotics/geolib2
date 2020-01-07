@@ -32,7 +32,8 @@ static double side_operator(Vector3& p_U, Vector3& p_V, Vector3& q_U, Vector3& q
  *  @return bool True means point p lies inside the shape.
  *  @math Let the line segment P connect points p and an arbitrary point p_out outside of the shape
  *  We count the number of intersections between P and the shape. A positive number means point p is inside the shape.
- *  We use plucker coordinates to determine whether or not a triangle intersects line segment P
+ *  We use plucker coordinates to determine whether or not a triangle intersects line segment P.
+ *  more details https://members.loria.fr/SLazard/ARC-Visi3D/Pant-project/files/Line_Segment_Triangle.html
  **/
 bool Shape::contains(const Vector3& p) const {
     if (p.length2() > mesh_.getSquaredMaxRadius()){
