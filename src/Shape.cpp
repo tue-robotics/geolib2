@@ -35,11 +35,11 @@ static double determinant(const Vector3& v1, const Vector3& v2, const Vector3& v
  *  @math http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.49.9172&rep=rep1&type=pdf
  **/
 bool Shape::intersect(const Vector3& p, const double radius) const {
-    if (p.length2()-radius > mesh_.getSquaredMaxRadius()){
+    if (p.length()-radius > mesh_.getMaxRadius()){
         return false;
     }
 
-    if (radius > 0) {
+    if (radius > 0.0) {
         const double radius2 = radius*radius;
         // load triangles
         const std::vector<geo::Vector3>& t_points = mesh_.getPoints();
