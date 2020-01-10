@@ -2,6 +2,7 @@
 #include "geolib/Box.h"
 
 #include <geolib/serialization.h>
+#include <cmath>
 
 namespace geo {
 
@@ -40,6 +41,7 @@ bool Shape::intersect(const Vector3& p, const double radius) const {
     }
 
     if (radius > 0.0) {
+        std::cout << "checking triangles:" << std::endl;
         const double radius2 = radius*radius;
         // load triangles
         const std::vector<geo::Vector3>& t_points = mesh_.getPoints();
@@ -54,44 +56,62 @@ bool Shape::intersect(const Vector3& p, const double radius) const {
             Vector3 e3 = v1 - v3;
 
             // check endpoints
-            if ((v1-p).length2() < radius2) return true;
-            if ((v2-p).length2() < radius2) return true;
-            if ((v3-p).length2() < radius2) return true;
+            if ((v1-p).length2() < radius2) {std::cout << "point collision"<< std::endl; return true;}
+            if ((v2-p).length2() < radius2) {std::cout << "point collision"<< std::endl; return true;}
+            if ((v3-p).length2() < radius2) {std::cout << "point collision"<< std::endl; return true;}
 
             // check line segments
             double d1 = (v1-p).length2();  // distance between v1 and p squared
             double d2 = e1.dot(v1-p);  // dot product between e1 and v1-p
             if (d2>0) {
                 d2 = d2*d2 / e1.length2(); // distance between v1 and the projection of p on e1
-                if (d1-d2 < radius2 && d2 < e1.length2()) return true;
+                if (d1-d2 < radius2 && d2 < e1.length2()) {std::cout << "edge collision"<< std::endl; return true;}
             }
 
             d2 = e3.dot(v1-p);  // dot product between e3 and v1-p
             if (d2>0) {
                 d2 = d2*d2 / e3.length2(); // distance between v1 and the projection of p on e3
-                if (d1-d2 < radius2 && d2 < e1.length2()) return true;
+                if (d1-d2 < radius2 && d2 < e1.length2()) {std::cout << "edge collision"<< std::endl; return true;}
             }
 
             d1 = (v2-p).length2();  // distance between v2 and p squared
             d2 = e2.dot(v2-p);  // dot product between e2 and v2-p
             if (d2>0) {
                 d2 = d2*d2 / e2.length2(); // distance between v2 and the projection of p on e2
-                if (d1-d2 < radius2 && d2 < e2.length2()) return true;
+                if (d1-d2 < radius2 && d2 < e2.length2()) {std::cout << "edge collision"<< std::endl; return true;}
             }
 
             // check surface
             Vector3 norm = e1.cross(e2);
-            double projected_distance = p.dot(norm) / norm.length2();
-            if (abs(projected_distance) < radius) {
+            double projected_distance2 = p.dot(norm); // projected_distance^2 = (p dot norm)^2 / |norm|^2
+            projected_distance2 = projected_distance2 * projected_distance2 / norm.length2();
+            if (projected_distance2 < radius2) {
+                std::cout << "pd: " << projected_distance2 << " r2: " << radius2 << std::endl;
                 // check that the projection falls within the triangle
-                //Vector3 projected_point = p - norm * projected_distance;
-                double det1  = determinant(v1, v2, p);
-                double det2  = determinant(v2, v3, p);
-                double det3  = determinant(v3, v1, p);
-                if (det1 > 0 && det2 > 0 && det3 > 0 || det1 < 0 && det2 < 0 && det3 < 0) return true;
+                //TODO something here doesn't quite work right
+                Vector3 r = p+sqrt(projected_distance2)*norm/norm.length();
+                double sign;
+                if (determinant(v1, v2, v3) > 0) {
+                    sign = 1;
+                }
+                else {
+                    sign = -1;
+                }
+
+                double det1  = determinant(v1, v2, r);
+                double det2  = determinant(v2, v3, r);
+                double det3  = determinant(v3, v1, r);
+
+
+                std::cout << "sign: " << sign << " det: " << det1 << " " << det2 << " " << det3<< std::endl;
+                if (det1*sign > 0 && det2*sign > 0 && det3*sign > 0) {
+                    std::cout << "face collision"<< std::endl; return true;
+                }
             }
         }
+        std::cout << "no intersection with triangles found: going to conatins(p)" << std::endl;
     }
+    std::cout << "conatins(p)" << std::endl;
     return contains(p);
 }
 
