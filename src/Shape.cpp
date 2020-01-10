@@ -83,37 +83,41 @@ bool Shape::intersect(const Vector3& p, const double radius) const {
 
             // check surface
             Vector3 norm = e1.cross(e2);
-            double projected_distance2 = p.dot(norm); // projected_distance^2 = (p dot norm)^2 / |norm|^2
+            double projected_distance2 = (p-v1).dot(norm); // projected_distance^2 = ((p-v1) dot norm)^2 / |norm|^2
             projected_distance2 = projected_distance2 * projected_distance2 / norm.length2();
+
             if (projected_distance2 < radius2) {
-                std::cout << "pd: " << projected_distance2 << " r2: " << radius2 << std::endl;
                 // check that the projection falls within the triangle
-                //TODO something here doesn't quite work right
                 Vector3 r = p+sqrt(projected_distance2)*norm/norm.length();
-                double sign;
-                if (determinant(v1, v2, v3) > 0) {
-                    sign = 1;
-                }
-                else {
-                    sign = -1;
-                }
 
                 double det1  = determinant(v1, v2, r);
                 double det2  = determinant(v2, v3, r);
                 double det3  = determinant(v3, v1, r);
 
+                Vector3 cross1  = e1.cross(r-v2);
+                Vector3 cross2  = e2.cross(r-v3);
+                Vector3 cross3  = e3.cross(r-v3);
 
-                std::cout << "sign: " << sign << " det: " << det1 << " " << det2 << " " << det3<< std::endl;
-                if (det1*sign > 0 && det2*sign > 0 && det3*sign > 0) {
+                double dot1 = cross1.dot(cross2);
+                double dot2 = cross1.dot(cross3);
+                double dot3 = cross2.dot(cross3);
+
+                if (dot1 > 0 && dot2 < 0 && dot3 < 0) {
                     std::cout << "face collision"<< std::endl; return true;
                 }
             }
+            std::cout << std::endl;
         }
-        std::cout << "no intersection with triangles found: going to conatins(p)" << std::endl;
+        std::cout << "no intersection with triangles found: going to contains(p)" << std::endl;
     }
-    std::cout << "conatins(p)" << std::endl;
+    std::cout << "contains(p)" << std::endl;
     return contains(p);
 }
+
+
+//std::cout << "v1: x: " << v1.getX() << " y: " << v1.getY()<< " z: " << v1.getZ() << std::endl;
+//std::cout << "v2: x: " << v2.getX() << " y: " << v2.getY()<< " z: " << v2.getZ() << std::endl;
+//std::cout << "v3: x: " << v3.getX() << " y: " << v3.getY()<< " z: " << v3.getZ() << std::endl;
 
 static double side_operator(Vector3& p_U, Vector3& p_V, Vector3& q_U, Vector3& q_V){
     // calculate the side-operator of directed lines p and q given their plucker coordinates.
