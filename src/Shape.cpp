@@ -24,13 +24,6 @@ bool Shape::intersect(const Ray &, float t0, float t1, double& distance) const {
 }
 
 
-static double determinant(const Vector3& v1, const Vector3& v2, const Vector3& v3){
-    // calculate the determinant.
-    return v1.getX()*(v2.getY()*v3.getZ() - v2.getZ()*v3.getY())
-         - v1.getY()*(v2.getX()*v3.getZ() - v2.getZ()*v3.getX())
-         + v1.getZ()*(v2.getX()*v3.getY() - v2.getY()*v3.getX());
-}
-
 /** @brief Shape::contains() determines whether the shape intersects a sphere with center p.
  *  @return bool True means the sphere intersects the shape.
  *  @math http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.49.9172&rep=rep1&type=pdf
@@ -41,7 +34,6 @@ bool Shape::intersect(const Vector3& p, const double radius) const {
     }
 
     if (radius > 0.0) {
-        std::cout << "checking triangles:" << std::endl;
         const double radius2 = radius*radius;
         // load triangles
         const std::vector<geo::Vector3>& t_points = mesh_.getPoints();
@@ -56,29 +48,29 @@ bool Shape::intersect(const Vector3& p, const double radius) const {
             Vector3 e3 = v1 - v3;
 
             // check endpoints
-            if ((v1-p).length2() < radius2) {std::cout << "point collision"<< std::endl; return true;}
-            if ((v2-p).length2() < radius2) {std::cout << "point collision"<< std::endl; return true;}
-            if ((v3-p).length2() < radius2) {std::cout << "point collision"<< std::endl; return true;}
+            if ((v1-p).length2() < radius2) return true;
+            if ((v2-p).length2() < radius2) return true;
+            if ((v3-p).length2() < radius2) return true;
 
             // check line segments
             double d1 = (v1-p).length2();  // distance between v1 and p squared
             double d2 = e1.dot(v1-p);  // dot product between e1 and v1-p
             if (d2>0) {
                 d2 = d2*d2 / e1.length2(); // distance between v1 and the projection of p on e1
-                if (d1-d2 < radius2 && d2 < e1.length2()) {std::cout << "edge collision"<< std::endl; return true;}
+                if (d1-d2 < radius2 && d2 < e1.length2()) return true;
             }
 
             d2 = e3.dot(v1-p);  // dot product between e3 and v1-p
             if (d2>0) {
                 d2 = d2*d2 / e3.length2(); // distance between v1 and the projection of p on e3
-                if (d1-d2 < radius2 && d2 < e1.length2()) {std::cout << "edge collision"<< std::endl; return true;}
+                if (d1-d2 < radius2 && d2 < e1.length2()) return true;
             }
 
             d1 = (v2-p).length2();  // distance between v2 and p squared
             d2 = e2.dot(v2-p);  // dot product between e2 and v2-p
             if (d2>0) {
                 d2 = d2*d2 / e2.length2(); // distance between v2 and the projection of p on e2
-                if (d1-d2 < radius2 && d2 < e2.length2()) {std::cout << "edge collision"<< std::endl; return true;}
+                if (d1-d2 < radius2 && d2 < e2.length2()) return true;
             }
 
             // check surface
@@ -90,10 +82,6 @@ bool Shape::intersect(const Vector3& p, const double radius) const {
                 // check that the projection falls within the triangle
                 Vector3 r = p+sqrt(projected_distance2)*norm/norm.length();
 
-                double det1  = determinant(v1, v2, r);
-                double det2  = determinant(v2, v3, r);
-                double det3  = determinant(v3, v1, r);
-
                 Vector3 cross1  = e1.cross(r-v2);
                 Vector3 cross2  = e2.cross(r-v3);
                 Vector3 cross3  = e3.cross(r-v3);
@@ -102,22 +90,13 @@ bool Shape::intersect(const Vector3& p, const double radius) const {
                 double dot2 = cross1.dot(cross3);
                 double dot3 = cross2.dot(cross3);
 
-                if (dot1 > 0 && dot2 < 0 && dot3 < 0) {
-                    std::cout << "face collision"<< std::endl; return true;
-                }
+                if (dot1 > 0 && dot2 < 0 && dot3 < 0) return true;
             }
-            std::cout << std::endl;
         }
-        std::cout << "no intersection with triangles found: going to contains(p)" << std::endl;
     }
-    std::cout << "contains(p)" << std::endl;
     return contains(p);
 }
 
-
-//std::cout << "v1: x: " << v1.getX() << " y: " << v1.getY()<< " z: " << v1.getZ() << std::endl;
-//std::cout << "v2: x: " << v2.getX() << " y: " << v2.getY()<< " z: " << v2.getZ() << std::endl;
-//std::cout << "v3: x: " << v3.getX() << " y: " << v3.getY()<< " z: " << v3.getZ() << std::endl;
 
 static double side_operator(Vector3& p_U, Vector3& p_V, Vector3& q_U, Vector3& q_V){
     // calculate the side-operator of directed lines p and q given their plucker coordinates.
