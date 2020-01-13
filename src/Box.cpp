@@ -89,7 +89,40 @@ bool Box::intersect(const Box& other) const {
     return true;
 }
 
+bool Box::intersect(const Vector3& p, const double radius) const {
+    Vector3 c = (bounds[0] + bounds[1]) / 2;
+
+    if (p.getX()+radius < bounds[0].getX() || p.getX()-radius < bounds[1].getX())
+        c.x = p.getX();
+    else if (p.getX() > c.getX())
+        c.x = bounds[1].getX();
+    else
+        c.x = bounds[0].getX();
+
+    if (p.getY()+radius < bounds[0].getY() || p.getY()-radius < bounds[1].getY())
+        c.x = p.getY();
+    else if (p.getY() > c.getY())
+        c.x = bounds[1].getY();
+    else
+        c.x = bounds[0].getY();
+
+    if (p.getZ()+radius < bounds[0].getZ() || p.getZ()-radius < bounds[1].getZ())
+        c.x = p.getZ();
+    else if (p.getZ() > c.getZ())
+        c.x = bounds[1].getZ();
+    else
+        c.x = bounds[0].getZ();
+
+
+    return radius*radius < (p-c).length2();
+}
+
 bool Box::intersect(const Vector3& p) const {
+    std::cout << "WARNING! Box::intersect(p) is deprecated! use Box::intersect(p, 0) or Box::contains(p) instead" << std::endl;
+    return contains(p);
+}
+
+bool Box::contains(const Vector3& p) const {
     return (p.getX() > bounds[0].getX() && p.getX() < bounds[1].getX()
             && p.getY() > bounds[0].getY() && p.getZ() < bounds[1].getY()
             && p.getZ() > bounds[0].getZ() && p.getY() < bounds[1].getZ());
