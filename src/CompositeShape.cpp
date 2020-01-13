@@ -43,6 +43,40 @@ bool CompositeShape::intersect(const Ray& r, float t0, float t1, double& distanc
     return false;
 }
 
+bool CompositeShape::intersect(const Vector3& p, const double radius) const {
+    if (!bb_.intersect(p, radius)) {
+        return false;
+    }
+    for(std::vector<std::pair<ShapePtr, Transform> >::const_iterator it = shapes_.begin(); it != shapes_.end(); ++it) {
+        const Transform& pose_inv = it->second;
+
+        const Shape& shape = *it->first;
+
+        Vector3 p_t = pose_inv * p;
+
+        if (shape.intersect(p_t, radius)) {
+            return true;
+        }
+    }
+}
+
+bool CompositeShape::contains(const Vector3& p) const {
+    if (!bb_.contains(p)) {
+        return false;
+    }
+    for(std::vector<std::pair<ShapePtr, Transform> >::const_iterator it = shapes_.begin(); it != shapes_.end(); ++it) {
+        const Transform& pose_inv = it->second;
+
+        const Shape& shape = *it->first;
+
+        Vector3 p_t = pose_inv * p;
+
+        if (shape.contains(p_t)) {
+            return true;
+        }
+    }
+}
+
 double CompositeShape::getMaxRadius() const {
     return max_radius_;
 }

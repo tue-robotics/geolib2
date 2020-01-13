@@ -19,6 +19,9 @@ public:
     CompositeShape* clone() const;
 
     bool intersect(const Ray &, float t0, float t1, double& distance) const;
+    bool intersect(const Vector3& p, const double radius) const;
+
+    bool contains(const Vector3& p) const;
 
     double getMaxRadius() const;
 
