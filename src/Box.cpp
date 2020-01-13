@@ -92,29 +92,28 @@ bool Box::intersect(const Box& other) const {
 bool Box::intersect(const Vector3& p, const double radius) const {
     Vector3 c = (bounds[0] + bounds[1]) / 2;
 
-    if (p.getX()+radius < bounds[0].getX() || p.getX()-radius < bounds[1].getX())
+    if (p.getX() > bounds[0].getX() && p.getX() < bounds[1].getX())
         c.x = p.getX();
     else if (p.getX() > c.getX())
         c.x = bounds[1].getX();
     else
         c.x = bounds[0].getX();
 
-    if (p.getY()+radius < bounds[0].getY() || p.getY()-radius < bounds[1].getY())
-        c.x = p.getY();
+    if (p.getY() > bounds[0].getY() && p.getY() < bounds[1].getY())
+        c.y = p.getY();
     else if (p.getY() > c.getY())
-        c.x = bounds[1].getY();
+        c.y = bounds[1].getY();
     else
-        c.x = bounds[0].getY();
+        c.y = bounds[0].getY();
 
-    if (p.getZ()+radius < bounds[0].getZ() || p.getZ()-radius < bounds[1].getZ())
-        c.x = p.getZ();
+    if (p.getZ() > bounds[0].getZ() && p.getZ() < bounds[1].getZ())
+        c.z = p.getZ();
     else if (p.getZ() > c.getZ())
-        c.x = bounds[1].getZ();
+        c.z = bounds[1].getZ();
     else
-        c.x = bounds[0].getZ();
+        c.z = bounds[0].getZ();
 
-
-    return radius*radius < (p-c).length2();
+    return radius*radius > (p-c).length2();
 }
 
 bool Box::intersect(const Vector3& p) const {
