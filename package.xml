@@ -16,5 +16,5 @@
   <depend>cv_bridge</depend>
   <depend>tf</depend>
   <depend>shape_msgs</depend>
-
+  <depend>gtest</depend>
 </package>
