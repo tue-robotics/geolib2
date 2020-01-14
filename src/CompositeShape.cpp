@@ -49,12 +49,8 @@ bool CompositeShape::intersect(const Vector3& p, const double radius) const {
     }
     for(std::vector<std::pair<ShapePtr, Transform> >::const_iterator it = shapes_.begin(); it != shapes_.end(); ++it) {
         const Transform& pose_inv = it->second;
-
-        const Shape& shape = *it->first;
-
         Vector3 p_t = pose_inv * p;
-
-        if (shape.intersect(p_t, radius)) {
+        if ((it->first)->intersect(p_t, radius)) {
             return true;
         }
     }
