@@ -20,7 +20,6 @@ TEST(TestSuite, testCase1){
     double radius = 0.5;
 
     ASSERT_TRUE(comp.intersect(p, radius));
-    ASSERT_TRUE(false);
 }
 
 int main(int argc, char **argv){
