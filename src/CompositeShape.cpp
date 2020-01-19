@@ -54,6 +54,7 @@ bool CompositeShape::intersect(const Vector3& p, const double radius) const {
             return true;
         }
     }
+    return false;
 }
 
 bool CompositeShape::contains(const Vector3& p) const {
