@@ -26,6 +26,8 @@ public:
 
     virtual bool intersect(const Ray &, float t0, float t1, double& distance) const;
 
+    virtual bool contains(const Vector3& p) const;
+
     virtual double getMaxRadius() const;
 
     virtual const Mesh& getMesh() const;
@@ -55,7 +57,6 @@ private:
     mutable bool  bounding_box_cache_valid_;    // keeps track if the cached values of the bounding box are valid
     mutable Vector3 bounding_box_min_cache_;    // cached value of the min corner of a bounding box
     mutable Vector3 bounding_box_max_cache_;    // cached value of the max corner of a bounding box
-
 };
 
 }

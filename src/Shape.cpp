@@ -22,6 +22,80 @@ bool Shape::intersect(const Ray &, float t0, float t1, double& distance) const {
     return false;
 }
 
+
+static double side_operator(Vector3& p_U, Vector3& p_V, Vector3& q_U, Vector3& q_V) {
+    // calculate the side-operator of directed lines p and q given their plucker coordinates.
+    // this indicates whether p and q pass eachother clockwise or counterclockwise
+    return p_U.dot(q_V) + q_U.dot(p_V);
+}
+
+/** @brief Shape::contains() determines whether a point p lies within the shape.
+ *  @return bool True means point p lies inside the shape.
+ *  @math Let the line segment P connect points p and an arbitrary point p_out outside of the shape
+ *  We count the number of intersections between P and the shape. A positive number means point p is inside the shape.
+ *  We use plucker coordinates to determine whether or not a triangle intersects line segment P.
+ *  more details https://members.loria.fr/SLazard/ARC-Visi3D/Pant-project/files/Line_Segment_Triangle.html
+ **/
+bool Shape::contains(const Vector3& p) const {
+    if (p.length2() > mesh_.getSquaredMaxRadius()) {
+        return false;
+    }
+
+    int intersect_count = 0;
+
+    // determine plucker coordinates of line p
+    Vector3 p_out = Vector3(1.1 * mesh_.getMaxRadius(), 0, 0);
+    Vector3 p_U = p - p_out;
+    Vector3 p_V = p.cross(p_out);
+
+    // load triangles
+    const std::vector<geo::Vector3>& t_points = mesh_.getPoints();
+    const std::vector<TriangleI>& triangles_i = mesh_.getTriangleIs();
+    for (std::vector<TriangleI>::const_iterator it = triangles_i.begin(); it != triangles_i.end(); ++it) {
+        const Vector3 &v1 = t_points[it->i1_];
+        const Vector3 &v2 = t_points[it->i2_];
+        const Vector3 &v3 = t_points[it->i3_];
+
+        Vector3 e1_U = v1 - v2;
+        Vector3 e2_U = v2 - v3;
+        Vector3 e3_U = v3 - v1;
+
+        Vector3 e1_V = v1.cross(v2);
+        Vector3 e2_V = v2.cross(v3);
+        Vector3 e3_V = v3.cross(v1);
+
+        double s1 = side_operator(p_U, p_V, e1_U, e1_V);
+        double s2 = side_operator(p_U, p_V, e2_U, e2_V);
+        double s3 = side_operator(p_U, p_V, e3_U, e3_V);
+
+        // Determine whether v1, v2 and v3 circle line p (counter) clockwise.
+        bool clockwise = s1 < 0 && s2 < 0 && s3 < 0;
+        bool counterclockwise = s1 > 0 && s2 > 0 && s3 > 0;
+
+        if (clockwise || counterclockwise) { // the line passes through the triangle. now check the line segment
+            Vector3 l1_U = p_out - v1;
+            Vector3 l2_U = v1 - p;
+
+            Vector3 l1_V = p_out.cross(v1);
+            Vector3 l2_V = v1.cross(p);
+
+            double s4 = side_operator(l1_U, l1_V, e2_U, e2_V);
+            double s5 = side_operator(l2_U, l2_V, e2_U, e2_V);
+
+            if ((s4 > 0 && s5 < 0) || (s4 < 0 && s5 > 0)) {
+                intersect_count+= counterclockwise-clockwise;
+            }
+        }
+    }
+
+   if (intersect_count < 0 || intersect_count > 1) {
+        std::cout << "intersect_count is " << intersect_count << ", it should be 0 or 1!" << std::endl;
+        return false;
+    }
+
+    return intersect_count > 0;
+}
+
 const Mesh& Shape::getMesh() const {
     return mesh_;
 }
