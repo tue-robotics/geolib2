@@ -15,7 +15,15 @@ public:
 
     bool intersect(const Ray &, float t0, float t1, double& distance) const;
     bool intersect(const Box& other) const;
+
+    /** @brief Box::intersect() determines whether the shape intersects a sphere with center p.
+     *  @return bool True means the sphere intersects the shape.
+     **/
     bool intersect(const Vector3& p, const double radius) const;
+
+    /** @brief Box::contains() determines whether a point p lies within the shape.
+     *  @return bool True means point p lies inside the shape.
+     **/
     bool intersect(const Vector3& p) const;
 
     bool contains(const Vector3& p) const;
