@@ -4,6 +4,8 @@
 #include <geolib/serialization.h>
 #include <cmath>
 
+#include <ros/console.h>
+
 namespace geo {
 
 const std::string Shape::TYPE = "mesh";
@@ -162,7 +164,7 @@ bool Shape::contains(const Vector3& p) const {
     }
 
    if (intersect_count < 0 || intersect_count > 1) {
-        std::cout << "intersect_count is " << intersect_count << ", it should be 0 or 1!" << std::endl;
+        ROS_ERROR("intersect_count is %i, it should be 0 or 1! Is your shape constructed correctly?", intersect_count);
         return false;
     }
 
