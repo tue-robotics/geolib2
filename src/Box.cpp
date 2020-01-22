@@ -1,5 +1,7 @@
 #include "geolib/Box.h"
 
+#include <ros/console.h>
+
 namespace geo {
 
 Box::Box(const Vector3 &min, const Vector3 &max) {
@@ -117,7 +119,7 @@ bool Box::intersect(const Vector3& p, const double radius) const {
 }
 
 bool Box::intersect(const Vector3& p) const {
-    std::cout << "WARNING! Box::intersect(p) is deprecated! use Box::intersect(p, 0) or Box::contains(p) instead" << std::endl;
+    ROS_WARN("Box::intersect(p) is deprecated! use Box::intersect(p, 0) or Box::contains(p) instead");
     return contains(p);
 }
 
