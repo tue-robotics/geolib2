@@ -26,8 +26,14 @@ public:
 
     virtual bool intersect(const Ray &, float t0, float t1, double& distance) const;
 
+    /** @brief Shape::intersect() determines whether the shape intersects a sphere with center p.
+     *  @return bool True means the sphere intersects the shape.
+     **/
     virtual bool intersect(const Vector3& p, const double radius) const;
 
+    /** @brief Shape::contains() determines whether a point p lies within the shape.
+    *   @return bool True means point p lies inside the shape.
+    **/
     virtual bool contains(const Vector3& p) const;
 
     virtual double getMaxRadius() const;

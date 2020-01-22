@@ -24,8 +24,7 @@ bool Shape::intersect(const Ray &, float t0, float t1, double& distance) const {
 }
 
 
-/** @brief Shape::contains() determines whether the shape intersects a sphere with center p.
- *  @return bool True means the sphere intersects the shape.
+/**
  *  @math http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.49.9172&rep=rep1&type=pdf
  **/
 bool Shape::intersect(const Vector3& p, const double radius) const {
@@ -104,8 +103,7 @@ static double side_operator(Vector3& p_U, Vector3& p_V, Vector3& q_U, Vector3& q
     return p_U.dot(q_V) + q_U.dot(p_V);
 }
 
-/** @brief Shape::contains() determines whether a point p lies within the shape.
- *  @return bool True means point p lies inside the shape.
+/**
  *  @math Let the line segment P connect points p and an arbitrary point p_out outside of the shape
  *  We count the number of intersections between P and the shape. A positive number means point p is inside the shape.
  *  We use plucker coordinates to determine whether or not a triangle intersects line segment P.
