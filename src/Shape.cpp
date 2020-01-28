@@ -70,28 +70,6 @@ bool Shape::intersect(const Vector3& p, const double radius) const {
             if (check_linesegment(p, radius, v2, e2)) return true;
             if (check_linesegment(p, radius, v3, e3)) return true;
 
-            /*
-            double d1 = (v1-p).length2();  // distance between v1 and p squared
-            double d2 = e1.dot(v1-p);  // dot product between e1 and v1-p
-            if (d2>0) {
-                d2 = d2*d2 / e1.length2(); // distance between v1 and the projection of p on e1
-                if (d1-d2 < radius2 && d2 < e1.length2()) return true;
-            }
-
-            d2 = e3.dot(v1-p);  // dot product between e3 and v1-p
-            if (d2>0) {
-                d2 = d2*d2 / e3.length2(); // distance between v1 and the projection of p on e3
-                if (d1-d2 < radius2 && d2 < e1.length2()) return true;
-            }
-
-            d1 = (v2-p).length2();  // distance between v2 and p squared
-            d2 = e2.dot(v2-p);  // dot product between e2 and v2-p
-            if (d2>0) {
-                d2 = d2*d2 / e2.length2(); // distance between v2 and the projection of p on e2
-                if (d1-d2 < radius2 && d2 < e2.length2()) return true;
-            }
-            */
-
             // check surface
             Vector3 norm = e1.cross(e2);
             double projected_distance2 = (p-v1).dot(norm); // projected_distance^2 = ((p-v1) dot norm)^2 / |norm|^2
