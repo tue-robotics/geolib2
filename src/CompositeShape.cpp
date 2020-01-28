@@ -61,7 +61,7 @@ bool CompositeShape::contains(const Vector3& p) const {
     if (!bb_.contains(p)) {
         return false;
     }
-    for(std::vector<std::pair<ShapePtr, Transform> >::const_iterator it = shapes_.begin(); it != shapes_.end(); ++it) {
+    for(auto it = shapes_.begin(); it != shapes_.end(); ++it) {
         const Transform& pose_inv = it->second;
 
         const Shape& shape = *it->first;
