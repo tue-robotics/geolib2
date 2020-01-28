@@ -21,7 +21,7 @@ bool CompositeShape::intersect(const Ray& r, float t0, float t1, double& distanc
     double min_distance = t1;
 
 
-    for(std::vector<std::pair<ShapePtr, Transform> >::const_iterator it = shapes_.begin(); it != shapes_.end(); ++it) {
+    for(auto it = shapes_.begin(); it != shapes_.end(); ++it) {
         const Transform& pose_inv = it->second;
 
         const Shape& shape = *it->first;
