@@ -25,6 +25,18 @@ bool Shape::intersect(const Ray &, float t0, float t1, double& distance) const {
     return false;
 }
 
+/** Check whether a point p is within distance radius of the line segment whose first vertex is described by v and second vertex by v-e
+ *
+ **/
+bool check_linesegment(const Vector3& p, const double radius, const Vector3& v, const Vector3& e){
+    double d1 = (v-p).length2();  // distance between v and p, squared
+    double d2 = e.dot(v-p);  // dot product between e and v-p
+    if (d2>0) {
+        d2 = d2*d2 / e.length2(); // distance between v and the projection of p on e
+        return d1-d2 < radius && d2 < e.length2();
+    }
+    return false;
+}
 
 /**
  *  @math http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.49.9172&rep=rep1&type=pdf
@@ -46,7 +58,7 @@ bool Shape::intersect(const Vector3& p, const double radius) const {
 
             Vector3 e1 = v1 - v2;
             Vector3 e2 = v2 - v3;
-            Vector3 e3 = v1 - v3;
+            Vector3 e3 = v3 - v1;
 
             // check endpoints
             if ((v1-p).length2() < radius2) return true;
@@ -54,6 +66,11 @@ bool Shape::intersect(const Vector3& p, const double radius) const {
             if ((v3-p).length2() < radius2) return true;
 
             // check line segments
+            if (check_linesegment(p, radius, v1, e1)) return true;
+            if (check_linesegment(p, radius, v2, e2)) return true;
+            if (check_linesegment(p, radius, v3, e3)) return true;
+
+            /*
             double d1 = (v1-p).length2();  // distance between v1 and p squared
             double d2 = e1.dot(v1-p);  // dot product between e1 and v1-p
             if (d2>0) {
@@ -73,6 +90,7 @@ bool Shape::intersect(const Vector3& p, const double radius) const {
                 d2 = d2*d2 / e2.length2(); // distance between v2 and the projection of p on e2
                 if (d1-d2 < radius2 && d2 < e2.length2()) return true;
             }
+            */
 
             // check surface
             Vector3 norm = e1.cross(e2);
@@ -85,13 +103,13 @@ bool Shape::intersect(const Vector3& p, const double radius) const {
 
                 Vector3 cross1  = e1.cross(r-v2);
                 Vector3 cross2  = e2.cross(r-v3);
-                Vector3 cross3  = e3.cross(r-v3);
+                Vector3 cross3  = e3.cross(r-v1);
 
                 double dot1 = cross1.dot(cross2);
-                double dot2 = cross1.dot(cross3);
-                double dot3 = cross2.dot(cross3);
+                double dot2 = cross2.dot(cross3);
+                double dot3 = cross3.dot(cross1);
 
-                if (dot1 > 0 && dot2 < 0 && dot3 < 0) return true;
+                if (dot1 > 0 && dot2 > 0 && dot3 > 0) return true;
             }
         }
     }
