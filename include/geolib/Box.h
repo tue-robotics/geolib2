@@ -21,11 +21,13 @@ public:
      **/
     bool intersect(const Vector3& p, const double radius) const;
 
-    /** @brief Box::contains() determines whether a point p lies within the shape.
-     *  @return bool True means point p lies inside the shape.
+    /** Deprecated! use Box::contains(p) instead!
      **/
     bool intersect(const Vector3& p) const;
 
+    /** @brief Box::contains() determines whether a point p lies within the shape.
+     *  @return bool True means point p lies inside the shape.
+     **/
     bool contains(const Vector3& p) const;
 
     double getMaxRadius() const;
