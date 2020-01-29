@@ -94,3 +94,13 @@ add_executable(test_geolib_lrf test/test_geolib_lrf.cpp)
 target_link_libraries(test_geolib_lrf geolib)
 
 add_executable(test_matrix test/test_matrix.cpp)
+
+
+# ------------------------------------------------------------------------------------------------
+#                                               UNIT TESTS
+# ------------------------------------------------------------------------------------------------
+
+if(CATKIN_ENABLE_TESTING)
+  catkin_add_gtest(test_intersect test/test_intersect.cpp)
+  target_link_libraries(test_intersect geolib)
+endif()

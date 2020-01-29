@@ -1,5 +1,7 @@
 #include "geolib/Box.h"
 
+#include <ros/console.h>
+
 namespace geo {
 
 Box::Box(const Vector3 &min, const Vector3 &max) {
@@ -89,7 +91,39 @@ bool Box::intersect(const Box& other) const {
     return true;
 }
 
+bool Box::intersect(const Vector3& p, const double radius) const {
+    Vector3 c = (bounds[0] + bounds[1]) / 2;
+
+    if (p.getX() > bounds[0].getX() && p.getX() < bounds[1].getX())
+        c.x = p.getX();
+    else if (p.getX() > c.getX())
+        c.x = bounds[1].getX();
+    else
+        c.x = bounds[0].getX();
+
+    if (p.getY() > bounds[0].getY() && p.getY() < bounds[1].getY())
+        c.y = p.getY();
+    else if (p.getY() > c.getY())
+        c.y = bounds[1].getY();
+    else
+        c.y = bounds[0].getY();
+
+    if (p.getZ() > bounds[0].getZ() && p.getZ() < bounds[1].getZ())
+        c.z = p.getZ();
+    else if (p.getZ() > c.getZ())
+        c.z = bounds[1].getZ();
+    else
+        c.z = bounds[0].getZ();
+
+    return radius*radius > (p-c).length2();
+}
+
 bool Box::intersect(const Vector3& p) const {
+    ROS_WARN("Box::intersect(p) is deprecated! use Box::intersect(p, 0) or Box::contains(p) instead");
+    return contains(p);
+}
+
+bool Box::contains(const Vector3& p) const {
     return (p.getX() > bounds[0].getX() && p.getX() < bounds[1].getX()
             && p.getY() > bounds[0].getY() && p.getZ() < bounds[1].getY()
             && p.getZ() > bounds[0].getZ() && p.getY() < bounds[1].getZ());

@@ -2,6 +2,9 @@
 #include "geolib/Box.h"
 
 #include <geolib/serialization.h>
+#include <cmath>
+
+#include <ros/console.h>
 
 namespace geo {
 
@@ -22,6 +25,75 @@ bool Shape::intersect(const Ray &, float t0, float t1, double& distance) const {
     return false;
 }
 
+/** Check whether a point p is within distance radius of the line segment whose first vertex is described by v and second vertex by v-e
+ *
+ **/
+bool check_linesegment(const Vector3& p, const double radius, const Vector3& v, const Vector3& e){
+    double d1 = (v-p).length2();  // distance between v and p, squared
+    double d2 = e.dot(v-p);  // dot product between e and v-p
+    if (d2>0) {
+        d2 = d2*d2 / e.length2(); // distance between v and the projection of p on e
+        return d1-d2 < radius && d2 < e.length2();
+    }
+    return false;
+}
+
+/**
+ *  @math http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.49.9172&rep=rep1&type=pdf
+ **/
+bool Shape::intersect(const Vector3& p, const double radius) const {
+    if (p.length()-radius > mesh_.getMaxRadius()){
+        return false;
+    }
+
+    if (radius > 0.0) {
+        const double radius2 = radius*radius;
+        // load triangles
+        const std::vector<geo::Vector3>& t_points = mesh_.getPoints();
+        const std::vector<TriangleI>& triangles_i = mesh_.getTriangleIs();
+        for(auto it = triangles_i.begin(); it != triangles_i.end(); ++it) {
+            const Vector3 &v1 = t_points[it->i1_];
+            const Vector3 &v2 = t_points[it->i2_];
+            const Vector3 &v3 = t_points[it->i3_];
+
+            Vector3 e1 = v1 - v2;
+            Vector3 e2 = v2 - v3;
+            Vector3 e3 = v3 - v1;
+
+            // check endpoints
+            if ((v1-p).length2() < radius2) return true;
+            if ((v2-p).length2() < radius2) return true;
+            if ((v3-p).length2() < radius2) return true;
+
+            // check line segments
+            if (check_linesegment(p, radius, v1, e1)) return true;
+            if (check_linesegment(p, radius, v2, e2)) return true;
+            if (check_linesegment(p, radius, v3, e3)) return true;
+
+            // check surface
+            Vector3 norm = e1.cross(e2);
+            double projected_distance2 = (p-v1).dot(norm); // projected_distance^2 = ((p-v1) dot norm)^2 / |norm|^2
+            projected_distance2 = projected_distance2 * projected_distance2 / norm.length2();
+
+            if (projected_distance2 < radius2) {
+                // check that the projection falls within the triangle
+                Vector3 r = p+sqrt(projected_distance2)*norm/norm.length();
+
+                Vector3 cross1  = e1.cross(r-v2);
+                Vector3 cross2  = e2.cross(r-v3);
+                Vector3 cross3  = e3.cross(r-v1);
+
+                double dot1 = cross1.dot(cross2);
+                double dot2 = cross2.dot(cross3);
+                double dot3 = cross3.dot(cross1);
+
+                if (dot1 > 0 && dot2 > 0 && dot3 > 0) return true;
+            }
+        }
+    }
+    return contains(p);
+}
+
 
 static double side_operator(Vector3& p_U, Vector3& p_V, Vector3& q_U, Vector3& q_V) {
     // calculate the side-operator of directed lines p and q given their plucker coordinates.
@@ -29,8 +101,7 @@ static double side_operator(Vector3& p_U, Vector3& p_V, Vector3& q_U, Vector3& q
     return p_U.dot(q_V) + q_U.dot(p_V);
 }
 
-/** @brief Shape::contains() determines whether a point p lies within the shape.
- *  @return bool True means point p lies inside the shape.
+/**
  *  @math Let the line segment P connect points p and an arbitrary point p_out outside of the shape
  *  We count the number of intersections between P and the shape. A positive number means point p is inside the shape.
  *  We use plucker coordinates to determine whether or not a triangle intersects line segment P.
@@ -89,7 +160,7 @@ bool Shape::contains(const Vector3& p) const {
     }
 
    if (intersect_count < 0 || intersect_count > 1) {
-        std::cout << "intersect_count is " << intersect_count << ", it should be 0 or 1!" << std::endl;
+        ROS_ERROR("intersect_count is %i, it should be 0 or 1! Is your shape constructed correctly?", intersect_count);
         return false;
     }
 

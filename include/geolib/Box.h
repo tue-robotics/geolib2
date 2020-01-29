@@ -14,12 +14,23 @@ public:
     Box* clone() const;
 
     bool intersect(const Ray &, float t0, float t1, double& distance) const;
-
-    double getMaxRadius() const;
-
     bool intersect(const Box& other) const;
 
+    /** @brief Box::intersect() determines whether the shape intersects a sphere with center p.
+     *  @return bool True means the sphere intersects the shape.
+     **/
+    bool intersect(const Vector3& p, const double radius) const;
+
+    /** Deprecated! use Box::contains(p) instead!
+     **/
     bool intersect(const Vector3& p) const;
+
+    /** @brief Box::contains() determines whether a point p lies within the shape.
+     *  @return bool True means point p lies inside the shape.
+     **/
+    bool contains(const Vector3& p) const;
+
+    double getMaxRadius() const;
 
     Box getBoundingBox() const;
 
