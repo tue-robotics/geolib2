@@ -95,6 +95,18 @@ bool Shape::intersect(const Vector3& p, const double radius) const {
 }
 
 
+bool Shape::intersect(const Pose3D& pose, const Shape& other) const {
+    if (pose.t.length() > other.mesh_.getMaxRadius() + mesh_.getMaxRadius()){
+        const std::vector<geo::Vector3>& t_points = mesh_.getPoints();
+        for (auto it = t_points.begin(); it != t_points.end(); ++it) {
+            Vector3 p = pose * *it;
+            if (other.contains(p))
+                return true;
+        }
+    }
+}
+
+
 static double side_operator(Vector3& p_U, Vector3& p_V, Vector3& q_U, Vector3& q_V) {
     // calculate the side-operator of directed lines p and q given their plucker coordinates.
     // this indicates whether p and q pass eachother clockwise or counterclockwise
