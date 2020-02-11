@@ -100,7 +100,9 @@ double line_parameter(const Vector3 &D, const Vector3 &v1, const Vector3 &v2, co
     return p_v1 + (p_v2-p_v1) * d_v1/(d_v1-d_v2);
 }
 
-
+/**
+ *  @math http://web.stanford.edu/class/cs277/resources/papers/Moller1997b.pdf
+ **/
 bool Shape::intersect(const Pose3D& pose, const Shape& other) const {
     if (pose.t.length() < other.mesh_.getMaxRadius() + mesh_.getMaxRadius())
         return false;
