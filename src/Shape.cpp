@@ -94,16 +94,120 @@ bool Shape::intersect(const Vector3& p, const double radius) const {
     return contains(p);
 }
 
+double line_parameter(const Vector3 &D, const Vector3 &v1, const Vector3 &v2, const double d_v1, const double d_v2) {
+    double p_v1 = D.dot(v1);
+    double p_v2 = D.dot(v2);
+    return p_v1 + (p_v2-p_v1) * d_v1/(d_v1-d_v2);
+}
+
 
 bool Shape::intersect(const Pose3D& pose, const Shape& other) const {
-    if (pose.t.length() > other.mesh_.getMaxRadius() + mesh_.getMaxRadius()){
-        const std::vector<geo::Vector3>& t_points = mesh_.getPoints();
-        for (auto it = t_points.begin(); it != t_points.end(); ++it) {
-            Vector3 p = pose * *it;
-            if (other.contains(p))
+    if (pose.t.length() < other.mesh_.getMaxRadius() + mesh_.getMaxRadius())
+        return false;
+
+    // properties of self or 1
+    const std::vector<geo::Vector3>& points_1 = mesh_.getPoints();
+    const std::vector<TriangleI>& triangles_1 = mesh_.getTriangleIs();
+    // properties of the other or 2
+    const std::vector<geo::Vector3>& points_2 = other.mesh_.getPoints();
+    const std::vector<TriangleI>& triangles_2 = other.mesh_.getTriangleIs();
+
+    // check triangle triangle intersections for all combinations
+    for (auto it_1 = triangles_1.begin(); it_1 != triangles_1.end(); ++it_1) {
+        Vector3 v1_1 = points_1[it_1->i1_];
+        Vector3 v2_1 = points_1[it_1->i2_];
+        Vector3 v3_1 = points_1[it_1->i3_];
+
+        // transform the point to the frame of shape other
+        v1_1 = pose * v1_1;
+        v2_1 = pose * v2_1;
+        v3_1 = pose * v3_1;
+
+        Vector3 N_1 = (v2_1 - v1_1).cross(v3_1 - v1_1);
+        double d_1 = -N_1.dot(v1_1);
+
+        for (auto it_2 = triangles_2.begin(); it_2 != triangles_2.end(); ++it_2) {
+            Vector3 v1_2 = points_2[it_2->i1_];
+            Vector3 v2_2 = points_2[it_2->i2_];
+            Vector3 v3_2 = points_2[it_2->i3_];
+
+            // define the plane of 2 as 'N_2 * X + d_2 = 0'
+            Vector3 N_2 = (v2_2 - v1_2).cross(v3_2 - v1_2);
+            double d_2 = -N_2.dot(v1_2);
+
+            double d_v1_1 = N_2.dot(v1_1) + d_2;
+            double d_v2_1 = N_2.dot(v2_1) + d_2;
+            double d_v3_1 = N_2.dot(v3_1) + d_2;
+
+            // check distance of the points of triangle 1 to the plane of triangle 2
+            if ((d_v1_1 > 0 && d_v2_1 > 0 && d_v3_1 > 0) || (d_v1_1 < 0 && d_v2_1 < 0 && d_v3_1 < 0))
+                continue;
+
+            double d_v1_2 = N_1.dot(v1_2) + d_1;
+            double d_v2_2 = N_1.dot(v2_2) + d_1;
+            double d_v3_2 = N_1.dot(v3_2) + d_1;
+
+            // check distance of the points of triangle 2 to the plane of triangle 1
+            if ((d_v1_2 > 0 && d_v2_2 > 0 && d_v3_2 > 0) || (d_v1_2 < 0 && d_v2_2 < 0 && d_v3_2 < 0))
+                continue;
+
+
+            // define the line where the two planes cross 'L = D * t + O'
+            Vector3 D = N_1.cross(N_2);
+
+            // determine which line segments cross line L
+            bool s_v1_1 = d_v1_1 > 0;
+            bool s_v2_1 = d_v2_1 > 0;
+            bool s_v3_1 = d_v3_1 > 0;
+            bool s_v1_2 = d_v1_2 > 0;
+            bool s_v2_2 = d_v2_2 > 0;
+            bool s_v3_2 = d_v3_2 > 0;
+
+            double t_11, t_12, t_21, t_22;
+
+            // get intersection range of triangle 1 and L
+            if (s_v1_1 == s_v2_1) {// lines 13 and 23 cross the line L
+                t_11 = line_parameter(D, v1_1, v3_1, d_v1_1, d_v3_1);
+                t_12 = line_parameter(D, v2_1, v3_1, d_v2_1, d_v3_1);
+            }
+            else {
+                if (s_v1_1 == s_v3_1) {// lines 12 and 23 cross the line L
+                    t_11 = line_parameter(D, v1_1, v2_1, d_v1_1, d_v2_1);
+                    t_12 = line_parameter(D, v2_1, v3_1, d_v2_1, d_v3_1);
+                }
+                else {// lines 12 and 23 cross the line L
+                    t_11 = line_parameter(D, v1_1, v2_1, d_v1_1, d_v2_1);
+                    t_12 = line_parameter(D, v2_1, v3_1, d_v2_1, d_v3_1);
+                }
+            }
+
+            if (s_v1_2 == s_v2_2) {// lines 13 and 23 cross the line L
+                t_21 = line_parameter(D, v1_2, v3_2, d_v1_2, d_v3_2);
+                t_22 = line_parameter(D, v2_2, v3_2, d_v2_2, d_v3_2);
+            }
+            else {
+                if (s_v1_2 == s_v3_2) {// lines 12 and 23 cross the line L
+                    t_21 = line_parameter(D, v1_2, v2_2, d_v1_2, d_v2_2);
+                    t_22 = line_parameter(D, v2_2, v3_2, d_v2_2, d_v3_2);
+                }
+                else {// lines 12 and 23 cross the line L
+                    t_21 = line_parameter(D, v1_2, v2_2, d_v1_2, d_v2_2);
+                    t_22 = line_parameter(D, v2_2, v3_2, d_v2_2, d_v3_2);
+                }
+            }
+
+            // get high and low values of both ranges
+            double t_1h = std::max(t_11,t_12);
+            double t_1l = std::min(t_11,t_12);
+            double t_2h = std::max(t_21,t_22);
+            double t_2l = std::min(t_21,t_22);
+
+            if (t_1h > t_2l && t_1l < t_2h)
                 return true;
         }
     }
+    Vector3 p = pose.inverse() * points_2[0];
+    return contains(p);
 }
 
 
