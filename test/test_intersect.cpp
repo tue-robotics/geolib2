@@ -26,6 +26,8 @@ TEST(TestSuite, testCase1){
 
 // Test intersection with another shape
 TEST(TestSuite, testCase2){
+    geo::Shape* shapeptr;
+
     geo::CompositeShape comp;
     geo::Vector3 min1(-0.5, -0.5, -0.5);
     geo::Vector3 max1(0.5, 0.5, 0.5);
@@ -39,8 +41,10 @@ TEST(TestSuite, testCase2){
     geo::Pose3D p3(0.0, 0.0, 0.0);
     geo::Pose3D p4(10.0, 0.0, 0.0);
 
-    ASSERT_TRUE(comp.intersect(p3, box1));
-    ASSERT_FALSE(comp.intersect(p4, box1));
+    shapeptr = &box1;
+
+    ASSERT_TRUE(shapeptr->intersect(p3, box1));
+    ASSERT_FALSE(shapeptr->intersect(p4, box1));
 }
 
 int main(int argc, char **argv){
