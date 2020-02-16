@@ -31,7 +31,8 @@ public:
      **/
     virtual bool intersect(const Vector3& p, const double radius) const;
 
-    /** @brief Shape::intersect(shape) determines whether the shape intersects another shape.
+    /** @brief Shape::intersect(pose, shape) determines whether the shape intersects another shape.
+     *  @param Pose is the position of the frame of shape self represented in the frame of shape other
      *  @return bool True means the two shapes intersect.
      **/
     virtual bool intersect(const Pose3D& pose, const Shape& other) const;

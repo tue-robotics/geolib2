@@ -100,11 +100,57 @@ double line_parameter(const Vector3 &D, const Vector3 &v1, const Vector3 &v2, co
     return p_v1 + (p_v2-p_v1) * d_v1/(d_v1-d_v2);
 }
 
+double crossProduct(const Vec2d& v1, const Vec2d& v2) {
+    return v1.x*v2.y - v1.y*v2.x;
+}
+
+bool linelineintersect(const Vec2d& v1, const Vec2d& v2, const Vec2d& w1, const Vec2d& w2) {
+    Vec2d ev = v2-v1;
+    Vec2d ew = w2-w1;
+    // check for parallel lines
+    double ev_x_ew = crossProduct(ev, ew);
+    if (ev_x_ew == 0) // lines are parallel
+    {
+        if (crossProduct(v1-w1, ev) == 0) {// lines are collinear
+            if (ev.dot(ew) > 0) {// lines are in the same diretion
+                double t0 = ev.dot(w1 - v1) / ev.length2();
+                double t1 = ev.dot(w2 - v1) / ev.length2();
+                return t0 < 1 && t1 > 0;
+            }
+            else
+                return false;
+        }
+        else
+            return false;
+    }
+    else {
+        double tv = crossProduct(w1-v1, ew) / ev_x_ew;
+        double tw = crossProduct(w1-v1, ev) / ev_x_ew;
+        return tv > 0 && tv < 1 && tw > 0 && tw < 1;
+    }
+}
+
+void project3Dto2Dvector(Vec2d& v2d, const Vector3& v3d, int skip){
+    if (skip == 0) { // skip x, project on the (y,z) plane
+        v2d.x = v3d.y;
+        v2d.y = v3d.z;
+    }
+    else if (skip == 1) { // skip y, project on the (x,z) plane
+        v2d.x = v3d.x;
+        v2d.y = v3d.z;
+    }
+    else { // skip z, project on the (x,y) plane
+        v2d.x = v3d.x;
+        v2d.y = v3d.y;
+    }
+
+}
+
 /**
  *  @math http://web.stanford.edu/class/cs277/resources/papers/Moller1997b.pdf
  **/
 bool Shape::intersect(const Pose3D& pose, const Shape& other) const {
-    if (pose.t.length() < other.mesh_.getMaxRadius() + mesh_.getMaxRadius())
+    if (pose.t.length() > other.mesh_.getMaxRadius() + mesh_.getMaxRadius())
         return false;
 
     // properties of self or 1
@@ -121,9 +167,10 @@ bool Shape::intersect(const Pose3D& pose, const Shape& other) const {
         Vector3 v3_1 = points_1[it_1->i3_];
 
         // transform the point to the frame of shape other
-        v1_1 = pose * v1_1;
-        v2_1 = pose * v2_1;
-        v3_1 = pose * v3_1;
+        Pose3D invpose = pose.inverse();
+        v1_1 = invpose * v1_1;
+        v2_1 = invpose * v2_1;
+        v3_1 = invpose * v3_1;
 
         Vector3 N_1 = (v2_1 - v1_1).cross(v3_1 - v1_1);
         double d_1 = -N_1.dot(v1_1);
@@ -133,6 +180,11 @@ bool Shape::intersect(const Pose3D& pose, const Shape& other) const {
             Vector3 v2_2 = points_2[it_2->i2_];
             Vector3 v3_2 = points_2[it_2->i3_];
 
+            //std::cout << "checking intersect for triangles 1:" << std::endl;
+            //std::cout << v1_1 << std::endl << v2_1 << std::endl << v3_1 << std::endl;
+            //std::cout << "and 2:" << std::endl;
+            //std::cout << v1_2 << std::endl << v2_2 << std::endl << v3_2 << std::endl;
+
             // define the plane of 2 as 'N_2 * X + d_2 = 0'
             Vector3 N_2 = (v2_2 - v1_2).cross(v3_2 - v1_2);
             double d_2 = -N_2.dot(v1_2);
@@ -141,18 +193,61 @@ bool Shape::intersect(const Pose3D& pose, const Shape& other) const {
             double d_v2_1 = N_2.dot(v2_1) + d_2;
             double d_v3_1 = N_2.dot(v3_1) + d_2;
 
+            if ((d_v1_1 == 0 && d_v2_1 == 0 && d_v3_1 == 0) || (d_v1_1 == 0 && d_v2_1 == 0 && d_v3_1 == 0)) {
+                //std::cout << "coplanar triangles detected" << std::endl;
+                //std::cout << "norm of triangles is: " << N_1 << ", " << N_2 << std::endl;
+                if (N_1.dot(N_2) < 0) // triangles face opposite directions.
+                    continue;
+
+                // 2D triangle triangle test
+
+                // convert vectors to 2D
+                Vec2d v1_1_2d, v2_1_2d, v3_1_2d;
+                Vec2d v1_2_2d, v2_2_2d, v3_2_2d;
+
+                double maxN_1 = std::max(std::max(N_1.x, N_1.y), N_1.z);
+                int skip = (maxN_1 == N_1.y) + 2*(maxN_1==N_2.z);
+
+                project3Dto2Dvector(v1_1_2d, v1_1, skip);
+                project3Dto2Dvector(v2_1_2d, v2_1, skip);
+                project3Dto2Dvector(v3_1_2d, v3_1, skip);
+
+                project3Dto2Dvector(v1_2_2d, v1_2, skip);
+                project3Dto2Dvector(v2_2_2d, v2_2, skip);
+                project3Dto2Dvector(v3_2_2d, v3_2, skip);
+                //std::cout << "2D vectors triangle 1:" << std::endl;
+                //std::cout << v1_1_2d << std::endl << v2_1_2d << std::endl << v3_1_2d << std::endl;
+                //std::cout << "and 2:" << std::endl << v1_2_2d << std::endl << v2_2_2d << std::endl << v3_2_2d << std::endl;
+
+                if (linelineintersect(v1_1_2d, v2_1_2d, v1_2_2d, v2_2_2d)) return true;
+                if (linelineintersect(v1_1_2d, v2_1_2d, v2_2_2d, v3_2_2d)) return true;
+                if (linelineintersect(v1_1_2d, v2_1_2d, v3_2_2d, v1_2_2d)) return true;
+
+                if (linelineintersect(v2_1_2d, v3_1_2d, v1_2_2d, v2_2_2d)) return true;
+                if (linelineintersect(v2_1_2d, v3_1_2d, v2_2_2d, v3_2_2d)) return true;
+                if (linelineintersect(v2_1_2d, v3_1_2d, v3_2_2d, v1_2_2d)) return true;
+
+                if (linelineintersect(v3_1_2d, v1_1_2d, v1_2_2d, v2_2_2d)) return true;
+                if (linelineintersect(v3_1_2d, v1_1_2d, v2_2_2d, v3_2_2d)) return true;
+                if (linelineintersect(v3_1_2d, v1_1_2d, v3_2_2d, v1_2_2d)) return true;
+
+                // no line intersections found
+                return false;
+            }
+
+            //std::cout << "norm of plane of triangle 2: " << N_2 << " distance of triangle 1: " << d_v1_1 << ", " << d_v2_1 << ", "<< d_v3_1 << std::endl;
             // check distance of the points of triangle 1 to the plane of triangle 2
-            if ((d_v1_1 > 0 && d_v2_1 > 0 && d_v3_1 > 0) || (d_v1_1 < 0 && d_v2_1 < 0 && d_v3_1 < 0))
+            if ((d_v1_1 >= 0 && d_v2_1 >= 0 && d_v3_1 >= 0) || (d_v1_1 <= 0 && d_v2_1 <= 0 && d_v3_1 <= 0))
                 continue;
 
             double d_v1_2 = N_1.dot(v1_2) + d_1;
             double d_v2_2 = N_1.dot(v2_2) + d_1;
             double d_v3_2 = N_1.dot(v3_2) + d_1;
 
+            //std::cout << "norm of plane of triangle 1: " << N_1 << " distance of triangle 2: " << d_v1_2 << ", " << d_v2_2 << ", "<< d_v3_2 << std::endl;
             // check distance of the points of triangle 2 to the plane of triangle 1
-            if ((d_v1_2 > 0 && d_v2_2 > 0 && d_v3_2 > 0) || (d_v1_2 < 0 && d_v2_2 < 0 && d_v3_2 < 0))
+            if ((d_v1_2 >= 0 && d_v2_2 >= 0 && d_v3_2 >= 0) || (d_v1_2 <= 0 && d_v2_2 <= 0 && d_v3_2 <= 0))
                 continue;
-
 
             // define the line where the two planes cross 'L = D * t + O'
             Vector3 D = N_1.cross(N_2);
@@ -204,8 +299,13 @@ bool Shape::intersect(const Pose3D& pose, const Shape& other) const {
             double t_2h = std::max(t_21,t_22);
             double t_2l = std::min(t_21,t_22);
 
+            //std::cout << "Intersection with line segment of triangle 1: "<< t_1l << ", " << t_1h << std::endl;
+            //std::cout << "Intersection with line segment of triangle 2: "<< t_2l << ", " << t_2h << std::endl;
             if (t_1h > t_2l && t_1l < t_2h)
+            {
+                //std::cout << "Intersection DETECTED"<< std::endl;
                 return true;
+            }
         }
     }
     Vector3 p = pose.inverse() * points_2[0];
