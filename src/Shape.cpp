@@ -194,7 +194,7 @@ bool Shape::intersect(const Pose3D& pose, const Shape& other) const {
                 Vec2d t2_2d[3];
 
                 double maxN_1 = std::max(std::max(N_1.x, N_1.y), N_1.z);
-                int skip = (maxN_1 == N_1.y) + 2*(maxN_1==N_2.z);
+                int skip = (maxN_1 == N_1.y) + 2*(maxN_1 == N_2.z);
 
                 project3Dto2Dvector(t1_2d[0], v1_1, skip);
                 project3Dto2Dvector(t1_2d[1], v2_1, skip);
