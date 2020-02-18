@@ -28,7 +28,6 @@ TEST(TestSuite, testCase1){
 TEST(TestSuite, testCase2){
     geo::Shape* shapeptr;
 
-    geo::CompositeShape comp;
     geo::Vector3 min1(-0.5, -0.5, -0.5);
     geo::Vector3 max1(0.5, 0.5, 0.5);
     geo::Box box1(min1, max1);
@@ -36,8 +35,8 @@ TEST(TestSuite, testCase2){
     geo::Pose3D p1(0.1, 0.1, 0.1); // easy offset pose
     geo::Pose3D p2(0.0, 0.0, 0.0); // exact overlap
     geo::Pose3D p3(1.0, 0.0, 0.0); // meet at one face == no intersect
-    geo::Pose3D p2(2.0, 0.0, 0.0); // far away == no intersect
-    geo::Pose3D p4(1.1, 0.0, 0.0, 0.0, 0.0, 1.05); // rotated pose which intersects
+    geo::Pose3D p4(2.0, 0.0, 0.0); // far away == no intersect
+    geo::Pose3D p5(1.1, 0.0, 0.0, 0.0, 0.0, 1.05); // rotated pose which intersects
 
     shapeptr = &box1;
 
