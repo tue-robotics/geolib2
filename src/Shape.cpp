@@ -130,7 +130,7 @@ bool linelineintersect(const Vec2d& v1, const Vec2d& v2, const Vec2d& w1, const 
     }
 }
 
-void project3Dto2Dvector(Vec2d& v2d, const Vector3& v3d, int skip){
+void project3Dto2Dvector(Vec2d& v2d, const Vector3& v3d, int skip) {
     if (skip == 0) { // skip x, project on the (y,z) plane
         v2d.x = v3d.y;
         v2d.y = v3d.z;
