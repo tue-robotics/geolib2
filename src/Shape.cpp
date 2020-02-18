@@ -100,18 +100,14 @@ double line_parameter(const Vector3 &D, const Vector3 &v1, const Vector3 &v2, co
     return p_v1 + (p_v2-p_v1) * d_v1/(d_v1-d_v2);
 }
 
-double crossProduct(const Vec2d& v1, const Vec2d& v2) {
-    return v1.x*v2.y - v1.y*v2.x;
-}
-
 bool linelineintersect(const Vec2d& v1, const Vec2d& v2, const Vec2d& w1, const Vec2d& w2) {
     Vec2d ev = v2-v1;
     Vec2d ew = w2-w1;
     // check for parallel lines
-    double ev_x_ew = crossProduct(ev, ew);
+    double ev_x_ew = ev.cross(ew);
     if (ev_x_ew == 0) // lines are parallel
     {
-        if (crossProduct(v1-w1, ev) == 0) {// lines are collinear
+        if ((v1-w1).cross(ev) == 0) {// lines are collinear
             if (ev.dot(ew) > 0) {// lines are in the same diretion
                 double t0 = ev.dot(w1 - v1) / ev.length2();
                 double t1 = ev.dot(w2 - v1) / ev.length2();
@@ -124,8 +120,8 @@ bool linelineintersect(const Vec2d& v1, const Vec2d& v2, const Vec2d& w1, const 
             return false;
     }
     else {
-        double tv = crossProduct(w1-v1, ew) / ev_x_ew;
-        double tw = crossProduct(w1-v1, ev) / ev_x_ew;
+        double tv = (w1-v1).cross(ew) / ev_x_ew;
+        double tw = (w1-v1).cross(ev) / ev_x_ew;
         return tv > 0 && tv < 1 && tw > 0 && tw < 1;
     }
 }
