@@ -190,30 +190,31 @@ bool Shape::intersect(const Pose3D& pose, const Shape& other) const {
                 // 2D triangle triangle test
 
                 // convert vectors to 2D
-                Vec2d t1_2d[3];
-                Vec2d t2_2d[3];
+                Vec2d v1_1_2d, v2_1_2d, v3_1_2d;
+                Vec2d v1_2_2d, v2_2_2d, v3_2_2d;
 
                 double maxN_1 = std::max(std::max(N_1.x, N_1.y), N_1.z);
                 int skip = (maxN_1 == N_1.y) + 2*(maxN_1 == N_2.z);
 
-                project3Dto2Dvector(t1_2d[0], v1_1, skip);
-                project3Dto2Dvector(t1_2d[1], v2_1, skip);
-                project3Dto2Dvector(t1_2d[2], v3_1, skip);
+                project3Dto2Dvector(v1_1_2d, v1_1, skip);
+                project3Dto2Dvector(v2_1_2d, v2_1, skip);
+                project3Dto2Dvector(v3_1_2d, v3_1, skip);
 
-                project3Dto2Dvector(t2_2d[0], v1_2, skip);
-                project3Dto2Dvector(t2_2d[1], v2_2, skip);
-                project3Dto2Dvector(t2_2d[2], v3_2, skip);
+                project3Dto2Dvector(v1_2_2d, v1_2, skip);
+                project3Dto2Dvector(v2_2_2d, v2_2, skip);
+                project3Dto2Dvector(v3_2_2d, v3_2, skip);
 
-                // check all combinations of lines and check for intersections
-                for (int i=0; i!=3; ++i) {
-                    int i_next = i+1;
-                    if (i_next==3) i_next=0;
-                    for (int j=0; j!=3; ++j) {
-                        int j_next = j+1;
-                        if (j_next==3) j_next=0;
-                        if (linelineintersect(t1_2d[i], t1_2d[i_next], t2_2d[j], t2_2d[j_next])) return true;
-                    }
-                }
+                if (linelineintersect(v1_1_2d, v2_1_2d, v1_2_2d, v2_2_2d)) return true;
+                if (linelineintersect(v1_1_2d, v2_1_2d, v2_2_2d, v3_2_2d)) return true;
+                if (linelineintersect(v1_1_2d, v2_1_2d, v3_2_2d, v1_2_2d)) return true;
+
+                if (linelineintersect(v2_1_2d, v3_1_2d, v1_2_2d, v2_2_2d)) return true;
+                if (linelineintersect(v2_1_2d, v3_1_2d, v2_2_2d, v3_2_2d)) return true;
+                if (linelineintersect(v2_1_2d, v3_1_2d, v3_2_2d, v1_2_2d)) return true;
+
+                if (linelineintersect(v3_1_2d, v1_1_2d, v1_2_2d, v2_2_2d)) return true;
+                if (linelineintersect(v3_1_2d, v1_1_2d, v2_2_2d, v3_2_2d)) return true;
+                if (linelineintersect(v3_1_2d, v1_1_2d, v3_2_2d, v1_2_2d)) return true;
 
                 // no line intersections found
                 // #TODO check if triangle 1 is contained by 2 or vice versa
