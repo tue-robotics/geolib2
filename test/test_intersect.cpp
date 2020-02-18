@@ -20,8 +20,8 @@ TEST(TestSuite, testCase1){
     geo::Vector3 v2(10.0, 0.0, 0.0);
     double radius = 0.5;
 
-    ASSERT_TRUE(comp.intersect(p, radius));
-    ASSERT_FALSE(comp.intersect(p, radius));
+    ASSERT_TRUE(comp.intersect(v1, radius));
+    ASSERT_FALSE(comp.intersect(v2, radius));
 }
 
 // Test intersection with another shape
