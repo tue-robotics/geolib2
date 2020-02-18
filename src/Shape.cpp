@@ -105,10 +105,9 @@ bool linelineintersect(const Vec2d& v1, const Vec2d& v2, const Vec2d& w1, const 
     Vec2d ew = w2-w1;
     // check for parallel lines
     double ev_x_ew = ev.cross(ew);
-    if (ev_x_ew == 0) // lines are parallel
-    {
+    if (ev_x_ew == 0) { // lines are parallel
         if ((v1-w1).cross(ev) == 0) {// lines are collinear
-            if (ev.dot(ew) > 0) {// lines are in the same diretion
+            if (ev.dot(ew) > 0) { // lines are in the same diretion
                 double t0 = ev.dot(w1 - v1) / ev.length2();
                 double t1 = ev.dot(w2 - v1) / ev.length2();
                 return t0 < 1 && t1 > 0;
@@ -285,10 +284,7 @@ bool Shape::intersect(const Pose3D& pose, const Shape& other) const {
             double t_2l = std::min(t_21,t_22);
 
             if (t_1h > t_2l && t_1l < t_2h)
-            {
-                //std::cout << "Intersection DETECTED"<< std::endl;
                 return true;
-            }
         }
     }
     Vector3 p = pose.inverse() * points_2[0];
