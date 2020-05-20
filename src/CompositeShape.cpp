@@ -74,6 +74,7 @@ bool CompositeShape::contains(const Vector3& p) const {
             return true;
         }
     }
+    return false;
 }
 
 double CompositeShape::getMaxRadius() const {
