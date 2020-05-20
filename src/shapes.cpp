@@ -8,12 +8,12 @@ namespace geo
 
 // ----------------------------------------------------------------------------------------------------
 
-void createCylinder(geo::Shape& shape, double radius, double height, int num_corners)
+void createCylinder(geo::Shape& shape, double radius, double height, unsigned int num_corners)
 {
     geo::Mesh mesh;
 
     // Calculate vertices
-    for(int i = 0; i < num_corners; ++i)
+    for(unsigned int i = 0; i < num_corners; ++i)
     {
         double a = 6.283 * i / num_corners;
         double x = sin(a) * radius;
@@ -24,9 +24,9 @@ void createCylinder(geo::Shape& shape, double radius, double height, int num_cor
     }
 
     // Calculate top and bottom triangles
-    for(int i = 1; i < num_corners - 1; ++i)
+    for(unsigned int i = 1; i < num_corners - 1; ++i)
     {
-        int i2 = 2 * i;
+        unsigned int i2 = 2 * i;
 
         // bottom
         mesh.addTriangle(0, i2, i2 + 2);
@@ -36,9 +36,9 @@ void createCylinder(geo::Shape& shape, double radius, double height, int num_cor
     }
 
     // Calculate side triangles
-    for(int i = 0; i < num_corners; ++i)
+    for(unsigned int i = 0; i < num_corners; ++i)
     {
-        int j = (i + 1) % num_corners;
+        unsigned int j = (i + 1) % num_corners;
         mesh.addTriangle(i * 2, i * 2 + 1, j * 2);
         mesh.addTriangle(i * 2 + 1, j * 2 + 1, j * 2);
     }
@@ -63,7 +63,7 @@ void createConvexPolygon(geo::Shape& shape, const std::vector<geo::Vec2>& points
     }
 
     // Calculate top and bottom triangles
-    for(int i = 1; i < points.size() - 1; ++i)
+    for(unsigned int i = 1; i < points.size() - 1; ++i)
     {
         int i2 = 2 * i;
 
@@ -75,7 +75,7 @@ void createConvexPolygon(geo::Shape& shape, const std::vector<geo::Vec2>& points
     }
 
     // Calculate side triangles
-    for(int i = 0; i < points.size(); ++i)
+    for(unsigned int i = 0; i < points.size(); ++i)
     {
         int j = (i + 1) % points.size();
         mesh.addTriangle(i * 2, i * 2 + 1, j * 2);
