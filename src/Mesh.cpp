@@ -1,6 +1,8 @@
 #include "geolib/Mesh.h"
 #include "geolib/math_types.h"
 
+#include <map>
+
 namespace geo {
 
 Mesh::Mesh() {

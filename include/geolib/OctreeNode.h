@@ -3,6 +3,8 @@
 
 #include "datatypes.h"
 
+#include <vector>
+
 namespace geo {
 
 class Octree;

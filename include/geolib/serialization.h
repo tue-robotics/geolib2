@@ -4,6 +4,7 @@
 #include "datatypes.h"
 
 #include <iostream>
+#include <map>
 
 namespace geo {
 

@@ -1,11 +1,6 @@
 #ifndef GEOLIB_DATATYPES_H_
 #define GEOLIB_DATATYPES_H_
 
-#include <string>
-#include <map>
-#include <vector>
-#include <set>
-
 #include "geolib/math_types.h"
 
 #include <memory>

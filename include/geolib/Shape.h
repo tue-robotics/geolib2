@@ -1,10 +1,10 @@
 #ifndef GEOLIB_SHAPE_H_
 #define GEOLIB_SHAPE_H_
 
+#include "datatypes.h"
+#include "Mesh.h"
 #include "Ray.h"
 #include "Triangle.h"
-#include "Mesh.h"
-#include "datatypes.h"
 
 namespace geo {
 

@@ -3,6 +3,8 @@
 
 #include "Triangle.h"
 
+#include <vector>
+
 namespace geo {
 
 /** Triangle mesh, as triplet of indices in the point vector. */
