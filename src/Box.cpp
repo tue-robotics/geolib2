@@ -124,9 +124,9 @@ bool Box::intersect(const Vector3& p) const {
 }
 
 bool Box::contains(const Vector3& p) const {
-    return (p.getX() > bounds[0].getX() && p.getX() < bounds[1].getX()
-            && p.getY() > bounds[0].getY() && p.getZ() < bounds[1].getY()
-            && p.getZ() > bounds[0].getZ() && p.getY() < bounds[1].getZ());
+    return (p.x > bounds[0].x && p.x < bounds[1].x
+            && p.y > bounds[0].y && p.y < bounds[1].y
+            && p.z > bounds[0].z && p.z < bounds[1].z);
 }
 
 /**
