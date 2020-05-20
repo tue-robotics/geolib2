@@ -13,7 +13,13 @@ public:
 
     Box* clone() const;
 
-    bool intersect(const Ray &, float t0, float t1, double& distance) const;
+    bool intersect(const Ray& r, float t0, float t1, double& distance) const;
+
+    /**
+     * @brief Determines of this Box intersects with an other box
+     * @param other second box
+     * @return True means this box intersects with the other box
+     */
     bool intersect(const Box& other) const;
 
     /** @brief Box::intersect() determines whether the shape intersects a sphere with center p.
