@@ -7,19 +7,19 @@ add_compile_options(-std=c++11)
 find_package(catkin REQUIRED COMPONENTS
   code_profiler
   cv_bridge
-  tf
+  roscpp
   shape_msgs
+  tf
 )
 
-find_package(Boost REQUIRED)
+find_package(ASSIMP REQUIRED)
 find_package(OpenCV REQUIRED)
-find_package(Assimp REQUIRED)
 
 catkin_package(
   INCLUDE_DIRS include
   LIBRARIES geolib
-  CATKIN_DEPENDS cv_bridge tf shape_msgs
-  DEPENDS Boost OpenCV
+  CATKIN_DEPENDS cv_bridge roscpp shape_msgs tf
+  DEPENDS ASSIMP OpenCV
 )
 
 ###########
@@ -28,9 +28,9 @@ catkin_package(
 
 include_directories(
   include
-  ${Boost_INCLUDE_DIRS}
-  ${OpenCV_INCLUDE_DIRS}
+  ${ASSIMP_INCLUDE_DIRS}
   ${catkin_INCLUDE_DIRS}
+  ${OpenCV_INCLUDE_DIRS}
 )
 
 # to show header files in Qt Creator

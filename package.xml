@@ -13,6 +13,8 @@
   <depend>assimp</depend>
   <depend>code_profiler</depend>
   <depend>cv_bridge</depend>
-  <depend>tf</depend>
+  <depend>roscpp</depend>
   <depend>shape_msgs</depend>
+  <depend>tf</depend>
+
 </package>
