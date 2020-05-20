@@ -6,8 +6,6 @@
 #include "Mesh.h"
 #include "datatypes.h"
 
-#include <boost/archive/basic_binary_iarchive.hpp>
-
 namespace geo {
 
 class Box;
