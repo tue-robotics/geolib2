@@ -25,8 +25,8 @@ bool Shape::intersect(const Ray &, float t0, float t1, double& distance) const {
     return false;
 }
 
-/** Check whether a point p is within distance radius of the line segment whose first vertex is described by v and second vertex by v-e
- *
+/**
+ * Check whether a point p is within distance radius of the line segment whose first vertex is described by v and second vertex by v-e
  **/
 bool check_linesegment(const Vector3& p, const double radius, const Vector3& v, const Vector3& e){
     double d1 = (v-p).length2();  // distance between v and p, squared
@@ -172,7 +172,7 @@ const Mesh& Shape::getMesh() const {
 }
 
 /**
- * @brief Shape::getBoundingBox returns the smallest box which includes all mesh points. Box is not rotated, but matches
+ * @brief Returns the smallest box which includes all mesh points. Box is not rotated, but matches
  * the axis of the Shape
  * @return geo::Box of the bounding box.
  */
