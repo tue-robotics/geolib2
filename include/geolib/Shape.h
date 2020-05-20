@@ -22,16 +22,21 @@ public:
 
     virtual Shape* clone() const;
 
-    virtual bool intersect(const Ray &, float t0, float t1, double& distance) const;
+    virtual bool intersect(const Ray& r, float t0, float t1, double& distance) const;
 
-    /** @brief Shape::intersect() determines whether the shape intersects a sphere with center p.
-     *  @return bool True means the sphere intersects the shape.
-     **/
+    /**
+     * @brief Determines whether the shape intersects a sphere with center p
+     * @param p center of the sphere
+     * @param radius radius of the sphere
+     * @return True means the sphere intersects the shape
+     */
     virtual bool intersect(const Vector3& p, const double radius) const;
 
-    /** @brief Shape::contains() determines whether a point p lies within the shape.
-     *  @return bool True means point p lies inside the shape.
-     **/
+    /**
+     * @brief Determines whether a point p lies within the shape
+     * @param p point to test
+     * @return True means point p lies inside the shape
+     */
     virtual bool contains(const Vector3& p) const;
 
     virtual double getMaxRadius() const;

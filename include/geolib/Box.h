@@ -22,22 +22,34 @@ public:
      */
     bool intersect(const Box& other) const;
 
-    /** @brief Box::intersect() determines whether the shape intersects a sphere with center p.
-     *  @return bool True means the sphere intersects the shape.
-     **/
+    /**
+     * @brief Determines whether the shape intersects a sphere with center p
+     * @param p center of the sphere
+     * @param radius radius of the sphere
+     * @return True means the sphere intersects the shape
+     */
     bool intersect(const Vector3& p, const double radius) const;
 
-    /** Deprecated! use Box::contains(p) instead!
-     **/
+    /**
+     * @deprecated use #contains instead
+     * @copydoc contains
+     */
     bool intersect(const Vector3& p) const;
 
-    /** @brief Box::contains() determines whether a point p lies within the shape.
-     *  @return bool True means point p lies inside the shape.
-     **/
+    /**
+     * @brief Determines whether a point p lies within the shape
+     * @param p point to test
+     * @return True means point p lies inside the shape
+     */
     bool contains(const Vector3& p) const;
 
     double getMaxRadius() const;
 
+    /**
+     * @copybrief Shape::getBoundingBox()
+     * @brief Return a bounding box, which is the same as the object itself.
+     * @return itself
+     */
     Box getBoundingBox() const;
 
     void enclose(const Box& box, const Pose3D& pose);
