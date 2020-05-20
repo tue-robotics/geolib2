@@ -41,34 +41,35 @@ if(EXISTS "/usr/include/assimp/Importer.hpp" OR EXISTS "/usr/local/include/assim
 endif()
 
 ## Declare a cpp library
-add_library(geolib   src/Box.cpp
-                     src/datatypes.cpp
-                     src/Octree.cpp
-                     src/OctreeNode.cpp
-                     src/Ray.cpp
-                     src/Shape.cpp
-                     src/Mesh.cpp
-                     src/CompositeShape.cpp
-                     src/Triangle.cpp
-                     src/HeightMap.cpp
-                     src/HeightMapNode.cpp
+add_library(geolib  src/Box.cpp
+                    src/CompositeShape.cpp
+                    src/HeightMap.cpp
+                    src/HeightMapNode.cpp
+                    src/Mesh.cpp
+                    src/Octree.cpp
+                    src/OctreeNode.cpp
+                    src/Ray.cpp
+                    src/Shape.cpp
 
-                     src/shapes.cpp
+                    src/Triangle.cpp
 
-                     src/sensors/DepthCamera.cpp
-                     src/sensors/LaserRangeFinder.cpp
 
-                     src/ros/msg_conversions.cpp
+                    src/shapes.cpp
 
-                     src/Importer.cpp
-                     src/Exporter.cpp
-                     
-                     src/serialization.cpp
-                     src/visualization.cpp
-                     
-                     ${HEADER_FILES})
+                    src/sensors/DepthCamera.cpp
+                    src/sensors/LaserRangeFinder.cpp
 
-target_link_libraries(geolib assimp ${Boost_LIBRARIES} ${OpenCV_LIBRARIES} ${catkin_LIBRARIES})
+                    src/ros/msg_conversions.cpp
+
+                    src/Importer.cpp
+                    src/Exporter.cpp
+
+                    src/serialization.cpp
+                    src/visualization.cpp
+
+                    ${HEADER_FILES})
+
+target_link_libraries(geolib ${ASSIMP_LIBRARIES} ${catkin_LIBRARIES} ${OpenCV_LIBRARIES})
 
 add_executable(show src/show.cpp)
 target_link_libraries(show geolib)
