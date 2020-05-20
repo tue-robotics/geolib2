@@ -45,7 +45,7 @@ public:
 
     virtual Box getBoundingBox() const;
 
-    void setMesh(const Mesh& mesh);
+    virtual void setMesh(const Mesh& mesh);
 
     virtual bool write(std::ostream& output) const;
 

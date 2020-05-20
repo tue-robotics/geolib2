@@ -1,5 +1,7 @@
 #include "geolib/CompositeShape.h"
 
+#include <ros/console.h>
+
 namespace geo {
 
 CompositeShape::CompositeShape() : Shape(), max_radius_(0), min_(1e10, 1e10, 1e10), max_(-1e10, -1e10, -1e10), bb_(-min_, -max_) {
@@ -120,8 +122,12 @@ Box CompositeShape::getBoundingBox() const {
  * @brief CompositeShape::getShapes return all the child shapes.
  * @return reference to the vector of all ShapePtr and Transform(which are the inverse)
  */
-const std::vector<std::pair<ShapePtr, Transform> > &CompositeShape::getShapes() const {
+const std::vector<std::pair<ShapePtr, Transform> >& CompositeShape::getShapes() const {
     return shapes_;
+}
+
+void CompositeShape::setMesh(const Mesh& /*mesh*/) {
+    ROS_ERROR("Mesh can not be set for CompositeShape");
 }
 
 }

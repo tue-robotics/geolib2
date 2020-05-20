@@ -63,10 +63,15 @@ public:
     Vector3 getMax() const;
 
     Vector3 bounds[2];
+    const Mesh& getMesh() const;
+
+    void setMesh(const Mesh& mesh);
 
 protected:
 
     double max_radius_;
+
+    mutable Mesh mesh_;
 
 };
 

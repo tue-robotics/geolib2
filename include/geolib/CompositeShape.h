@@ -41,7 +41,9 @@ public:
 
     Box getBoundingBox() const;
 
-    const std::vector<std::pair<ShapePtr, Transform> > &getShapes() const;
+    const std::vector<std::pair<ShapePtr, Transform> >& getShapes() const;
+
+    void setMesh(const Mesh &mesh);
 
 
 protected:
