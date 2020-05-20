@@ -92,17 +92,19 @@ bool Octree::intersect(const Vector3& p) const {
 }
 
 bool Octree::intersect(const Box& b) const {
-    if (b.bounds[1].x < offset_.x || b.bounds[1].y < offset_.y || b.bounds[1].z < offset_.z
-            || b.bounds[0].x > max_.x || b.bounds[0].y > max_.y || b.bounds[0].z > max_.z) {
+    const Vector3& min = b.getMin();
+    const Vector3& max = b.getMax();
+    if (max.x < offset_.x || max.y < offset_.y || max.z < offset_.z
+            || min.x > max_.x || min.y > max_.y || min.z > max_.z) {
         return false;
     }
 
-    return root_->intersect(Box(Vector3(std::max(b.bounds[0].x, offset_.x),
-                                        std::max(b.bounds[0].y, offset_.y),
-                                        std::max(b.bounds[0].z, offset_.z)) - offset_,
-                                Vector3(std::min(b.bounds[1].x, max_.x),
-                                        std::min(b.bounds[1].y, max_.y),
-                                        std::min(b.bounds[1].z, max_.z)) - offset_));
+    return root_->intersect(Box(Vector3(std::max(min.x, offset_.x),
+                                        std::max(min.y, offset_.y),
+                                        std::max(min.z, offset_.z)) - offset_,
+                                Vector3(std::min(max.x, max_.x),
+                                        std::min(max.y, max_.y),
+                                        std::min(max.z, max_.z)) - offset_));
 }
 
 const Mesh& Octree::getMesh() const {

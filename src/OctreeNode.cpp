@@ -173,15 +173,17 @@ bool OctreeNode::intersect(const Box& b) const {
     if (occupied_) {
         return true;
     }
+    const Vector3&  min = b.getMin();
+    const Vector3&  max = b.getMax();
 
-    int sx = b.bounds[0].x > split_;
-    int ex = b.bounds[1].x > split_;
+    int sx = min.x > split_;
+    int ex = max.x > split_;
 
-    int sy = b.bounds[0].y > split_;
-    int ey = b.bounds[1].y > split_;
+    int sy = min.y > split_;
+    int ey = max.y > split_;
 
-    int sz = b.bounds[0].z > split_;
-    int ez = b.bounds[1].z > split_;
+    int sz = min.z > split_;
+    int ez = max.z > split_;
 
     for(int x = sx; x <= ex; ++x) {
         for(int y = sy; y <= ey; ++y) {
@@ -189,7 +191,7 @@ bool OctreeNode::intersect(const Box& b) const {
                 int i = 4 * x + 2 * y + z;
                 if (children_[i]) {
                     Vector3 offset(split_ * x, split_ * y, split_ * z);
-                    if (children_[i]->intersect(Box(b.bounds[0] - offset, b.bounds[1] - offset))) {
+                    if (children_[i]->intersect(Box(min - offset, max - offset))) {
                         return true;
                     }
                 }

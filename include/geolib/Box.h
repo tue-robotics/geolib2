@@ -58,9 +58,9 @@ public:
 
     Vector3 getCenter() const;
 
-    Vector3 getMin() const;
+    const Vector3& getMin() const;
 
-    Vector3 getMax() const;
+    const Vector3& getMax() const;
 
     const Mesh& getMesh() const;
 

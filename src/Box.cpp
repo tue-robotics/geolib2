@@ -139,11 +139,11 @@ Vector3 Box::getCenter() const {
     return (bounds[0] + bounds[1]) / 2;
 }
 
-Vector3 Box::getMin() const {
+const Vector3& Box::getMin() const {
     return bounds[0];
 }
 
-Vector3 Box::getMax() const {
+const Vector3& Box::getMax() const {
     return bounds[1];
 }
 
