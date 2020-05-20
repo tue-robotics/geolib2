@@ -10,9 +10,9 @@ namespace geo {
 /** Triangle mesh, as triplet of indices in the point vector. */
 struct TriangleI {
 
-    TriangleI(int i1, int i2, int i3) : i1_(i1), i2_(i2), i3_(i3) {}
+    TriangleI(unsigned int i1, unsigned int i2, unsigned int i3) : i1_(i1), i2_(i2), i3_(i3) {}
 
-    int i1_, i2_, i3_; ///< Points in the Mesh::points_ vector.
+    unsigned int i1_, i2_, i3_; ///< Points in the Mesh::points_ vector.
 };
 
 /** Mesh storage. */
@@ -24,11 +24,11 @@ public:
 
     virtual ~Mesh();
 
-    int addPoint(double x, double y, double z);
+    unsigned int addPoint(double x, double y, double z);
 
-    int addPoint(const geo::Vector3& p);
+    unsigned int addPoint(const geo::Vector3& p);
 
-    void addTriangle(int i1, int i2, int i3);
+    void addTriangle(unsigned int i1, unsigned int i2, unsigned int i3);
 
     void add(const Mesh& mesh);
 
