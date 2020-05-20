@@ -11,7 +11,6 @@
   <buildtool_depend>catkin</buildtool_depend>
 
   <depend>assimp</depend>
-  <depend>boost</depend>
   <depend>code_profiler</depend>
   <depend>cv_bridge</depend>
   <depend>tf</depend>
