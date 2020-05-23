@@ -22,4 +22,10 @@
   <depend>shape_msgs</depend>
   <depend>tf</depend>
 
+  <doc_depend>doxygen</doc_depend>
+
+  <export>
+    <rosdoc config="rosdoc.yaml" />
+  </export>
+
 </package>
