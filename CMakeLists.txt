@@ -19,7 +19,7 @@ catkin_package(
   INCLUDE_DIRS include
   LIBRARIES geolib
   CATKIN_DEPENDS cv_bridge roscpp shape_msgs tf
-  DEPENDS ASSIMP OpenCV
+  DEPENDS OpenCV #ASSIMP
 )
 
 ###########
@@ -28,7 +28,7 @@ catkin_package(
 
 include_directories(
   include
-  ${ASSIMP_INCLUDE_DIRS}
+#  ${ASSIMP_INCLUDE_DIRS}
   ${catkin_INCLUDE_DIRS}
   ${OpenCV_INCLUDE_DIRS}
 )
