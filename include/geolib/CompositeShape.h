@@ -4,6 +4,8 @@
 #include "Shape.h"
 #include "geolib/Box.h"
 
+#include <vector>
+
 namespace geo {
 
 class Box;

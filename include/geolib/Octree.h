@@ -5,6 +5,8 @@
 #include "OctreeNode.h"
 #include "Shape.h"
 
+#include <vector>
+
 namespace geo {
 
 class Octree : public Shape {
