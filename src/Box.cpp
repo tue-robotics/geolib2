@@ -85,11 +85,6 @@ bool Box::intersect(const Vector3& p, const double radius) const {
     return radius*radius > (p-c).length2();
 }
 
-bool Box::intersect(const Vector3& p) const {
-    ROS_WARN("Box::intersect(p) is deprecated! use Box::intersect(p, 0) or Box::contains(p) instead");
-    return contains(p);
-}
-
 bool Box::contains(const Vector3& p) const {
     return (p.x > bounds[0].x && p.x < bounds[1].x
             && p.y > bounds[0].y && p.y < bounds[1].y

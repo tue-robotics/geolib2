@@ -29,7 +29,7 @@ public:
 
     void raytrace(const Vector3& o, const Vector3& dir, float t0, float t1, const Vector3& offset);
 
-    bool intersect(const Vector3& p) const;
+    bool contains(const Vector3& p) const;
 
     bool intersect(const Box& b) const;
 

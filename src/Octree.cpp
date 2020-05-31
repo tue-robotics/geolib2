@@ -82,13 +82,13 @@ void Octree::raytrace(const Ray& r, float t0, float t1) {
     mesh_.clear();
 }
 
-bool Octree::intersect(const Vector3& p) const {
+bool Octree::contains(const Vector3& p) const {
     if (p.x < offset_.x || p.y < offset_.y || p.z < offset_.z
             || p.x > max_.x || p.y > max_.y || p.z > max_.z) {
         return false;
     }
 
-    return root_->intersect(p - offset_);
+    return root_->contains(p - offset_);
 }
 
 bool Octree::intersect(const Box& b) const {

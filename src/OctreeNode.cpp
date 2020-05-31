@@ -147,7 +147,7 @@ void OctreeNode::raytrace(const Vector3& o, const Vector3& dir, float t0, float 
     this->raytrace(o, dir, distance + tree_->resolution_ * 0.1, t1, offset);
 }
 
-bool OctreeNode::intersect(const Vector3& p) const {
+bool OctreeNode::contains(const Vector3& p) const {
     if (occupied_) {
         return true;
     }
@@ -165,7 +165,7 @@ bool OctreeNode::intersect(const Vector3& p) const {
     if (!children_[index]) {
         return false;
     } else {
-        return children_[index]->intersect(p);
+        return children_[index]->contains(p);
     }
 }
 

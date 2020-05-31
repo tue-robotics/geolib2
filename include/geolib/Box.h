@@ -31,12 +31,6 @@ public:
     bool intersect(const Vector3& p, const double radius) const;
 
     /**
-     * @deprecated use #contains instead
-     * @copydoc contains
-     */
-    bool intersect(const Vector3& p) const;
-
-    /**
      * @brief Determines whether a point p lies within the shape
      * @param p point to test
      * @return True means point p lies inside the shape
