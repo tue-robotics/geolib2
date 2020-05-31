@@ -41,8 +41,17 @@ public:
 
     void addShape(const Shape& shape, const Pose3D& pose);
 
+    /**
+     * @brief Returns the smallest box which includes all mesh points. Box is not rotated,
+     * but matches the axis of the Shape
+     * @return the bounding box.
+     */
     Box getBoundingBox() const;
 
+    /**
+     * @brief Get all the child shapes and their inverse pose relative to the "origin" of the CompositeShape.
+     * @return reference to the vector of all ShapePtr and Transform
+     */
     const std::vector<std::pair<ShapePtr, Transform> >& getShapes() const;
 
     void setMesh(const Mesh &mesh);
