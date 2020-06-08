@@ -28,7 +28,7 @@ catkin_package(
 
 include_directories(
   include
-#  ${ASSIMP_INCLUDE_DIRS}
+#  ${ASSIMP_INCLUDE_DIRS} Broxen, fixed in https://github.com/assimp/assimp/pull/2161, released from 5.0.1
   ${catkin_INCLUDE_DIRS}
   ${OpenCV_INCLUDE_DIRS}
 )
