@@ -2,6 +2,8 @@
 
 #include <ros/console.h>
 
+#include <stdexcept>
+
 namespace geo {
 
 Box::Box(const Vector3 &min, const Vector3 &max) {
@@ -169,7 +171,8 @@ const Mesh& Box::getMesh() const {
 }
 
 void Box::setMesh(const Mesh& /*mesh*/) {
-    ROS_ERROR("Mesh can not be set for Box");
+    ROS_ERROR("Box::setMesh: can not set mesh for Box");
+    throw std::runtime_error("Box::setMesh: can not set mesh for Box");
 }
 
 }

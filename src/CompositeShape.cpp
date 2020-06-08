@@ -2,6 +2,8 @@
 
 #include <ros/console.h>
 
+#include <stdexcept>
+
 namespace geo {
 
 CompositeShape::CompositeShape() : Shape(), max_radius_(0), min_(1e10, 1e10, 1e10), max_(-1e10, -1e10, -1e10), bb_(-min_, -max_) {
@@ -120,6 +122,7 @@ const std::vector<std::pair<ShapePtr, Transform> >& CompositeShape::getShapes() 
 
 void CompositeShape::setMesh(const Mesh& /*mesh*/) {
     ROS_ERROR("Mesh can not be set for CompositeShape");
+    throw std::runtime_error("CompositeShape::setMesh: can not set mesh for CompositeShape");
 }
 
 }

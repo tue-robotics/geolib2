@@ -41,10 +41,15 @@ public:
 
     virtual double getMaxRadius() const;
 
-    virtual const Mesh& getMesh() const;
-
     virtual Box getBoundingBox() const;
 
+    virtual const Mesh& getMesh() const;
+
+    /**
+     * @brief set the Mesh
+     * Any child classes should throw a std::logic_error in case the mesh should not be changed via #setMesh.
+     * @param mesh mesh to set
+     */
     virtual void setMesh(const Mesh& mesh);
 
     virtual bool write(std::ostream& output) const;
@@ -61,6 +66,10 @@ public:
 
 protected:
 
+    /**
+     * @brief Should not be read or written to directly in general. Use #setMesh and #getMesh to write respectively read the mesh.
+     * In a few exceptions, the mesh can be written direcly. Make sure that mesh keeps consistent with other member variables.
+     */
     Mesh mesh_;
 
 private:
