@@ -9,6 +9,7 @@ namespace geo {
 Box::Box(const Vector3 &min, const Vector3 &max) {
     bounds[0] = min;
     bounds[1] = max;
+    generate_mesh_();
 }
 
 Box* Box::clone() const {
@@ -109,7 +110,7 @@ void Box::enclose(const Box& box, const Pose3D& pose) {
         bounds[1].y = std::max<double>(bounds[1].y, it->y);
         bounds[1].z = std::max<double>(bounds[1].z, it->z);
     }
-    mesh_.clear();
+    generate_mesh_();
 }
 
 Vector3 Box::getSize() const {
@@ -128,51 +129,47 @@ const Vector3& Box::getMax() const {
     return bounds[1];
 }
 
-const Mesh& Box::getMesh() const {
-    if (mesh_.empty()) {
-        const Vector3& min = getMin();
-        const Vector3& max = getMax();
-
-        unsigned int p0 = mesh_.addPoint(min.x, min.y, min.z); // 0
-        unsigned int p1 = mesh_.addPoint(max.x, min.y, min.z); // 1
-        unsigned int p2 = mesh_.addPoint(min.x, max.y, min.z); // 2
-        unsigned int p3 = mesh_.addPoint(max.x, max.y, min.z); // 3
-        unsigned int p4 = mesh_.addPoint(min.x, min.y, max.z); // 4
-        unsigned int p5 = mesh_.addPoint(max.x, min.y, max.z); // 5
-        unsigned int p6 = mesh_.addPoint(min.x, max.y, max.z); // 6
-        unsigned int p7 = mesh_.addPoint(max.x, max.y, max.z); // 7
-
-        // back plane
-        mesh_.addTriangle(p1, p0, p2);
-        mesh_.addTriangle(p1, p2, p3);
-
-        // front plane
-        mesh_.addTriangle(p4, p5, p6);
-        mesh_.addTriangle(p6, p5, p7);
-
-        // left plane
-        mesh_.addTriangle(p0, p4, p2);
-        mesh_.addTriangle(p2, p4, p6);
-
-        // right plane
-        mesh_.addTriangle(p5, p1, p3);
-        mesh_.addTriangle(p5, p3, p7);
-
-        // top plane
-        mesh_.addTriangle(p0, p1, p4);
-        mesh_.addTriangle(p4, p1, p5);
-
-        // bottom plane
-        mesh_.addTriangle(p3, p2, p6);
-        mesh_.addTriangle(p3, p6, p7);
-    }
-
-    return mesh_;
-}
-
 void Box::setMesh(const Mesh& /*mesh*/) {
     ROS_ERROR("Box::setMesh: can not set mesh for Box");
     throw std::runtime_error("Box::setMesh: can not set mesh for Box");
+}
+
+void Box::generate_mesh_() {
+    const Vector3& min = getMin();
+    const Vector3& max = getMax();
+
+    unsigned int p0 = mesh_.addPoint(min.x, min.y, min.z); // 0
+    unsigned int p1 = mesh_.addPoint(max.x, min.y, min.z); // 1
+    unsigned int p2 = mesh_.addPoint(min.x, max.y, min.z); // 2
+    unsigned int p3 = mesh_.addPoint(max.x, max.y, min.z); // 3
+    unsigned int p4 = mesh_.addPoint(min.x, min.y, max.z); // 4
+    unsigned int p5 = mesh_.addPoint(max.x, min.y, max.z); // 5
+    unsigned int p6 = mesh_.addPoint(min.x, max.y, max.z); // 6
+    unsigned int p7 = mesh_.addPoint(max.x, max.y, max.z); // 7
+
+    // back plane
+    mesh_.addTriangle(p1, p0, p2);
+    mesh_.addTriangle(p1, p2, p3);
+
+    // front plane
+    mesh_.addTriangle(p4, p5, p6);
+    mesh_.addTriangle(p6, p5, p7);
+
+    // left plane
+    mesh_.addTriangle(p0, p4, p2);
+    mesh_.addTriangle(p2, p4, p6);
+
+    // right plane
+    mesh_.addTriangle(p5, p1, p3);
+    mesh_.addTriangle(p5, p3, p7);
+
+    // top plane
+    mesh_.addTriangle(p0, p1, p4);
+    mesh_.addTriangle(p4, p1, p5);
+
+    // bottom plane
+    mesh_.addTriangle(p3, p2, p6);
+    mesh_.addTriangle(p3, p6, p7);
 }
 
 }

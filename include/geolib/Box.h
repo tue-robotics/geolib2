@@ -56,8 +56,6 @@ public:
 
     const Vector3& getMax() const;
 
-    const Mesh& getMesh() const;
-
     void setMesh(const Mesh& mesh);
 
 protected:
@@ -66,7 +64,10 @@ protected:
 
     double max_radius_;
 
-    mutable Mesh mesh_;
+    /**
+     * @brief Should be called any time #bounds is changed
+     */
+    void generate_mesh_();
 
 };
 
