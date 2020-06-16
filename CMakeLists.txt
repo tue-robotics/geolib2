@@ -7,19 +7,19 @@ add_compile_options(-std=c++11)
 find_package(catkin REQUIRED COMPONENTS
   code_profiler
   cv_bridge
-  tf
+  roscpp
   shape_msgs
+  tf
 )
 
-find_package(Boost REQUIRED)
+find_package(ASSIMP REQUIRED)
 find_package(OpenCV REQUIRED)
-find_package(Assimp REQUIRED)
 
 catkin_package(
   INCLUDE_DIRS include
   LIBRARIES geolib
-  CATKIN_DEPENDS cv_bridge tf shape_msgs
-  DEPENDS Boost OpenCV
+  CATKIN_DEPENDS cv_bridge roscpp shape_msgs tf
+  DEPENDS OpenCV #ASSIMP
 )
 
 ###########
@@ -28,9 +28,9 @@ catkin_package(
 
 include_directories(
   include
-  ${Boost_INCLUDE_DIRS}
-  ${OpenCV_INCLUDE_DIRS}
+#  ${ASSIMP_INCLUDE_DIRS} Broxen, fixed in https://github.com/assimp/assimp/pull/2161, released from 5.0.1
   ${catkin_INCLUDE_DIRS}
+  ${OpenCV_INCLUDE_DIRS}
 )
 
 # to show header files in Qt Creator
@@ -41,34 +41,35 @@ if(EXISTS "/usr/include/assimp/Importer.hpp" OR EXISTS "/usr/local/include/assim
 endif()
 
 ## Declare a cpp library
-add_library(geolib   src/Box.cpp
-                     src/datatypes.cpp
-                     src/Octree.cpp
-                     src/OctreeNode.cpp
-                     src/Ray.cpp
-                     src/Shape.cpp
-                     src/Mesh.cpp
-                     src/CompositeShape.cpp
-                     src/Triangle.cpp
-                     src/HeightMap.cpp
-                     src/HeightMapNode.cpp
+add_library(geolib  src/Box.cpp
+                    src/CompositeShape.cpp
+                    src/HeightMap.cpp
+                    src/HeightMapNode.cpp
+                    src/Mesh.cpp
+                    src/Octree.cpp
+                    src/OctreeNode.cpp
+                    src/Ray.cpp
+                    src/Shape.cpp
 
-                     src/shapes.cpp
+                    src/Triangle.cpp
 
-                     src/sensors/DepthCamera.cpp
-                     src/sensors/LaserRangeFinder.cpp
 
-                     src/ros/msg_conversions.cpp
+                    src/shapes.cpp
 
-                     src/Importer.cpp
-                     src/Exporter.cpp
-                     
-                     src/serialization.cpp
-                     src/visualization.cpp
-                     
-                     ${HEADER_FILES})
+                    src/sensors/DepthCamera.cpp
+                    src/sensors/LaserRangeFinder.cpp
 
-target_link_libraries(geolib assimp ${Boost_LIBRARIES} ${OpenCV_LIBRARIES} ${catkin_LIBRARIES})
+                    src/ros/msg_conversions.cpp
+
+                    src/Importer.cpp
+                    src/Exporter.cpp
+
+                    src/serialization.cpp
+                    src/visualization.cpp
+
+                    ${HEADER_FILES})
+
+target_link_libraries(geolib ${ASSIMP_LIBRARIES} ${catkin_LIBRARIES} ${OpenCV_LIBRARIES})
 
 add_executable(show src/show.cpp)
 target_link_libraries(show geolib)

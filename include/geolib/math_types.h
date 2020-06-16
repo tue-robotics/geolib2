@@ -18,6 +18,7 @@ public:
     Vec2T() {}
     Vec2T(T x_, T y_) : x(x_), y(y_) {}
     Vec2T(T value) : x(value), y(value) {}
+    Vec2T(const T* values) { memcpy(m, values, 2 * sizeof(T)); }
 
     Vec2T &operator=(const Vec2T &v) {
         if (this != &v) {

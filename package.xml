@@ -1,19 +1,31 @@
 <?xml version="1.0"?>
-<package format="2">
+<?xml-model
+  href="http://download.ros.org/schema/package_format3.xsd"
+  schematypens="http://www.w3.org/2001/XMLSchema"?>
+<package format="3">
   <name>geolib2</name>
-  <version>0.0.0</version>
+  <version>0.1.0</version>
   <description>The geolib2 package</description>
 
-  <maintainer email="S.v.d.Dries@tue.nl">Sjoerd van den Dries</maintainer>
+  <author email="S.v.d.Dries@tue.nl">Sjoerd van den Dries</author>
+
+  <maintainer email="MatthijsBurgh@outlook.com">Matthijs van der Burgh</maintainer>
 
   <license>BSD</license>
 
   <buildtool_depend>catkin</buildtool_depend>
 
   <depend>assimp</depend>
-  <depend>boost</depend>
   <depend>code_profiler</depend>
   <depend>cv_bridge</depend>
-  <depend>tf</depend>
+  <depend>roscpp</depend>
   <depend>shape_msgs</depend>
+  <depend>tf</depend>
+
+  <doc_depend>doxygen</doc_depend>
+
+  <export>
+    <rosdoc config="rosdoc.yaml" />
+  </export>
+
 </package>

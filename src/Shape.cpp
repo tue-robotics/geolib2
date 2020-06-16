@@ -2,9 +2,11 @@
 #include "geolib/Box.h"
 
 #include <geolib/serialization.h>
-#include <cmath>
 
 #include <ros/console.h>
+
+#include <cmath>
+#include <stdexcept>
 
 namespace geo {
 
@@ -21,12 +23,13 @@ Shape* Shape::clone() const {
     return new Shape(*this);
 }
 
-bool Shape::intersect(const Ray &, float t0, float t1, double& distance) const {
+bool Shape::intersect(const Ray& /*r*/, float /*t0*/, float /*t1*/, double& /*distance*/) const {
+    throw std::logic_error("intersect(Ray, float, float, double) not implemented");
     return false;
 }
 
-/** Check whether a point p is within distance radius of the line segment whose first vertex is described by v and second vertex by v-e
- *
+/**
+ * Check whether a point p is within distance radius of the line segment whose first vertex is described by v and second vertex by v-e
  **/
 bool check_linesegment(const Vector3& p, const double radius, const Vector3& v, const Vector3& e){
     double d1 = (v-p).length2();  // distance between v and p, squared
@@ -42,15 +45,16 @@ bool check_linesegment(const Vector3& p, const double radius, const Vector3& v, 
  *  @math http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.49.9172&rep=rep1&type=pdf
  **/
 bool Shape::intersect(const Vector3& p, const double radius) const {
-    if (p.length()-radius > mesh_.getMaxRadius()){
+    const Mesh& mesh = getMesh();
+    if (p.length()-radius > mesh.getMaxRadius()){
         return false;
     }
 
     if (radius > 0.0) {
         const double radius2 = radius*radius;
         // load triangles
-        const std::vector<geo::Vector3>& t_points = mesh_.getPoints();
-        const std::vector<TriangleI>& triangles_i = mesh_.getTriangleIs();
+        const std::vector<geo::Vector3>& t_points = mesh.getPoints();
+        const std::vector<TriangleI>& triangles_i = mesh.getTriangleIs();
         for(auto it = triangles_i.begin(); it != triangles_i.end(); ++it) {
             const Vector3 &v1 = t_points[it->i1_];
             const Vector3 &v2 = t_points[it->i2_];
@@ -108,20 +112,21 @@ static double side_operator(Vector3& p_U, Vector3& p_V, Vector3& q_U, Vector3& q
  *  more details https://members.loria.fr/SLazard/ARC-Visi3D/Pant-project/files/Line_Segment_Triangle.html
  **/
 bool Shape::contains(const Vector3& p) const {
-    if (p.length2() > mesh_.getSquaredMaxRadius()) {
+    const Mesh& mesh = getMesh();
+    if (p.length2() > mesh.getSquaredMaxRadius()) {
         return false;
     }
 
     int intersect_count = 0;
 
     // determine plucker coordinates of line p
-    Vector3 p_out = Vector3(1.1 * mesh_.getMaxRadius(), 0, 0);
+    Vector3 p_out = Vector3(1.1 * mesh.getMaxRadius(), 0, 0);
     Vector3 p_U = p - p_out;
     Vector3 p_V = p.cross(p_out);
 
     // load triangles
-    const std::vector<geo::Vector3>& t_points = mesh_.getPoints();
-    const std::vector<TriangleI>& triangles_i = mesh_.getTriangleIs();
+    const std::vector<geo::Vector3>& t_points = mesh.getPoints();
+    const std::vector<TriangleI>& triangles_i = mesh.getTriangleIs();
     for (std::vector<TriangleI>::const_iterator it = triangles_i.begin(); it != triangles_i.end(); ++it) {
         const Vector3 &v1 = t_points[it->i1_];
         const Vector3 &v2 = t_points[it->i2_];
@@ -167,19 +172,16 @@ bool Shape::contains(const Vector3& p) const {
     return intersect_count > 0;
 }
 
-const Mesh& Shape::getMesh() const {
-    return mesh_;
-}
-
 /**
- * @brief Shape::getBoundingBox returns the smallest box which includes all mesh points. Box is not rotated, but matches
+ * @brief Returns the smallest box which includes all mesh points. Box is not rotated, but matches
  * the axis of the Shape
  * @return geo::Box of the bounding box.
  */
 Box Shape::getBoundingBox() const {
     if (!bounding_box_cache_valid_)
     {
-        const std::vector<geo::Vector3>& points = mesh_.getPoints();
+        const Mesh& mesh = getMesh();
+        const std::vector<geo::Vector3>& points = mesh.getPoints();
         double x_min = 1e9, y_min = 1e9, z_min = 1e9;
         double x_max = -1e9, y_max = -1e9, z_max = -1e9;
         for (std::vector<geo::Vector3>::const_iterator it = points.begin(); it != points.end(); ++it)
@@ -198,20 +200,26 @@ Box Shape::getBoundingBox() const {
     return Box(bounding_box_min_cache_, bounding_box_max_cache_);
 }
 
+const Mesh& Shape::getMesh() const {
+    return mesh_;
+}
+
 void Shape::setMesh(const Mesh& mesh) {
     bounding_box_cache_valid_ = false;
     mesh_ = mesh;
 }
 
 double Shape::getMaxRadius() const {
-    return mesh_.getMaxRadius();
+    const Mesh& mesh = getMesh();
+    return mesh.getMaxRadius();
 }
 
 bool Shape::write(std::ostream& output) const {
     std::string type = "mesh    ";
     output.write(type.c_str(), type.size());
 
-    const std::vector<geo::Vector3>& points = mesh_.getPoints();
+    const Mesh& mesh = getMesh();
+    const std::vector<geo::Vector3>& points = mesh.getPoints();
     int p_size = points.size();
     output.write((char*)&p_size, sizeof(p_size));
     for(std::vector<geo::Vector3>::const_iterator it = points.begin(); it != points.end(); ++it) {
@@ -225,7 +233,7 @@ bool Shape::write(std::ostream& output) const {
         output.write((char*)&z, sizeof(z));
     }
 
-    const std::vector<geo::TriangleI> triangles = mesh_.getTriangleIs();
+    const std::vector<geo::TriangleI> triangles = mesh.getTriangleIs();
     int t_size = triangles.size();
     output.write((char*)&t_size, sizeof(t_size));
     for(std::vector<geo::TriangleI>::const_iterator it = triangles.begin(); it != triangles.end(); ++it) {

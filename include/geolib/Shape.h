@@ -1,12 +1,10 @@
 #ifndef GEOLIB_SHAPE_H_
 #define GEOLIB_SHAPE_H_
 
+#include "datatypes.h"
+#include "Mesh.h"
 #include "Ray.h"
 #include "Triangle.h"
-#include "Mesh.h"
-#include "datatypes.h"
-
-#include <boost/archive/basic_binary_iarchive.hpp>
 
 namespace geo {
 
@@ -24,25 +22,35 @@ public:
 
     virtual Shape* clone() const;
 
-    virtual bool intersect(const Ray &, float t0, float t1, double& distance) const;
+    virtual bool intersect(const Ray& r, float t0, float t1, double& distance) const;
 
-    /** @brief Shape::intersect() determines whether the shape intersects a sphere with center p.
-     *  @return bool True means the sphere intersects the shape.
-     **/
+    /**
+     * @brief Determines whether the shape intersects a sphere with center p
+     * @param p center of the sphere
+     * @param radius radius of the sphere
+     * @return True means the sphere intersects the shape
+     */
     virtual bool intersect(const Vector3& p, const double radius) const;
 
-    /** @brief Shape::contains() determines whether a point p lies within the shape.
-     *  @return bool True means point p lies inside the shape.
-     **/
+    /**
+     * @brief Determines whether a point p lies within the shape
+     * @param p point to test
+     * @return True means point p lies inside the shape
+     */
     virtual bool contains(const Vector3& p) const;
 
     virtual double getMaxRadius() const;
 
-    virtual const Mesh& getMesh() const;
-
     virtual Box getBoundingBox() const;
 
-    void setMesh(const Mesh& mesh);
+    virtual const Mesh& getMesh() const;
+
+    /**
+     * @brief set the Mesh
+     * Any child classes should throw a std::logic_error in case the mesh should not be changed via #setMesh.
+     * @param mesh mesh to set
+     */
+    virtual void setMesh(const Mesh& mesh);
 
     virtual bool write(std::ostream& output) const;
 
@@ -58,6 +66,10 @@ public:
 
 protected:
 
+    /**
+     * @brief Should not be read or written to directly in general. Use #setMesh and #getMesh to write respectively read the mesh.
+     * In a few exceptions, the mesh can be written direcly. Make sure that mesh keeps consistent with other member variables.
+     */
     Mesh mesh_;
 
 private:

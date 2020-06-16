@@ -3,6 +3,8 @@
 
 #include "geolib/Ray.h"
 
+#include <vector>
+
 namespace geo {
 
 class Mesh;

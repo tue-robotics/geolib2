@@ -1,33 +1,29 @@
 #ifndef GEOLIB_DATATYPES_H_
 #define GEOLIB_DATATYPES_H_
 
-#include <string>
-#include <map>
-#include <vector>
-#include <set>
-
 #include "geolib/math_types.h"
-#include <boost/shared_ptr.hpp>
+
+#include <memory>
 
 namespace geo {
 
 typedef double Time;
 
 class Shape;
-typedef boost::shared_ptr<Shape> ShapePtr;
-typedef boost::shared_ptr<const Shape> ShapeConstPtr;
+typedef std::shared_ptr<Shape> ShapePtr;
+typedef std::shared_ptr<const Shape> ShapeConstPtr;
 
 class CompositeShape;
-typedef boost::shared_ptr<CompositeShape> CompositeShapePtr;
-typedef boost::shared_ptr<const CompositeShape> CompositeShapeConstPtr;
+typedef std::shared_ptr<CompositeShape> CompositeShapePtr;
+typedef std::shared_ptr<const CompositeShape> CompositeShapeConstPtr;
 
 class Box;
-typedef boost::shared_ptr<Box> BoxPtr;
-typedef boost::shared_ptr<const Box> BoxConstPtr;
+typedef std::shared_ptr<Box> BoxPtr;
+typedef std::shared_ptr<const Box> BoxConstPtr;
 
 class Octree;
-typedef boost::shared_ptr<Octree> OctreePtr;
-typedef boost::shared_ptr<const Octree> OctreeConstPtr;
+typedef std::shared_ptr<Octree> OctreePtr;
+typedef std::shared_ptr<const Octree> OctreeConstPtr;
 
 class Ray;
 

@@ -2,51 +2,21 @@
 
 #include <ros/console.h>
 
+#include <stdexcept>
+
 namespace geo {
 
 Box::Box(const Vector3 &min, const Vector3 &max) {
     bounds[0] = min;
     bounds[1] = max;
-
-    int p0 = mesh_.addPoint(min.x, min.y, min.z); // 0
-    int p1 = mesh_.addPoint(max.x, min.y, min.z); // 1
-    int p2 = mesh_.addPoint(min.x, max.y, min.z); // 2
-    int p3 = mesh_.addPoint(max.x, max.y, min.z); // 3
-    int p4 = mesh_.addPoint(min.x, min.y, max.z); // 4
-    int p5 = mesh_.addPoint(max.x, min.y, max.z); // 5
-    int p6 = mesh_.addPoint(min.x, max.y, max.z); // 6
-    int p7 = mesh_.addPoint(max.x, max.y, max.z); // 7
-
-    // back plane
-    mesh_.addTriangle(p1, p0, p2);
-    mesh_.addTriangle(p1, p2, p3);
-
-    // front plane
-    mesh_.addTriangle(p4, p5, p6);
-    mesh_.addTriangle(p6, p5, p7);
-
-    // left plane
-    mesh_.addTriangle(p0, p4, p2);
-    mesh_.addTriangle(p2, p4, p6);
-
-    // right plane
-    mesh_.addTriangle(p5, p1, p3);
-    mesh_.addTriangle(p5, p3, p7);
-
-    // top plane
-    mesh_.addTriangle(p0, p1, p4);
-    mesh_.addTriangle(p4, p1, p5);
-
-    // bottom plane
-    mesh_.addTriangle(p3, p2, p6);
-    mesh_.addTriangle(p3, p6, p7);
+    generate_mesh_();
 }
 
 Box* Box::clone() const {
     return new Box(*this);
 }
 
-bool Box::intersect(const Ray &r, float t0, float t1, double& distance) const {
+bool Box::intersect(const Ray& r, float t0, float t1, double& distance) const {
 
     float tmin, tmax, tymin, tymax, tzmin, tzmax;
     tmin = (bounds[r.sign[0]].x - r.origin_.x) * r.inv_direction_.x;
@@ -74,94 +44,73 @@ bool Box::intersect(const Ray &r, float t0, float t1, double& distance) const {
 }
 
 double Box::getMaxRadius() const {
-    return std::max(bounds[0].length(), bounds[1].length());
+    return std::max(getMin().length(), getMax().length());
 }
 
 bool Box::intersect(const Box& other) const {
-    Vector3 c1 = (bounds[0] + bounds[1]) / 2;
-    Vector3 c2 = (other.bounds[0] + other.bounds[1]) / 2;
+    const Vector3& c1 = getCenter();
+    const Vector3& c2 = other.getCenter();
 
-    Vector3 r1 = (bounds[1] - bounds[0]) / 2;
-    Vector3 r2 = (other.bounds[1] - other.bounds[0]) / 2;
+    const Vector3& r1 = getSize() * 0.5;
+    const Vector3& r2 = other.getSize() * 0.5;
 
-    if (std::abs(c1.getX() - c2.getX()) > r1.getX() + r2.getX()) return false;
-    if (std::abs(c1.getY() - c2.getY()) > r1.getY() + r2.getY()) return false;
-    if (std::abs(c1.getZ() - c2.getZ()) > r1.getZ() + r2.getZ()) return false;
+    if (std::abs<double>(c1.x - c2.x) > (r1.x + r2.x)) return false;
+    if (std::abs<double>(c1.y - c2.y) > (r1.y + r2.y)) return false;
+    if (std::abs<double>(c1.y - c2.z) > (r1.z + r2.z)) return false;
 
     return true;
 }
 
 bool Box::intersect(const Vector3& p, const double radius) const {
-    Vector3 c = (bounds[0] + bounds[1]) / 2;
+    Vector3 c = getCenter();
 
-    if (p.getX() > bounds[0].getX() && p.getX() < bounds[1].getX())
+    if (p.x > bounds[0].x && p.x < bounds[1].x)
         c.x = p.getX();
-    else if (p.getX() > c.getX())
-        c.x = bounds[1].getX();
+    else if (p.x > c.x)
+        c.x = bounds[1].x;
     else
-        c.x = bounds[0].getX();
+        c.x = bounds[0].x;
 
-    if (p.getY() > bounds[0].getY() && p.getY() < bounds[1].getY())
-        c.y = p.getY();
-    else if (p.getY() > c.getY())
-        c.y = bounds[1].getY();
+    if (p.y > bounds[0].y && p.y < bounds[1].y)
+        c.y = p.y;
+    else if (p.y > c.y)
+        c.y = bounds[1].y;
     else
-        c.y = bounds[0].getY();
+        c.y = bounds[0].y;
 
-    if (p.getZ() > bounds[0].getZ() && p.getZ() < bounds[1].getZ())
-        c.z = p.getZ();
-    else if (p.getZ() > c.getZ())
-        c.z = bounds[1].getZ();
+    if (p.z > bounds[0].z && p.z < bounds[1].z)
+        c.z = p.z;
+    else if (p.z > c.z)
+        c.z = bounds[1].z;
     else
-        c.z = bounds[0].getZ();
+        c.z = bounds[0].z;
 
     return radius*radius > (p-c).length2();
 }
 
-bool Box::intersect(const Vector3& p) const {
-    ROS_WARN("Box::intersect(p) is deprecated! use Box::intersect(p, 0) or Box::contains(p) instead");
-    return contains(p);
-}
-
 bool Box::contains(const Vector3& p) const {
-    return (p.getX() > bounds[0].getX() && p.getX() < bounds[1].getX()
-            && p.getY() > bounds[0].getY() && p.getZ() < bounds[1].getY()
-            && p.getZ() > bounds[0].getZ() && p.getY() < bounds[1].getZ());
+    return (p.x > bounds[0].x && p.x < bounds[1].x
+            && p.y > bounds[0].y && p.y < bounds[1].y
+            && p.z > bounds[0].z && p.z < bounds[1].z);
 }
 
-/**
- * @brief Box::getBoundingBox return a bounding box, which is the same as the object itself.
- * @return itself
- */
 Box Box::getBoundingBox() const {
     return *this;
 }
 
 void Box::enclose(const Box& box, const Pose3D& pose) {
-    const Vector3& a = box.bounds[0];
-    const Vector3& b = box.bounds[1];
+    const std::vector<Vector3> points = box.getMesh().getTransformed(pose).getPoints();
 
-    std::vector<Vector3> points;
-    points.push_back(pose * Vector3(a.getX(), a.getY(), a.getZ()));
-    points.push_back(pose * Vector3(a.getX(), a.getY(), b.getZ()));
-    points.push_back(pose * Vector3(a.getX(), b.getY(), a.getZ()));
-    points.push_back(pose * Vector3(a.getX(), b.getY(), b.getZ()));
-    points.push_back(pose * Vector3(b.getX(), a.getY(), a.getZ()));
-    points.push_back(pose * Vector3(b.getX(), a.getY(), b.getZ()));
-    points.push_back(pose * Vector3(b.getX(), b.getY(), a.getZ()));
-    points.push_back(pose * Vector3(b.getX(), b.getY(), b.getZ()));
+    for(auto it = points.cbegin(); it != points.cend(); ++it) {
+        bounds[0].x = std::min<double>(bounds[0].x, it->x);
+        bounds[0].y = std::min<double>(bounds[0].y, it->y);
+        bounds[0].z = std::min<double>(bounds[0].z, it->z);
 
-    for(unsigned int i = 0; i < 8; ++i) {
-        //std::cout << points[i] << std::endl;
-        bounds[0].x = std::min(bounds[0].getX(), points[i].getX());
-        bounds[0].y = std::min(bounds[0].getY(), points[i].getY());
-        bounds[0].z = std::min(bounds[0].getZ(), points[i].getZ());
-
-        bounds[1].x = std::max(bounds[1].getX(), points[i].getX());
-        bounds[1].y = std::max(bounds[1].getY(), points[i].getY());
-        bounds[1].z = std::max(bounds[1].getZ(), points[i].getZ());
+        bounds[1].x = std::max<double>(bounds[1].x, it->x);
+        bounds[1].y = std::max<double>(bounds[1].y, it->y);
+        bounds[1].z = std::max<double>(bounds[1].z, it->z);
     }
-    //std::cout << std::endl;
+    generate_mesh_();
 }
 
 Vector3 Box::getSize() const {
@@ -172,12 +121,55 @@ Vector3 Box::getCenter() const {
     return (bounds[0] + bounds[1]) / 2;
 }
 
-Vector3 Box::getMin() const {
+const Vector3& Box::getMin() const {
     return bounds[0];
 }
 
-Vector3 Box::getMax() const {
+const Vector3& Box::getMax() const {
     return bounds[1];
+}
+
+void Box::setMesh(const Mesh& /*mesh*/) {
+    ROS_ERROR("Box::setMesh: can not set mesh for Box");
+    throw std::runtime_error("Box::setMesh: can not set mesh for Box");
+}
+
+void Box::generate_mesh_() {
+    const Vector3& min = getMin();
+    const Vector3& max = getMax();
+
+    unsigned int p0 = mesh_.addPoint(min.x, min.y, min.z); // 0
+    unsigned int p1 = mesh_.addPoint(max.x, min.y, min.z); // 1
+    unsigned int p2 = mesh_.addPoint(min.x, max.y, min.z); // 2
+    unsigned int p3 = mesh_.addPoint(max.x, max.y, min.z); // 3
+    unsigned int p4 = mesh_.addPoint(min.x, min.y, max.z); // 4
+    unsigned int p5 = mesh_.addPoint(max.x, min.y, max.z); // 5
+    unsigned int p6 = mesh_.addPoint(min.x, max.y, max.z); // 6
+    unsigned int p7 = mesh_.addPoint(max.x, max.y, max.z); // 7
+
+    // back plane
+    mesh_.addTriangle(p1, p0, p2);
+    mesh_.addTriangle(p1, p2, p3);
+
+    // front plane
+    mesh_.addTriangle(p4, p5, p6);
+    mesh_.addTriangle(p6, p5, p7);
+
+    // left plane
+    mesh_.addTriangle(p0, p4, p2);
+    mesh_.addTriangle(p2, p4, p6);
+
+    // right plane
+    mesh_.addTriangle(p5, p1, p3);
+    mesh_.addTriangle(p5, p3, p7);
+
+    // top plane
+    mesh_.addTriangle(p0, p1, p4);
+    mesh_.addTriangle(p4, p1, p5);
+
+    // bottom plane
+    mesh_.addTriangle(p3, p2, p6);
+    mesh_.addTriangle(p3, p6, p7);
 }
 
 }

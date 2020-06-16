@@ -5,6 +5,8 @@
 #include "HeightMapNode.h"
 #include "Box.h"
 
+#include <vector>
+
 namespace geo {
 
 class HeightMap : public Shape {

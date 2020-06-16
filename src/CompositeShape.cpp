@@ -1,5 +1,9 @@
 #include "geolib/CompositeShape.h"
 
+#include <ros/console.h>
+
+#include <stdexcept>
+
 namespace geo {
 
 CompositeShape::CompositeShape() : Shape(), max_radius_(0), min_(1e10, 1e10, 1e10), max_(-1e10, -1e10, -1e10), bb_(-min_, -max_) {
@@ -72,6 +76,7 @@ bool CompositeShape::contains(const Vector3& p) const {
             return true;
         }
     }
+    return false;
 }
 
 double CompositeShape::getMaxRadius() const {
@@ -89,17 +94,17 @@ void CompositeShape::addShape(const Shape& shape, const Pose3D& pose) {
         Vector3 p2 = pose * it->p2_;
         Vector3 p3 = pose * it->p3_;
 
-        max_radius_ = std::max(max_radius_, (double)p1.length());
-        max_radius_ = std::max(max_radius_, (double)p2.length());
-        max_radius_ = std::max(max_radius_, (double)p3.length());
+        max_radius_ = std::max<double>(max_radius_, p1.length());
+        max_radius_ = std::max<double>(max_radius_, p2.length());
+        max_radius_ = std::max<double>(max_radius_, p3.length());
 
-        min_.x = std::min(min_.getX(), std::min(p1.x, std::min(p2.x, p3.x)));
-        min_.y = std::min(min_.getY(), std::min(p1.y, std::min(p2.y, p3.y)));
-        min_.z = std::min(min_.getZ(), std::min(p1.z, std::min(p2.z, p3.z)));
+        min_.x = std::min<double>(min_.x, std::min(p1.x, std::min(p2.x, p3.x)));
+        min_.y = std::min<double>(min_.y, std::min(p1.y, std::min(p2.y, p3.y)));
+        min_.z = std::min<double>(min_.z, std::min(p1.z, std::min(p2.z, p3.z)));
 
-        max_.x = std::max(max_.getX(), std::max(p1.x, std::max(p2.x, p3.x)));
-        max_.y = std::max(max_.getY(), std::max(p1.y, std::max(p2.y, p3.y)));
-        max_.z = std::max(max_.getZ(), std::max(p1.z, std::max(p2.z, p3.z)));
+        max_.x = std::max<double>(max_.x, std::max(p1.x, std::max(p2.x, p3.x)));
+        max_.y = std::max<double>(max_.y, std::max(p1.y, std::max(p2.y, p3.y)));
+        max_.z = std::max<double>(max_.z, std::max(p1.z, std::max(p2.z, p3.z)));
     }
 
     mesh_.add(shape.getMesh().getTransformed(pose));
@@ -107,21 +112,17 @@ void CompositeShape::addShape(const Shape& shape, const Pose3D& pose) {
     bb_ = Box(min_, max_);
 }
 
-/**
- * @brief CompositeShape::getBoundingBox returns the smallest box which includes all mesh points. Box is not rotated,
- * but matches the axis of the Shape
- * @return geo::Box of the bounding box.
- */
 Box CompositeShape::getBoundingBox() const {
     return bb_;
 }
 
-/**
- * @brief CompositeShape::getShapes return all the child shapes.
- * @return reference to the vector of all ShapePtr and Transform(which are the inverse)
- */
-const std::vector<std::pair<ShapePtr, Transform> > &CompositeShape::getShapes() const {
+const std::vector<std::pair<ShapePtr, Transform> >& CompositeShape::getShapes() const {
     return shapes_;
+}
+
+void CompositeShape::setMesh(const Mesh& /*mesh*/) {
+    ROS_ERROR("Mesh can not be set for CompositeShape");
+    throw std::runtime_error("CompositeShape::setMesh: can not set mesh for CompositeShape");
 }
 
 }
