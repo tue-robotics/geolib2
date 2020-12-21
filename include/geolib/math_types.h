@@ -636,7 +636,7 @@ public:
      * @return Transform in 3D
      */
     Transform3T<T> projectTo3d() const {
-        return Transform3T<T>(t.projectTo3d(), R.projectTo3d());
+        return Transform3T<T>(R.projectTo3d(), t.projectTo3d());
     }
 
     friend std::ostream& operator<< (std::ostream& out, const Transform2T& t) {
