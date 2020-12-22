@@ -92,7 +92,7 @@ public:
      * @brief Expand vector with a zero 3rd coordinate
      * @return Vector in 3D
      */
-    Vec3T<T> projectTo3d() {
+    Vec3T<T> projectTo3d() const {
         return Vec3T<T>(x, y, 0);
     }
 
@@ -190,7 +190,7 @@ public:
      * @brief Drop the displacement of the 3rd coordinate
      * @return Vector in 2D
      */
-    Vec2T<T> projectTo2d() {
+    Vec2T<T> projectTo2d() const {
         return Vec2T<T>(x, y);
     }
 
@@ -278,7 +278,7 @@ public:
      * @brief Expand rotation matrix into 3D, with zero rotation around the 3rd axis
      * @return Rotation matrix in 3D
      */
-    Mat3T<T> projectTo3d() {
+    Mat3T<T> projectTo3d() const {
         return Mat3T<T>(xx, xy, 0,
                         yx, yy, 0,
                         0,   0, 1);
@@ -532,7 +532,7 @@ public:
      * @brief Drops the rotation of the 3rd coordinate
      * @return Rotation matrix in 2D
      */
-    Mat2T<T> projectTo2d() {
+    Mat2T<T> projectTo2d() const {
         return Mat2T<T>(xx, xy, yx, yy);
     }
 
@@ -635,8 +635,8 @@ public:
      * @brief Transform with no displacement and rotation of the 3rd coordinate
      * @return Transform in 3D
      */
-    Transform3T<T> projectTo3d() {
-        return Transform3T<T>(t.projectTo3d(), R.projectTo3d());
+    Transform3T<T> projectTo3d() const {
+        return Transform3T<T>(R.projectTo3d(), t.projectTo3d());
     }
 
     friend std::ostream& operator<< (std::ostream& out, const Transform2T& t) {
@@ -732,7 +732,7 @@ public:
      * @brief Drops displacement and rotation fo the 3rd coordinate
      * @return Transform in 2D
      */
-    Transform2T<T> projectTo2d() {
+    Transform2T<T> projectTo2d() const {
         return Transform2T<T>(R.projectTo2d(), t.projectTo2d());
     }
 
