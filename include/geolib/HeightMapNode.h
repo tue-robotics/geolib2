@@ -16,6 +16,8 @@ public:
 
     HeightMapNode(const HeightMapNode& orig);
 
+    HeightMapNode(HeightMapNode&& orig);
+
     virtual ~HeightMapNode();
 
     HeightMapNode* clone() const;

@@ -8,6 +8,9 @@
     #include <assimp/aiScene.h>
 #endif
 
+#include <map>
+#include <set>
+
 namespace geo {
 
 // ----------------------------------------------------------------------------------------------------

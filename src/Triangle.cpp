@@ -7,7 +7,6 @@ Triangle::Triangle(const Vector3& p1, const Vector3& p2, const Vector3& p3)
 }
 
 Triangle::~Triangle() {
-
 }
 
 }

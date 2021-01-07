@@ -3,6 +3,8 @@
 
 #include <opencv2/highgui/highgui.hpp>
 
+#include <vector>
+
 int main(int argc, char **argv) {
 
     // Parse command-line arguments

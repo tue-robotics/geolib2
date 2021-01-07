@@ -14,4 +14,3 @@ Ray::Ray(const Vector3 &o, const Vector3 &d)
 }
 
 }
-

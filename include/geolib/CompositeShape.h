@@ -4,6 +4,8 @@
 #include "Shape.h"
 #include "geolib/Box.h"
 
+#include <vector>
+
 namespace geo {
 
 class Box;
@@ -18,25 +20,41 @@ public:
 
     CompositeShape* clone() const;
 
-    bool intersect(const Ray &, float t0, float t1, double& distance) const;
+    bool intersect(const Ray& r, float t0, float t1, double& distance) const;
 
-    /** @brief CompositeShape::intersect() determines whether the shape intersects a sphere with center p.
-     *  @return bool True means the sphere intersects the shape.
-     **/
+    /**
+     * @brief Determines whether the shape intersects a sphere with center p
+     * @param p center of the sphere
+     * @param radius radius of the sphere
+     * @return True means the sphere intersects the shape
+     */
     bool intersect(const Vector3& p, const double radius) const;
 
-    /** @brief CompositeShape::contains() determines whether a point p lies within the shape.
-     *  @return bool True means point p lies inside the shape.
-     **/
+    /**
+     * @brief Determines whether a point p lies within the shape
+     * @param p point to test
+     * @return True means point p lies inside the shape
+     */
     bool contains(const Vector3& p) const;
 
     double getMaxRadius() const;
 
     void addShape(const Shape& shape, const Pose3D& pose);
 
+    /**
+     * @brief Returns the smallest box which includes all mesh points. Box is not rotated,
+     * but matches the axis of the Shape
+     * @return the bounding box.
+     */
     Box getBoundingBox() const;
 
-    const std::vector<std::pair<ShapePtr, Transform> > &getShapes() const;
+    /**
+     * @brief Get all the child shapes and their inverse pose relative to the "origin" of the CompositeShape.
+     * @return reference to the vector of all ShapePtr and Transform
+     */
+    const std::vector<std::pair<ShapePtr, Transform> >& getShapes() const;
+
+    void setMesh(const Mesh &mesh);
 
 
 protected:

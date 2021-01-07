@@ -1,0 +1,4 @@
+- builder: doxygen
+  name: C++ API
+  file_patterns: '*.cpp *.h'
+  tab_size: 4

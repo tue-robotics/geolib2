@@ -4,7 +4,7 @@ namespace geo {
 
 HeightMapNode::HeightMapNode(const Box& box) : box_(box), occupied_(false) {
     for(unsigned int i = 0; i < 4; ++i) {
-        children_[i] = 0;
+        children_[i] = nullptr;
     }
 }
 
@@ -13,13 +13,23 @@ HeightMapNode::HeightMapNode(const HeightMapNode& orig) : box_(orig.box_), occup
         if (orig.children_[i]) {
             children_[i] = orig.children_[i]->clone();
         } else {
-            children_[i] = 0;
+            children_[i] = nullptr;
+        }
+    }
+}
+
+HeightMapNode::HeightMapNode(HeightMapNode&& orig) : box_(std::move(orig.box_)), occupied_(orig.occupied_) {
+    for(unsigned int i = 0; i < 4; ++i) {
+        if (orig.children_[i]) {
+            children_[i] = orig.children_[i];
+            orig.children_[i] = nullptr;
+        } else {
+            children_[i] = nullptr;
         }
     }
 }
 
 HeightMapNode::~HeightMapNode() {
-
 }
 
 HeightMapNode* HeightMapNode::clone() const {
@@ -44,7 +54,7 @@ bool HeightMapNode::intersect(const Ray& r, float t0, float t1, double& distance
 
     unsigned int i_child_origin = 5;
     for(unsigned int i = 0; i < 4; ++i) {
-        if (children_[i] && children_[i]->box_.intersect(r.origin_)) {
+        if (children_[i] && children_[i]->box_.contains(r.origin_)) {
             if (children_[i]->intersect(r, t0, t1, distance)) {
                 return true;
             }

@@ -6,6 +6,8 @@
 #include "geolib/Ray.h"
 #include "geolib/math_types.h"
 
+#include <vector>
+
 namespace geo {
 
 typedef std::vector<std::vector<void*> > PointerMap;

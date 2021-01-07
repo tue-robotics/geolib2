@@ -5,6 +5,8 @@
 #include "OctreeNode.h"
 #include "Shape.h"
 
+#include <vector>
+
 namespace geo {
 
 class Octree : public Shape {
@@ -37,7 +39,7 @@ public:
 
     void raytrace(const Ray& r, float t0, float t1);
 
-    bool intersect(const Vector3& p) const;
+    bool contains(const Vector3& p) const;
 
     bool intersect(const Box& b) const;
 

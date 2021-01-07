@@ -13,6 +13,7 @@
 #include <opencv2/highgui/highgui.hpp>
 
 #include <fstream>
+#include <vector>
 
 double CANVAS_WIDTH = 640;
 double CANVAS_HEIGHT = 480;

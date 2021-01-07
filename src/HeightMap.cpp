@@ -1,5 +1,7 @@
 #include "geolib/HeightMap.h"
 
+#include <assert.h>
+
 namespace geo {
 
 HeightMap::HeightMap() : root_(0) {
@@ -231,8 +233,4 @@ HeightMapNode* HeightMap::createQuadTree(const std::vector<std::vector<double> >
     return n;
 }
 
-
-
 }
-
-

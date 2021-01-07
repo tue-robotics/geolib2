@@ -1,6 +1,8 @@
 #include "geolib/Mesh.h"
 #include "geolib/math_types.h"
 
+#include <map>
+
 namespace geo {
 
 Mesh::Mesh() {
@@ -17,7 +19,7 @@ Mesh::~Mesh() {
  * @param z Z coordinate of the point to add.
  * @return Index of the point.
  */
-int Mesh::addPoint(double x, double y, double z) {
+unsigned int Mesh::addPoint(double x, double y, double z) {
     return addPoint(Vector3(x, y, z));
 }
 
@@ -26,8 +28,8 @@ int Mesh::addPoint(double x, double y, double z) {
  * @param p Point to add.
  * @return Index of the point.
  */
-int Mesh::addPoint(const geo::Vector3& p) {
-    int i = points_.size();
+unsigned int Mesh::addPoint(const geo::Vector3& p) {
+    std::size_t i = points_.size();
     points_.push_back(p);
     invalidateCache();
     return i;
@@ -39,7 +41,7 @@ int Mesh::addPoint(const geo::Vector3& p) {
  * @param i2 Second point of the triangle to add.
  * @param i2 Third point of the triangle to add.
  */
-void Mesh::addTriangle(int i1, int i2, int i3) {
+void Mesh::addTriangle(unsigned int i1, unsigned int i2, unsigned int i3) {
     triangles_i_.push_back(TriangleI(i1, i2, i3));
     invalidateCache();
 }
@@ -49,7 +51,7 @@ void Mesh::addTriangle(int i1, int i2, int i3) {
  * @param mesh Mesh to add.
  */
 void Mesh::add(const Mesh& mesh) {
-    int i_start = points_.size();
+    unsigned int i_start = points_.size();
     points_.insert(points_.end(), mesh.points_.begin(), mesh.points_.end());
 
     for(std::vector<TriangleI>::const_iterator it = mesh.triangles_i_.begin(); it != mesh.triangles_i_.end(); ++it) {

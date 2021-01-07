@@ -8,6 +8,16 @@ namespace geo {
 
 typedef double real;
 
+// Forward declare
+template<typename T>
+class Vec3T;
+
+template<typename T>
+class Mat3T;
+
+template<typename T>
+class Transform3T;
+
 // --------------------------------------------------------------------------------
 
 template<typename T>
@@ -18,6 +28,7 @@ public:
     Vec2T() {}
     Vec2T(T x_, T y_) : x(x_), y(y_) {}
     Vec2T(T value) : x(value), y(value) {}
+    Vec2T(const T* values) { memcpy(m, values, 2 * sizeof(T)); }
 
     Vec2T &operator=(const Vec2T &v) {
         if (this != &v) {
@@ -78,6 +89,14 @@ public:
 
     Vec2T &operator*=(T s) { x *= s; y *= s; return *this; }
     Vec2T &operator/=(T s) { x /= s; y /= s; return *this; }
+
+    /**
+     * @brief Expand vector with a zero 3rd coordinate
+     * @return Vector in 3D
+     */
+    Vec3T<T> projectTo3d() const {
+        return Vec3T<T>(x, y, 0);
+    }
 
     // serialize vector to stream
     friend std::ostream& operator<< (std::ostream& out, const Vec2T& v) {
@@ -169,6 +188,14 @@ public:
     T getY() const { return y; }
     T getZ() const { return z; }
 
+    /**
+     * @brief Drop the displacement of the 3rd coordinate
+     * @return Vector in 2D
+     */
+    Vec2T<T> projectTo2d() const {
+        return Vec2T<T>(x, y);
+    }
+
     // serialize vector to stream
     friend std::ostream& operator<< (std::ostream& out, const Vec3T& v) {
         out << "[ " << v.x << " " << v.y << " " << v.z << " ]";
@@ -248,6 +275,16 @@ public:
     friend Mat2T operator*(T s, const Mat2T& m) { return Mat2T(m.xx * s, m.xy * s, m.yx * s, m.yy * s); }
 
     static Mat2T identity() { return Mat2T(1, 0, 0, 1); }
+
+    /**
+     * @brief Expand rotation matrix into 3D, with zero rotation around the 3rd axis
+     * @return Rotation matrix in 3D
+     */
+    Mat3T<T> projectTo3d() const {
+        return Mat3T<T>(xx, xy, 0,
+                        yx, yy, 0,
+                        0,   0, 1);
+    }
 
     // serialize matrix to stream
     friend std::ostream& operator<< (std::ostream& out, const Mat2T& m) {
@@ -493,6 +530,14 @@ public:
         m[6] = xz - wy; m[7] = yz + wx; m[8] = 1 - (xx + yy);
     }
 
+    /**
+     * @brief Drops the rotation of the 3rd coordinate
+     * @return Rotation matrix in 2D
+     */
+    Mat2T<T> projectTo2d() const {
+        return Mat2T<T>(xx, xy, yx, yy);
+    }
+
     // Serialize matrix to stream
     friend std::ostream& operator<< (std::ostream& out, const Mat3T& m) {
         out << "[ " << m.m[0] << " " << m.m[1] << " " << m.m[2] << " ; "
@@ -588,6 +633,14 @@ public:
 
     static Transform2T identity() { return Transform2T(Mat2T<T>::identity(), Vec2T<T>(0, 0));  }
 
+    /**
+     * @brief Transform with no displacement and rotation of the 3rd coordinate
+     * @return Transform in 3D
+     */
+    Transform3T<T> projectTo3d() const {
+        return Transform3T<T>(R.projectTo3d(), t.projectTo3d());
+    }
+
     friend std::ostream& operator<< (std::ostream& out, const Transform2T& t) {
         out << "t: " << t.t << "\tR: " << t.R;
         return out;
@@ -676,6 +729,14 @@ public:
     }
 
     static Transform3T identity() { return Transform3T(Mat3T<T>::identity(), Vec3T<T>(0, 0, 0));  }
+
+    /**
+     * @brief Drops displacement and rotation fo the 3rd coordinate
+     * @return Transform in 2D
+     */
+    Transform2T<T> projectTo2d() const {
+        return Transform2T<T>(R.projectTo2d(), t.projectTo2d());
+    }
 
     friend std::ostream& operator<< (std::ostream& out, const Transform3T& t) {
         out << "t: " << t.t << "\tR: " << t.R;
