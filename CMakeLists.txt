@@ -7,6 +7,7 @@ find_package(catkin REQUIRED COMPONENTS
   roscpp
   shape_msgs
   tf
+  tf2
 )
 
 find_package(ASSIMP REQUIRED)
