@@ -8,8 +8,12 @@
     #include <assimp/aiScene.h>
 #endif
 
+#include <console_bridge/console.h>
+
 #include <map>
 #include <set>
+#include <sstream>
+#include <string>
 
 namespace geo {
 
@@ -120,7 +124,10 @@ ShapePtr Importer::readMeshFile(const std::string& filename, geo::Vec3 scale)
 
     if (!scene)
     {
-        std::cout << "Assimp failed to load file: " << filename << std::endl;
+        std::stringstream ss;
+        ss << "Assimp failed to load file: " << filename << std::endl;
+        const std::string& str = ss.str();
+        CONSOLE_BRIDGE_logError(str.c_str());
         return ShapePtr();
     }
 

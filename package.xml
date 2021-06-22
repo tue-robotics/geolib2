@@ -16,6 +16,7 @@
   <buildtool_depend>catkin</buildtool_depend>
 
   <depend>assimp</depend>
+  <depend>libconsole-bridge-dev</depend>
   <depend>code_profiler</depend>
   <depend>cv_bridge</depend>
   <depend>roscpp</depend>

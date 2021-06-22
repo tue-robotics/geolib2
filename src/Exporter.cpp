@@ -1,6 +1,8 @@
 #include "geolib/Exporter.h"
 
 #include <algorithm>
+#include <sstream>
+#include <string>
 
 #ifdef ASSIMP_VERSION_3
     #include <assimp/Exporter.hpp>
@@ -11,6 +13,9 @@
     #include <assimp/aiScene.h>
     #include <assimp/aiMesh.h>
 #endif
+
+#include <console_bridge/console.h>
+
 
 namespace geo {
 
@@ -104,7 +109,10 @@ bool Exporter::writeMeshFile(const std::string& filename, const Shape& shape, st
     aiReturn result = aExp.Export(&aScene, format, filename);
     if (result != AI_SUCCESS)
     {
-        std::cout << "Error" << std::endl << aExp.GetErrorString() << std::endl;
+        std::stringstream ss;
+        ss << "Error" << std::endl << aExp.GetErrorString() << std::endl;
+        const std::string& str = ss.str();
+        CONSOLE_BRIDGE_logError(str.c_str());
         return false;
     }
     return true;
