@@ -18,7 +18,7 @@ catkin_package(
   INCLUDE_DIRS include
   LIBRARIES geolib
   CATKIN_DEPENDS cv_bridge roscpp shape_msgs tf
-  DEPENDS console_bridge OpenCV #ASSIMP
+  DEPENDS console_bridge OpenCV ASSIMP
 )
 
 ###########
@@ -29,7 +29,7 @@ link_directories(${console_bridge_LIBRARY_DIRS})
 
 include_directories(
   include
-#  ${ASSIMP_INCLUDE_DIRS} Broxen, fixed in https://github.com/assimp/assimp/pull/2161, released from 5.0.1
+  ${ASSIMP_INCLUDE_DIRS}
   ${catkin_INCLUDE_DIRS}
   ${console_bridge_INCLUDE_DIRS}
   ${OpenCV_INCLUDE_DIRS}
