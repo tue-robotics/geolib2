@@ -10,7 +10,15 @@
 
 namespace geo {
 
+/**
+ * @brief PointerMap maps pixels in a depth image to an identifier
+ */
 typedef std::vector<std::vector<void*> > PointerMap;
+
+/**
+ * @brief TriangleMap maps pixels in a depth image to an index in the list of triangles in the mesh.
+ * Note: check with the corresponding pointermap to find which mesh is referred to!
+ */
 typedef std::vector<std::vector<int> > TriangleMap;
 
 struct RasterizeResult {
@@ -24,6 +32,9 @@ static TriangleMap EMPTY_TRIANGLE_MAP;
 class Mesh;
 class DepthCamera;
 
+/**
+ * Contains instructions on how to render a depth image
+ */
 class RenderOptions {
 
     friend class DepthCamera;
@@ -33,6 +44,12 @@ public:
     RenderOptions() : back_face_culling_(true) {}
 
     void setMesh(const geo::Mesh& mesh) { mesh_ = &mesh; }
+
+    /**
+     * @brief setMesh: set mesh to be rendered
+     * @param mesh: mesh describing the shape to be rendered
+     * @param pose: pose of the origin of the mesh with respect to the virtual camera
+     */
     void setMesh(const geo::Mesh& mesh, const Pose3D& pose) {
         mesh_ = &mesh;
         pose_ = pose;
@@ -42,11 +59,23 @@ public:
 
 protected:
 
+    /**
+     * @brief mesh_ mesh to be rendered
+     */
     const geo::Mesh* mesh_;
+
+    /**
+     * @brief pose_ pose of the mesh with respect to the virtual camera
+     */
     Pose3D pose_;
+
+    /**
+     * @brief back_face_culling_ flag to optimise rendering mesh triangles facing away from the camera.
+     */
     bool back_face_culling_;
 
 };
+
 
 class RenderResult {
 
@@ -75,6 +104,7 @@ private:
 
 };
 
+
 class DefaultRenderResult : public RenderResult {
 
     friend class DepthCamera;
@@ -82,7 +112,8 @@ class DefaultRenderResult : public RenderResult {
 public:
 
     DefaultRenderResult(cv::Mat& image, void* pointer, PointerMap& pointer_map, TriangleMap& triangle_map)
-        : geo::RenderResult(image.cols, image.rows), image_(image), pointer_(pointer), pointer_map_(pointer_map), triangle_map_(triangle_map) {
+        : geo::RenderResult(image.cols, image.rows), image_(image), pointer_(pointer), pointer_map_(pointer_map), triangle_map_(triangle_map)
+    {
 
         // reserve pointer map
         if (pointer_) {
@@ -114,7 +145,16 @@ protected:
 
 };
 
-
+/**
+ * Model of a depth camera which may be used to either
+ * convert points in an image to points in 3D space
+ * simulate a depth camera and render shapes in the image
+ *
+ * Frame conventions:
+ * the frame of the camera is defined with the z-axis pointing into the camera,
+ * the x-axis matches the x -axis of the image, and the y-axis matches the
+ * negative y-axis of the image.
+ */
 class DepthCamera {
 
 public:
@@ -125,6 +165,16 @@ public:
 
     void render(const RenderOptions& opt, RenderResult& res) const;
 
+    /**
+     * @brief rasterize: render a 3D shape onto a 2D image
+     * @param shape: 3D shape to be rendered
+     * @param pose: pose of the shape with respect to the camera
+     * @param image: image to render the result to
+     * @param pointer_map: pointer map to store an identifier of the shape
+     * @param pointer: identifier of the shape
+     * @param triangle_map: triangle map to store the index of a triangle in the mesh
+     * @return
+     */
     RasterizeResult rasterize(const Shape& shape, const Pose3D& pose, cv::Mat& image,
                               PointerMap& pointer_map = EMPTY_POINTER_MAP,
                               void* pointer = 0, TriangleMap& triangle_map = EMPTY_TRIANGLE_MAP) const;
@@ -145,6 +195,12 @@ public:
         return -(y - cy_plus_ty_) / fy_;
     }
 
+    /**
+     * convert points in an image to points in 3D space
+     * @param x: x index of the 2d point in the image
+     * @param y: y index of the 2d point in the image
+     * @returns: (semi) unit vector indicating the direction of the beam corresponding to the pixel.
+     */
     inline Vector3 project2Dto3D(int x, int y) const {
         return Vector3(project2Dto3DX(x), project2Dto3DY(y), -1.0);
     }
@@ -182,9 +238,16 @@ public:
 
 protected:
 
+    // focal length of the camera
     double fx_, fy_;
+
+    // optical center of the camera
     double cx_, cy_;
+
+    // optical translation of the camera
     double tx_, ty_;
+
+    // sums stored for optimisation
     double cx_plus_tx_;
     double cy_plus_ty_;
 
