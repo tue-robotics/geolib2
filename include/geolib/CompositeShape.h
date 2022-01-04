@@ -51,7 +51,7 @@ public:
 protected:
 
     /**
-     * pairs of child shapes and the transform from the origin of the child shape
+     * Pairs of child shapes and the transform from the origin of the child shape
      * to the origin of the composite shape
      */
     std::vector<std::pair<ShapePtr, Transform> > shapes_;
