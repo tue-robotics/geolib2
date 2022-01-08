@@ -172,11 +172,6 @@ bool Shape::contains(const Vector3& p) const {
     return intersect_count > 0;
 }
 
-/**
- * @brief Returns the smallest box which includes all mesh points. Box is not rotated, but matches
- * the axis of the Shape
- * @return geo::Box of the bounding box.
- */
 Box Shape::getBoundingBox() const {
     if (!bounding_box_cache_valid_)
     {

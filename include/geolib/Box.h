@@ -5,6 +5,13 @@
 
 namespace geo {
 
+/**
+ * A class describing a box geometry
+ *
+ * The box is defined by two vectors. Its origin is therefore not in the center
+ * of the box
+ *
+ */
 class Box : public Shape {
 
 public:
@@ -16,25 +23,16 @@ public:
     bool intersect(const Ray& r, float t0, float t1, double& distance) const;
 
     /**
-     * @brief Determines of this Box intersects with an other box
-     * @param other second box
+     * @brief Determines whether this Box intersects with another box
+     *
+     * The two boxes are not rotated, they are assumed to be axis aligned.
+     * @param other: second box
      * @return True means this box intersects with the other box
      */
     bool intersect(const Box& other) const;
 
-    /**
-     * @brief Determines whether the shape intersects a sphere with center p
-     * @param p center of the sphere
-     * @param radius radius of the sphere
-     * @return True means the sphere intersects the shape
-     */
     bool intersect(const Vector3& p, const double radius) const;
 
-    /**
-     * @brief Determines whether a point p lies within the shape
-     * @param p point to test
-     * @return True means point p lies inside the shape
-     */
     bool contains(const Vector3& p) const;
 
     double getMaxRadius() const;
@@ -48,12 +46,28 @@ public:
 
     void enclose(const Box& box, const Pose3D& pose);
 
+    /**
+     * @brief get the size of the box along all axes
+     * @return vector with the sizes of the box along the corresponding axes
+     */
     Vector3 getSize() const;
 
+    /**
+     * @brief Determine the center of the box with respect to the origin of the box.
+     * @return
+     */
     Vector3 getCenter() const;
 
+    /**
+     * @brief get vertex of the box with minimum coordinates
+     * @return vector
+     */
     const Vector3& getMin() const;
 
+    /**
+     * @brief get vertex of the box with maximum coordinates
+     * @return vector
+     */
     const Vector3& getMax() const;
 
     void setMesh(const Mesh& mesh);
