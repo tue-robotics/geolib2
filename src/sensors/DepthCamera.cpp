@@ -48,13 +48,7 @@ RasterizeResult DepthCamera::rasterize(const Shape& shape, const Pose3D& pose, c
 
     render(opt, res);
 
-    RasterizeResult res2;
-
-    image = res.image_;
-    pointer_map = res.pointer_map_;
-    triangle_map = res.triangle_map_;
-
-    return res2;
+    return RasterizeResult();
 }
 
 // -------------------------------------------------------------------------------
