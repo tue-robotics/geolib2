@@ -91,6 +91,12 @@ inline void convert(const geo::TriangleI& t, shape_msgs::MeshTriangle& msg) {
     msg.vertex_indices[2] = t.i3_;
 }
 
+/**
+ * @brief converts a geo::Mesh to shape_msgs::Mesh
+ * Both use a very similar structure based on points and triangles.
+ * @param m geo::Mesh as input
+ * @param msg filled shape_msgs::Mesh message as output
+ */
 void convert(const geo::Mesh& m, shape_msgs::Mesh& msg);
 
 // ------------------------------ FROM ROS ------------------------------

@@ -24,12 +24,34 @@ public:
 
     virtual ~Mesh();
 
+    /**
+     * Add a point to the mesh.
+     * @param x X coordinate of the point to add.
+     * @param y Y coordinate of the point to add.
+     * @param z Z coordinate of the point to add.
+     * @return Index of the point.
+     */
     unsigned int addPoint(double x, double y, double z);
 
+    /**
+     * Add a point to the mesh.
+     * @param p Point to add.
+     * @return Index of the point.
+     */
     unsigned int addPoint(const geo::Vector3& p);
 
+    /**
+     * Add a triangle to the mesh.
+     * @param i1 First point of the triangle to add.
+     * @param i2 Second point of the triangle to add.
+     * @param i2 Third point of the triangle to add.
+     */
     void addTriangle(unsigned int i1, unsigned int i2, unsigned int i3);
 
+    /**
+     * Add a mesh to this mesh.
+     * @param mesh Mesh to add.
+     */
     void add(const Mesh& mesh);
 
     /**
@@ -52,17 +74,45 @@ public:
         invalidateCache();
     }
 
+    /**
+     * Apply transformation to the mesh.
+     * @param t Transformation to apply.
+     * @return The transformed mesh.
+     */
     Mesh getTransformed(const geo::Transform t) const;
 
+    /**
+     * Get the triangles of the mesh.
+     * @return The triangles of the mesh with points in space.
+     */
     const std::vector<Triangle>& getTriangles() const;
 
+    /**
+     * Get the points of the mesh.
+     * @return The points of the mesh.
+     */
     const std::vector<geo::Vector3>& getPoints() const;
 
+    /**
+     * Get the triangles of the mesh.
+     * @return The triangles of the mesh, using indices into the vector returned by #getPoints..
+     */
     const std::vector<TriangleI>& getTriangleIs() const;
 
+    /** Filter overlapping vertices from the mesh. */
     void filterOverlappingVertices();
 
+    /**
+     * Get the maximum radius.
+     * @deprecated Use #getSquaredMaxRadius instead, as it is cheaper.
+     * @return The maximum radius of the mesh.
+     */
     double getMaxRadius() const;
+
+    /**
+     * Get the squared maximum radius.
+     * @return The squared maximum radius of the mesh.
+     */
     double getSquaredMaxRadius() const;
 
 protected:
