@@ -2,6 +2,7 @@
 
 #include <console_bridge/console.h>
 
+#include <cmath>
 #include <stdexcept>
 #include <string>
 
@@ -55,9 +56,9 @@ bool Box::intersect(const Box& other) const {
     const Vector3& r1 = getSize() * 0.5;
     const Vector3& r2 = other.getSize() * 0.5;
 
-    if (std::abs<double>(c1.x - c2.x) > (r1.x + r2.x)) return false;
-    if (std::abs<double>(c1.y - c2.y) > (r1.y + r2.y)) return false;
-    if (std::abs<double>(c1.y - c2.z) > (r1.z + r2.z)) return false;
+    if (std::abs(c1.x - c2.x) > (r1.x + r2.x)) return false;
+    if (std::abs(c1.y - c2.y) > (r1.y + r2.y)) return false;
+    if (std::abs(c1.y - c2.z) > (r1.z + r2.z)) return false;
 
     return true;
 }
