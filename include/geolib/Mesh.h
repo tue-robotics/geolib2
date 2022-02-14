@@ -115,6 +115,13 @@ public:
      */
     double getSquaredMaxRadius() const;
 
+    /**
+     * @brief Calculates the nornaml of a triangle in the mesh
+     * @param index Indez of the traingle
+     * @return the calculated normal of the triangle
+     */
+    const geo::Vector3 getTriangleNormal(unsigned int index) const;
+
 protected:
 
     mutable double max_radius_cache_; ///< Cached maximum radius.
