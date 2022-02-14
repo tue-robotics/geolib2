@@ -63,9 +63,7 @@ void DepthCamera::render(const RenderOptions& opt, RenderResult& res) const {
     const Mesh& mesh = *opt.mesh_;
     const Pose3D& pose = opt.pose_;
 
-    Transform pose_in = pose;
-
-    if (mesh.getMaxRadius() < pose_in.getOrigin().z) {
+    if (mesh.getMaxRadius() < pose.getOrigin().z) {
         return;
     }
 
@@ -79,7 +77,7 @@ void DepthCamera::render(const RenderOptions& opt, RenderResult& res) const {
     std::vector<cv::Point2d> points_proj(points.size());
 
     for(unsigned int i = 0; i < points.size(); ++i) {
-        points_t[i] = pose_in * points[i];
+        points_t[i] = pose * points[i];
         points_proj[i] = project3Dto2D(points_t[i]);
     }
 
