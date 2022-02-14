@@ -1,6 +1,6 @@
 #include "geolib/CompositeShape.h"
 
-#include <ros/console.h>
+#include <console_bridge/console.h>
 
 #include <stdexcept>
 
@@ -121,8 +121,9 @@ const std::vector<std::pair<ShapePtr, Transform> >& CompositeShape::getShapes() 
 }
 
 void CompositeShape::setMesh(const Mesh& /*mesh*/) {
-    ROS_ERROR("Mesh can not be set for CompositeShape");
-    throw std::runtime_error("CompositeShape::setMesh: can not set mesh for CompositeShape");
+    std::string msg = "CompositeShape::setMesh: can not set mesh for CompositeShape";
+    CONSOLE_BRIDGE_logError(msg.c_str());
+    throw std::runtime_error(msg);
 }
 
 }

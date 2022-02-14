@@ -1,8 +1,9 @@
 #include "geolib/Box.h"
 
-#include <ros/console.h>
+#include <console_bridge/console.h>
 
 #include <stdexcept>
+#include <string>
 
 namespace geo {
 
@@ -130,8 +131,9 @@ const Vector3& Box::getMax() const {
 }
 
 void Box::setMesh(const Mesh& /*mesh*/) {
-    ROS_ERROR("Box::setMesh: can not set mesh for Box");
-    throw std::runtime_error("Box::setMesh: can not set mesh for Box");
+    std::string msg = "Box::setMesh: can not set mesh for Box";
+    CONSOLE_BRIDGE_logError(msg.c_str());
+    throw std::runtime_error(msg);
 }
 
 void Box::generate_mesh_() {

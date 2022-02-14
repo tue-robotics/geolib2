@@ -4,7 +4,6 @@ project(geolib2)
 find_package(catkin REQUIRED COMPONENTS
   code_profiler
   cv_bridge
-  roscpp
   shape_msgs
   tf
   tf2
@@ -17,7 +16,7 @@ find_package(OpenCV REQUIRED)
 catkin_package(
   INCLUDE_DIRS include
   LIBRARIES geolib
-  CATKIN_DEPENDS cv_bridge roscpp shape_msgs tf
+  CATKIN_DEPENDS cv_bridge shape_msgs tf
   DEPENDS console_bridge OpenCV ASSIMP
 )
 
