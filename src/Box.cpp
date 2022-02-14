@@ -1,8 +1,10 @@
 #include "geolib/Box.h"
 
-#include <ros/console.h>
+#include <console_bridge/console.h>
 
+#include <cmath>
 #include <stdexcept>
+#include <string>
 
 namespace geo {
 
@@ -54,9 +56,9 @@ bool Box::intersect(const Box& other) const {
     const Vector3& r1 = getSize() * 0.5;
     const Vector3& r2 = other.getSize() * 0.5;
 
-    if (std::abs<double>(c1.x - c2.x) > (r1.x + r2.x)) return false;
-    if (std::abs<double>(c1.y - c2.y) > (r1.y + r2.y)) return false;
-    if (std::abs<double>(c1.y - c2.z) > (r1.z + r2.z)) return false;
+    if (std::abs(c1.x - c2.x) > (r1.x + r2.x)) return false;
+    if (std::abs(c1.y - c2.y) > (r1.y + r2.y)) return false;
+    if (std::abs(c1.y - c2.z) > (r1.z + r2.z)) return false;
 
     return true;
 }
@@ -130,8 +132,9 @@ const Vector3& Box::getMax() const {
 }
 
 void Box::setMesh(const Mesh& /*mesh*/) {
-    ROS_ERROR("Box::setMesh: can not set mesh for Box");
-    throw std::runtime_error("Box::setMesh: can not set mesh for Box");
+    std::string msg = "Box::setMesh: can not set mesh for Box";
+    CONSOLE_BRIDGE_logError(msg.c_str());
+    throw std::runtime_error(msg);
 }
 
 void Box::generate_mesh_() {

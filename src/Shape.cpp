@@ -3,7 +3,7 @@
 
 #include <geolib/serialization.h>
 
-#include <ros/console.h>
+#include <console_bridge/console.h>
 
 #include <cmath>
 #include <stdexcept>
@@ -165,7 +165,7 @@ bool Shape::contains(const Vector3& p) const {
     }
 
    if (intersect_count < 0 || intersect_count > 1) {
-        ROS_ERROR("intersect_count is %i, it should be 0 or 1! Is your shape constructed correctly?", intersect_count);
+        CONSOLE_BRIDGE_logError("intersect_count is %i, it should be 0 or 1! Is your shape constructed correctly?", intersect_count);
         return false;
     }
 
