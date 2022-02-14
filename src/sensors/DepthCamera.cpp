@@ -18,11 +18,11 @@ void DefaultRenderResult::renderPixel(int x, int y, float depth, int i_triangle)
     }
 }
 
-DepthCamera::DepthCamera() {
+DepthCamera::DepthCamera() : fx_(0), fy_(0), cx_(0), cy_(0), tx_(0), ty_(0), cx_plus_tx_(0), cy_plus_ty_(0), cache_valid_(false)
+{
 }
 
 DepthCamera::~DepthCamera() {
-
 }
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -48,13 +48,7 @@ RasterizeResult DepthCamera::rasterize(const Shape& shape, const Pose3D& pose, c
 
     render(opt, res);
 
-    RasterizeResult res2;
-
-    image = res.image_;
-    pointer_map = res.pointer_map_;
-    triangle_map = res.triangle_map_;
-
-    return res2;
+    return RasterizeResult();
 }
 
 // -------------------------------------------------------------------------------

@@ -188,10 +188,12 @@ public:
     }
 
     inline double project2Dto3DX(int x) const {
+        if (!cache_valid_) updateCache();
         return (x - cx_plus_tx_) / fx_;
     }
 
     inline double project2Dto3DY(int y) const {
+        if (!cache_valid_) updateCache();
         return -(y - cy_plus_ty_) / fy_;
     }
 
@@ -213,15 +215,13 @@ public:
     inline void setOpticalCenter(double cx, double cy) {
         cx_ = cx;
         cy_ = cy;
-        cx_plus_tx_ = cx_ + tx_;
-        cy_plus_ty_ = cy_ + ty_;
+        updateCache();
     }
 
     inline void setOpticalTranslation(double tx, double ty) {
         tx_ = tx;
         ty_ = ty;
-        cx_plus_tx_ = cx_ + tx_;
-        cy_plus_ty_ = cy_ + ty_;
+        updateCache();
     }
 
     inline double getFocalLengthX() const { return fx_; }
@@ -248,8 +248,16 @@ protected:
     double tx_, ty_;
 
     // sums stored for optimisation
-    double cx_plus_tx_;
-    double cy_plus_ty_;
+    mutable double cx_plus_tx_;
+    mutable double cy_plus_ty_;
+    mutable bool cache_valid_;
+
+    inline void updateCache() const
+    {
+        cx_plus_tx_ = cx_ + tx_;
+        cy_plus_ty_ = cy_ + ty_;
+        cache_valid_ = true;
+    }
 
     void drawTriangle(const Vector3& p1, const Vector3& p2, const Vector3& p3,
                       const RenderOptions& opt, RenderResult& res, int i_triangle) const;
