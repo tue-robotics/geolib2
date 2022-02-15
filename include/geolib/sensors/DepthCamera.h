@@ -6,6 +6,9 @@
 #include "geolib/Ray.h"
 #include "geolib/math_types.h"
 
+#include <image_geometry/pinhole_camera_model.h>
+#include <sensor_msgs/CameraInfo.h>
+
 #include <vector>
 
 namespace geo {
@@ -161,7 +164,17 @@ public:
 
     DepthCamera();
 
+    DepthCamera(const image_geometry::PinholeCameraModel& cam_model);
+
+    DepthCamera(const sensor_msgs::CameraInfo& cam_info);
+
     virtual ~DepthCamera();
+
+    /**
+     * @brief Set camera parameters from pinhole camera model
+     * @param cam_model pinhole camera model
+     */
+    void initFromCamModel(const image_geometry::PinholeCameraModel& cam_model);
 
     void render(const RenderOptions& opt, RenderResult& res) const;
 

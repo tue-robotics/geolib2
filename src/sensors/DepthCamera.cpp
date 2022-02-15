@@ -1,6 +1,8 @@
 #include "geolib/sensors/DepthCamera.h"
 #include "geolib/Shape.h"
 
+#include <image_geometry/pinhole_camera_model.h>
+
 namespace geo {
 
 void DefaultRenderResult::renderPixel(int x, int y, float depth, int i_triangle) {
@@ -22,7 +24,30 @@ DepthCamera::DepthCamera() : fx_(0), fy_(0), cx_(0), cy_(0), tx_(0), ty_(0), cx_
 {
 }
 
+DepthCamera::DepthCamera(const image_geometry::PinholeCameraModel& cam_model) : cache_valid_(false)
+{
+    initFromCamModel(cam_model);
+}
+
+DepthCamera::DepthCamera(const sensor_msgs::CameraInfo& cam_info) : cache_valid_(false)
+{
+    image_geometry::PinholeCameraModel cam_model;
+    cam_model.fromCameraInfo(cam_info);
+    initFromCamModel(cam_model);
+}
+
 DepthCamera::~DepthCamera() {
+}
+
+void DepthCamera::initFromCamModel(const image_geometry::PinholeCameraModel& cam_model)
+{
+    fx_ = cam_model.fx();
+    fy_ = cam_model.fy();
+    cx_ = cam_model.cx();
+    cy_ = cam_model.cy();
+    tx_ = cam_model.Tx();
+    ty_ = cam_model.Ty();
+    updateCache();
 }
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
