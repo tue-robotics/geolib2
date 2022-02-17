@@ -9,7 +9,7 @@ namespace geo {
 
 class Mesh;
 
-class LaserRangeFinder {    
+class LaserRangeFinder {
 
 public:
 
@@ -17,7 +17,7 @@ public:
 
     public:
 
-        void setMesh(const Mesh& mesh, const geo::Pose3D& pose) {
+        void setMesh(const geo::Mesh& mesh, const geo::Pose3D& pose) {
             mesh_ = &mesh;
             pose_ = pose;
         }
@@ -27,7 +27,7 @@ public:
         const geo::Mesh& getMesh() const { return *mesh_; }
 
     protected:
-        const Mesh* mesh_;
+        const geo::Mesh* mesh_;
         geo::Pose3D pose_;
 
     };
