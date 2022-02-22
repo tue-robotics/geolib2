@@ -242,8 +242,6 @@ void DepthCamera::drawTrianglePart(int y_start, int y_end,
                                    float d_start, float d_start_delta, float d_end, float d_end_delta,
                                    const RenderOptions& opt, RenderResult& res, int i_triangle) const {
 
-//    cv::Mat& image = res.image_;
-
     if (y_start < 0) {
         d_start += d_start_delta * -y_start;
         d_end += d_end_delta * -y_start;
