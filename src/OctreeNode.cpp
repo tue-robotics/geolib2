@@ -73,14 +73,14 @@ void OctreeNode::getCubes(std::vector<Box>& cubes, const Vector3& offset) const 
 
 bool OctreeNode::intersect(const Ray& r, float t0, float t1, double& distance, const Vector3& offset) const {
 
-    //std::cout << r.origin_ << ", t0 = " << t0 << ", t1 = " << t1 << " distance = " << distance << std::endl;
+    //std::cout << r.getOrigin() << ", t0 = " << t0 << ", t1 = " << t1 << " distance = " << distance << std::endl;
     //std::cout << offset << " - " << offset + Vector3(size_, size_, size_) << std::endl;
 
     if (occupied_) {
         return true;
     }
 
-    Vector3 o = r.origin_ + t0 * r.direction_;
+    Vector3 o = r.getOrigin() + t0 * r.getDirection();
     if (o.x < 0 || o.y < 0 || o.z < 0
             || o.x > size_ || o.y > size_ || o.z > size_) {
         return false;
@@ -99,7 +99,7 @@ bool OctreeNode::intersect(const Ray& r, float t0, float t1, double& distance, c
     if (o.z >= split_) { index += 1; dz = split_; }
 
     if (children_[index]) {
-        if (children_[index]->intersect(Ray(r.origin_ - Vector3(dx, dy, dz), r.direction_), t0, t1, distance, offset + Vector3(dx, dy, dz))) {
+        if (children_[index]->intersect(Ray(r.getOrigin() - Vector3(dx, dy, dz), r.getDirection()), t0, t1, distance, offset + Vector3(dx, dy, dz))) {
             return true;
         }
 
@@ -108,7 +108,7 @@ bool OctreeNode::intersect(const Ray& r, float t0, float t1, double& distance, c
 
     double dist;
     Box b(Vector3(dx, dy, dz), Vector3(dx + size_ / 2, dy + size_ / 2, dz + size_ / 2));
-    b.intersect(Ray(o, -r.direction_), 0, t1 - t0, dist);
+    b.intersect(Ray(o, -r.getDirection()), 0, t1 - t0, dist);
     distance = t0 - dist;
     return this->intersect(r, distance + tree_->resolution_ * 0.1, t1, distance, offset);
 }

@@ -21,10 +21,13 @@ Box* Box::clone() const {
 bool Box::intersect(const Ray& r, float t0, float t1, double& distance) const {
 
     float tmin, tmax, tymin, tymax, tzmin, tzmax;
-    tmin = (bounds[r.sign[0]].x - r.origin_.x) * r.inv_direction_.x;
-    tmax = (bounds[1-r.sign[0]].x - r.origin_.x) * r.inv_direction_.x;
-    tymin = (bounds[r.sign[1]].y - r.origin_.y) * r.inv_direction_.y;
-    tymax = (bounds[1-r.sign[1]].y - r.origin_.y) * r.inv_direction_.y;
+    const geo::Vec3& origin = r.getOrigin();
+    const geo::Vec3& invDirection = r.getInvDirection();
+    const std::array<int, 3>& sign = r.getSign();
+    tmin = (bounds[sign[0]].x - origin.x) * invDirection.x;
+    tmax = (bounds[1-sign[0]].x - origin.x) * invDirection.x;
+    tymin = (bounds[sign[1]].y - origin.y) * invDirection.y;
+    tymax = (bounds[1-sign[1]].y - origin.y) * invDirection.y;
 
     if ( (tmin > tymax) || (tymin > tmax) )
         return false;
@@ -32,8 +35,8 @@ bool Box::intersect(const Ray& r, float t0, float t1, double& distance) const {
         tmin = tymin;
     if (tymax < tmax)
         tmax = tymax;
-    tzmin = (bounds[r.sign[2]].z - r.origin_.z) * r.inv_direction_.z;
-    tzmax = (bounds[1-r.sign[2]].z - r.origin_.z) * r.inv_direction_.z;
+    tzmin = (bounds[sign[2]].z - origin.z) * invDirection.z;
+    tzmax = (bounds[1-sign[2]].z - origin.z) * invDirection.z;
     if ( (tmin > tzmax) || (tzmin > tmax) )
         return false;
     if (tzmin > tmin)
