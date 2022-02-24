@@ -76,7 +76,7 @@ void DepthCamera::render(const RenderOptions& opt, RenderResult& res) const {
     }
 
     int i_triangle = 0;
-    for(std::vector<TriangleI>::const_iterator it_tri = triangles.begin(); it_tri != triangles.end(); ++it_tri) {
+    for(std::vector<TriangleI>::const_iterator it_tri = triangles.cbegin(); it_tri != triangles.cend(); ++it_tri) {
 
         const Vector3& p1_3d = points_t[it_tri->i1_];
         const Vector3& p2_3d = points_t[it_tri->i2_];
