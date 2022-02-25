@@ -46,14 +46,12 @@ public:
 
     RenderOptions() : back_face_culling_(true) {}
 
-    void setMesh(const geo::Mesh& mesh) { mesh_ = &mesh; }
-
     /**
      * @brief setMesh: set mesh to be rendered
      * @param mesh: mesh describing the shape to be rendered
-     * @param pose: pose of the origin of the mesh with respect to the virtual camera
+     * @param pose: pose of the origin of the mesh with respect to the virtual camera (default: Identity)
      */
-    void setMesh(const geo::Mesh& mesh, const Pose3D& pose) {
+    void setMesh(const geo::Mesh& mesh, const geo::Pose3D& pose = geo::Pose3D::identity()) {
         mesh_ = &mesh;
         pose_ = pose;
     }
