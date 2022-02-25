@@ -298,8 +298,8 @@ void DepthCamera::drawTrianglePart(int y_start, int y_end,
 
 // -------------------------------------------------------------------------------
 
-void DepthCamera::sort(const geo::Vec3d& p1, const geo::Vec3d& p2, const geo::Vec3d& p3, int i,
-                       Vec3d& p_min,geo::Vec3d& p_mid, geo::Vec3d& p_max) const {
+void DepthCamera::sort(const geo::Vec3d& p1, const geo::Vec3d& p2, const geo::Vec3d& p3, uchar i,
+                       Vec3d& p_min, geo::Vec3d& p_mid, geo::Vec3d& p_max) const {
 
     if (p1.m[i] < p2.m[i]) {
         if (p2.m[i] < p3.m[i]) {

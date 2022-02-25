@@ -283,7 +283,7 @@ protected:
                           float d_start, float d_start_delta, float d_end, float d_end_delta,
                           const RenderOptions& opt, RenderResult& res, uint i_triangle) const;
 
-    void sort(const geo::Vec3d& p1, const geo::Vec3d& p2, const geo::Vec3d& p3, int dim,
+    void sort(const geo::Vec3d& p1, const geo::Vec3d& p2, const geo::Vec3d& p3, uchar dim,
               Vec3d& p_min, geo::Vec3d& p_mid, geo::Vec3d& p_max) const;
 
 };
