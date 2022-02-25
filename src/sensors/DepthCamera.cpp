@@ -98,6 +98,20 @@ void DepthCamera::render(const RenderOptions& opt, RenderResult& res) const {
         points_t[i] = pose * points[i];
     }
 
+    // Do not render in case no point of the mesh is inside the field of view
+    bool in_view = false;
+    for (const geo::Vec3d& point : points_t)
+    {
+        const cv::Point2d& p_2d = project3Dto2D(point);
+        if (0 <= p_2d.x <= res.getWidth() && 0 <= p_2d.y <= res.getHeight())
+        {
+            in_view = true;
+            break;
+        }
+    }
+    if (!in_view)
+        return;
+
     uint i_triangle = 0;
     for(std::vector<TriangleI>::const_iterator it_tri = triangles.cbegin(); it_tri != triangles.cend(); ++it_tri) {
 
