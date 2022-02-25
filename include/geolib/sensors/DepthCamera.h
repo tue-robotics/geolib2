@@ -196,7 +196,7 @@ public:
                               PointerMap& pointer_map = EMPTY_POINTER_MAP,
                               void* pointer = 0, TriangleMap& triangle_map = EMPTY_TRIANGLE_MAP) const;
 
-    inline cv::Point2d project3Dto2D(const geo::Vec3d& p, int width = 0, int height = 0) const {
+    inline cv::Point2d project3Dto2D(const geo::Vec3d& p) const {
         return cv::Point2d((fx_ * p.x + tx_) / -p.z + cx_, (fy_ * -p.y + ty_) / -p.z + cy_);
     }
 
