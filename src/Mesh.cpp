@@ -132,9 +132,9 @@ double Mesh::getMaxRadius() const {
 const geo::Vector3 Mesh::getTriangleNormal(unsigned int index) const {
     const geo::TriangleI& t = getTriangleIs()[index];
 
-    const geo::Vector3& p1 = getPoints()[t.i1_];
-    const geo::Vector3& p2 = getPoints()[t.i2_];
-    const geo::Vector3& p3 = getPoints()[t.i3_];
+    const geo::Vector3& p1 = points_[t.i1_];
+    const geo::Vector3& p2 = points_[t.i2_];
+    const geo::Vector3& p3 = points_[t.i3_];
 
     return ((p3 - p1).cross(p2 - p1)).normalized();
 }
