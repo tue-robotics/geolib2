@@ -88,30 +88,28 @@ void DepthCamera::render(const RenderOptions& opt, RenderResult& res) const {
 
     double near_clip_z = -0.1;
 
-    const std::vector<TriangleI>& triangles = mesh.getTriangleIs();
-    const std::vector<Vector3>& points = mesh.getPoints();
+    const std::vector<geo::TriangleI>& triangles = mesh.getTriangleIs();
+    const std::vector<geo::Vec3d>& points = mesh.getPoints();
 
     // transform points
-    std::vector<Vector3> points_t(points.size());
-    std::vector<cv::Point2d> points_proj(points.size());
+    std::vector<geo::Vec3d> points_t(points.size());
 
     for(unsigned int i = 0; i < points.size(); ++i) {
         points_t[i] = pose * points[i];
-        points_proj[i] = project3Dto2D(points_t[i]);
     }
 
-    int i_triangle = 0;
+    uint i_triangle = 0;
     for(std::vector<TriangleI>::const_iterator it_tri = triangles.cbegin(); it_tri != triangles.cend(); ++it_tri) {
 
-        const Vector3& p1_3d = points_t[it_tri->i1_];
-        const Vector3& p2_3d = points_t[it_tri->i2_];
-        const Vector3& p3_3d = points_t[it_tri->i3_];
+        const geo::Vec3d& p1_3d = points_t[it_tri->i1_];
+        const geo::Vec3d& p2_3d = points_t[it_tri->i2_];
+        const geo::Vec3d& p3_3d = points_t[it_tri->i3_];
 
         int n_verts_in = 0;
         bool v1_in = false;
         bool v2_in = false;
         bool v3_in = false;
-        const Vector3* vIn[3];
+        const geo::Vec3d* vIn[3];
 
         if (p1_3d.z < near_clip_z) {
             ++n_verts_in;
@@ -135,18 +133,18 @@ void DepthCamera::render(const RenderOptions& opt, RenderResult& res) const {
 
             //Parametric line stuff
             // p = v0 + v01*t
-            Vector3 v01 = *vIn[1] - *vIn[0];
+            geo::Vec3d v01 = *vIn[1] - *vIn[0];
 
             float t1 = ((near_clip_z - (*vIn[0]).z) / v01.z );
 
-            Vector3 new2(vIn[0]->x + v01.x * t1, vIn[0]->y + v01.y * t1, near_clip_z);
+            geo::Vec3d new2(vIn[0]->x + v01.x * t1, vIn[0]->y + v01.y * t1, near_clip_z);
 
             // Second vert point
-            Vector3 v02 = *vIn[2] - *vIn[0];
+            geo::Vec3d v02 = *vIn[2] - *vIn[0];
 
             float t2 = ((near_clip_z - (*vIn[0]).z) / v02.z);
 
-            Vector3 new3(vIn[0]->x + v02.x * t2, vIn[0]->y + v02.y * t2, near_clip_z);
+            geo::Vec3d new3(vIn[0]->x + v02.x * t2, vIn[0]->y + v02.y * t2, near_clip_z);
 
             drawTriangle(*vIn[0], new2, new3, opt, res, i_triangle);
         } else if (n_verts_in == 2) {
@@ -156,32 +154,25 @@ void DepthCamera::render(const RenderOptions& opt, RenderResult& res) const {
 
             //Parametric line stuff
             // p = v0 + v01*t
-            Vector3 v01 = *vIn[2] - *vIn[0];
+            geo::Vec3d v01 = *vIn[2] - *vIn[0];
 
             float t1 = ((near_clip_z - (*vIn[0]).z)/v01.z );
 
-            Vector3 new2((*vIn[0]).x + v01.x * t1,(*vIn[0]).y + v01.y * t1, near_clip_z);
+            geo::Vec3d new2((*vIn[0]).x + v01.x * t1,(*vIn[0]).y + v01.y * t1, near_clip_z);
 
             // Second point
-            Vector3 v02 = *vIn[2] - *vIn[1];
+            geo::Vec3d v02 = *vIn[2] - *vIn[1];
 
             float t2 = ((near_clip_z - (*vIn[1]).z)/v02.z);
 
-            Vector3 new3((*vIn[1]).x + v02.x * t2, (*vIn[1]).y + v02.y * t2, near_clip_z);
+            geo::Vec3d new3((*vIn[1]).x + v02.x * t2, (*vIn[1]).y + v02.y * t2, near_clip_z);
 
             drawTriangle(*vIn[0], *vIn[1], new2, opt, res, i_triangle);
 
             drawTriangle(new2, *vIn[1], new3, opt, res, i_triangle);
 
         } else if (n_verts_in == 3) {
-            const cv::Point2d& p1_2d = points_proj[it_tri->i1_];
-            const cv::Point2d& p2_2d = points_proj[it_tri->i2_];
-            const cv::Point2d& p3_2d = points_proj[it_tri->i3_];
-
-            drawTriangle2D(Vec3f(p1_2d.x, p1_2d.y, 1.0f / -p1_3d.z),
-                           Vec3f(p2_2d.x, p2_2d.y, 1.0f / -p2_3d.z),
-                           Vec3f(p3_2d.x, p3_2d.y, 1.0f / -p3_3d.z),
-                           opt, res, i_triangle);
+            drawTriangle(points_t[it_tri->i1_], points_t[it_tri->i2_], points_t[it_tri->i3_], opt, res, i_triangle);
         }
 
         if (res.stop_) {
@@ -194,22 +185,22 @@ void DepthCamera::render(const RenderOptions& opt, RenderResult& res) const {
 
 // -------------------------------------------------------------------------------
 
-void DepthCamera::drawTriangle(const Vector3& p1_3d, const Vector3& p2_3d, const Vector3& p3_3d,
-                               const RenderOptions& opt, RenderResult& res, int i_triangle) const {
+void DepthCamera::drawTriangle(const geo::Vec3d& p1_3d, const geo::Vec3d& p2_3d, const geo::Vec3d& p3_3d,
+                               const RenderOptions& opt, RenderResult& res, uint i_triangle) const {
     cv::Point2d p1_2d = project3Dto2D(p1_3d);
     cv::Point2d p2_2d = project3Dto2D(p2_3d);
     cv::Point2d p3_2d = project3Dto2D(p3_3d);
 
-    drawTriangle2D(Vec3f(p1_2d.x, p1_2d.y, 1.0f / -p1_3d.z),
-                   Vec3f(p2_2d.x, p2_2d.y, 1.0f / -p2_3d.z),
-                   Vec3f(p3_2d.x, p3_2d.y, 1.0f / -p3_3d.z),
+    drawTriangle2D(geo::Vec3d(p1_2d.x, p1_2d.y, 1.0f / -p1_3d.z),
+                   geo::Vec3d(p2_2d.x, p2_2d.y, 1.0f / -p2_3d.z),
+                   geo::Vec3d(p3_2d.x, p3_2d.y, 1.0f / -p3_3d.z),
                    opt, res, i_triangle);
 }
 
 // -------------------------------------------------------------------------------
 
-void DepthCamera::drawTriangle2D(const Vec3f& p1, const Vec3f& p2, const Vec3f& p3,
-                               const RenderOptions& opt, RenderResult& res, int i_triangle) const {
+void DepthCamera::drawTriangle2D(const Vec3d& p1, const Vec3d& p2, const Vec3d& p3,
+                               const RenderOptions& opt, RenderResult& res, uint i_triangle) const {
 
     if (!opt.back_face_culling_ || (p2.x - p1.x) * (p3.y - p1.y) - (p3.x - p1.x) * (p2.y - p1.y) < 0) {
 
@@ -221,7 +212,7 @@ void DepthCamera::drawTriangle2D(const Vec3f& p1, const Vec3f& p2, const Vec3f& 
         if (min_x < res.getWidth() && max_x > 0 && min_y < res.getHeight() && max_y > 0) {
 
             if (min_y == max_y) {
-                Vec3f p_min, p_mid, p_max;
+                Vec3d p_min, p_mid, p_max;
                 sort(p1, p2, p3, 0, p_min, p_mid, p_max);
 
                 drawTrianglePart(p_min.y, p_mid.y,
@@ -229,16 +220,16 @@ void DepthCamera::drawTriangle2D(const Vec3f& p1, const Vec3f& p2, const Vec3f& 
                      p_min.z, 0, p_max.z, 0,
                      opt, res, i_triangle);
             } else {
-                Vec3f p_min, p_mid, p_max;
+                Vec3d p_min, p_mid, p_max;
                 sort(p1, p2, p3, 1, p_min, p_mid, p_max);
 
                 int y_min_mid = (int)p_mid.y - (int)p_min.y;
                 int y_mid_max = (int)p_max.y - (int)p_mid.y;
                 int y_min_max = (int)p_max.y - (int)p_min.y;
 
-                Vec3f p_prime = (y_mid_max * p_min + y_min_mid * p_max) / y_min_max;
+                Vec3d p_prime = (y_mid_max * p_min + y_min_mid * p_max) / y_min_max;
 
-                Vec3f p_a, p_b;
+                Vec3d p_a, p_b;
                 if (p_prime.x < p_mid.x) {
                     p_a = p_prime; p_b = p_mid;
                 } else {
@@ -265,7 +256,7 @@ void DepthCamera::drawTriangle2D(const Vec3f& p1, const Vec3f& p2, const Vec3f& 
 void DepthCamera::drawTrianglePart(int y_start, int y_end,
                                    float x_start, float x_start_delta, float x_end, float x_end_delta,
                                    float d_start, float d_start_delta, float d_end, float d_end_delta,
-                                   const RenderOptions& opt, RenderResult& res, int i_triangle) const {
+                                   const RenderOptions& opt, RenderResult& res, uint i_triangle) const {
 
     if (y_start < 0) {
         d_start += d_start_delta * -y_start;
@@ -307,8 +298,8 @@ void DepthCamera::drawTrianglePart(int y_start, int y_end,
 
 // -------------------------------------------------------------------------------
 
-void DepthCamera::sort(const geo::Vec3f& p1, const geo::Vec3f& p2, const geo::Vec3f& p3, int i,
-                       Vec3f& p_min,geo::Vec3f& p_mid, geo::Vec3f& p_max) const {
+void DepthCamera::sort(const geo::Vec3d& p1, const geo::Vec3d& p2, const geo::Vec3d& p3, int i,
+                       Vec3d& p_min,geo::Vec3d& p_mid, geo::Vec3d& p_max) const {
 
     if (p1.m[i] < p2.m[i]) {
         if (p2.m[i] < p3.m[i]) {

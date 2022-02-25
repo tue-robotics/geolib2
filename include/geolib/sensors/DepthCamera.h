@@ -196,7 +196,7 @@ public:
                               PointerMap& pointer_map = EMPTY_POINTER_MAP,
                               void* pointer = 0, TriangleMap& triangle_map = EMPTY_TRIANGLE_MAP) const;
 
-    inline cv::Point2d project3Dto2D(const Vector3& p, int width = 0, int height = 0) const {
+    inline cv::Point2d project3Dto2D(const geo::Vec3d& p, int width = 0, int height = 0) const {
         return cv::Point2d((fx_ * p.x + tx_) / -p.z + cx_, (fy_ * -p.y + ty_) / -p.z + cy_);
     }
 
@@ -216,8 +216,8 @@ public:
      * @param y: y index of the 2d point in the image
      * @returns: (semi) unit vector indicating the direction of the beam corresponding to the pixel.
      */
-    inline Vector3 project2Dto3D(int x, int y) const {
-        return Vector3(project2Dto3DX(x), project2Dto3DY(y), -1.0);
+    inline geo::Vec3d project2Dto3D(int x, int y) const {
+        return geo::Vec3d(project2Dto3DX(x), project2Dto3DY(y), -1.0);
     }
 
     inline void setFocalLengths(double fx, double fy) {
@@ -272,19 +272,19 @@ protected:
         cache_valid_ = true;
     }
 
-    void drawTriangle(const Vector3& p1, const Vector3& p2, const Vector3& p3,
-                      const RenderOptions& opt, RenderResult& res, int i_triangle) const;
+    void drawTriangle(const geo::Vec3d& p1, const geo::Vec3d& p2, const geo::Vec3d& p3,
+                      const RenderOptions& opt, RenderResult& res, uint i_triangle) const;
 
-    void drawTriangle2D(const Vec3f& p1, const Vec3f& p2, const Vec3f& p3,
-                        const RenderOptions& opt, RenderResult& res, int i_triangle) const;
+    void drawTriangle2D(const Vec3d& p1, const Vec3d& p2, const Vec3d& p3,
+                        const RenderOptions& opt, RenderResult& res, uint i_triangle) const;
 
     void drawTrianglePart(int y_start, int y_end,
                           float x_start, float x_start_delta, float x_end, float x_end_delta,
                           float d_start, float d_start_delta, float d_end, float d_end_delta,
-                          const RenderOptions& opt, RenderResult& res, int i_triangle) const;
+                          const RenderOptions& opt, RenderResult& res, uint i_triangle) const;
 
-    void sort(const geo::Vec3f& p1, const geo::Vec3f& p2, const geo::Vec3f& p3, int dim,
-              Vec3f& p_min,geo::Vec3f& p_mid, geo::Vec3f& p_max) const;
+    void sort(const geo::Vec3d& p1, const geo::Vec3d& p2, const geo::Vec3d& p3, int dim,
+              Vec3d& p_min, geo::Vec3d& p_mid, geo::Vec3d& p_max) const;
 
 };
 
