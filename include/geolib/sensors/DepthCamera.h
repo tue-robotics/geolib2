@@ -194,8 +194,9 @@ public:
                               PointerMap& pointer_map = EMPTY_POINTER_MAP,
                               void* pointer = 0, TriangleMap& triangle_map = EMPTY_TRIANGLE_MAP) const;
 
-    inline cv::Point2d project3Dto2D(const geo::Vec3d& p) const {
-        return cv::Point2d((fx_ * p.x + tx_) / -p.z + cx_, (fy_ * -p.y + ty_) / -p.z + cy_);
+    template<typename Tin=double, typename Tout=double>
+    inline cv::Point_<Tout> project3Dto2D(const geo::Vec3T<Tin>& p) const {
+        return cv::Point_<Tout>((fx_ * p.x + tx_) / -p.z + cx_, (fy_ * -p.y + ty_) / -p.z + cy_);
     }
 
     inline double project2Dto3DX(int x) const {
@@ -214,8 +215,9 @@ public:
      * @param y: y index of the 2d point in the image
      * @returns: (semi) unit vector indicating the direction of the beam corresponding to the pixel.
      */
-    inline geo::Vec3d project2Dto3D(int x, int y) const {
-        return geo::Vec3d(project2Dto3DX(x), project2Dto3DY(y), -1.0);
+    template<typename T=double>
+    inline geo::Vec3T<T> project2Dto3D(int x, int y) const {
+        return geo::Vec3T<T>(project2Dto3DX(x), project2Dto3DY(y), -1.0);
     }
 
     inline void setFocalLengths(double fx, double fy) {
@@ -270,10 +272,12 @@ protected:
         cache_valid_ = true;
     }
 
-    void drawTriangle(const geo::Vec3d& p1, const geo::Vec3d& p2, const geo::Vec3d& p3,
+    template<typename Tin=double, typename Tout=double>
+    void drawTriangle(const geo::Vec3T<Tin>& p1, const geo::Vec3T<Tin>& p2, const geo::Vec3T<Tin>& p3,
                       const RenderOptions& opt, RenderResult& res, uint i_triangle) const;
 
-    void drawTriangle2D(const Vec3d& p1, const Vec3d& p2, const Vec3d& p3,
+    template<typename T=double>
+    void drawTriangle2D(const geo::Vec3T<T>& p1, const geo::Vec3T<T>& p2, const geo::Vec3T<T>& p3,
                         const RenderOptions& opt, RenderResult& res, uint i_triangle) const;
 
     void drawTrianglePart(int y_start, int y_end,
@@ -281,8 +285,8 @@ protected:
                           float d_start, float d_start_delta, float d_end, float d_end_delta,
                           const RenderOptions& opt, RenderResult& res, uint i_triangle) const;
 
-    void sort(const geo::Vec3d& p1, const geo::Vec3d& p2, const geo::Vec3d& p3, uchar dim,
-              Vec3d& p_min, geo::Vec3d& p_mid, geo::Vec3d& p_max) const;
+    template<typename T=double>
+    void sort(const geo::Vec3T<T>*& p_min, const geo::Vec3T<T>*& p_mid, const geo::Vec3T<T>*& p_max, uchar dim) const;
 
 };
 
