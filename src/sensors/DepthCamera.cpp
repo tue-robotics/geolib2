@@ -3,6 +3,9 @@
 
 #include <image_geometry/pinhole_camera_model.h>
 
+#include <array>
+#include <vector>
+
 namespace geo {
 
 void DefaultRenderResult::renderPixel(int x, int y, float depth, int i_triangle) {
@@ -100,10 +103,10 @@ void DepthCamera::render(const RenderOptions& opt, RenderResult& res) const {
 
     // Do not render in case no point of the mesh is inside the field of view
     bool in_view = false;
-    for (const geo::Vec3d& point : points_t)
+    for (const geo::Vec3d& point_t : points_t)
     {
-        const cv::Point2d& p_2d = project3Dto2D(point);
-        if (0 <= p_2d.x <= res.getWidth() && 0 <= p_2d.y <= res.getHeight())
+        const cv::Point2d& p_2d = project3Dto2D(point_t);
+        if (point_t.z < near_clip_z && 0 <= p_2d.x <= res.getWidth() && 0 <= p_2d.y <= res.getHeight())
         {
             in_view = true;
             break;
@@ -119,11 +122,11 @@ void DepthCamera::render(const RenderOptions& opt, RenderResult& res) const {
         const geo::Vec3d& p2_3d = points_t[it_tri->i2_];
         const geo::Vec3d& p3_3d = points_t[it_tri->i3_];
 
-        int n_verts_in = 0;
+        uchar n_verts_in = 0;
         bool v1_in = false;
         bool v2_in = false;
         bool v3_in = false;
-        const geo::Vec3d* vIn[3];
+        std::array<const geo::Vec3d*, 3> vIn;
 
         if (p1_3d.z < near_clip_z) {
             ++n_verts_in;
@@ -149,14 +152,14 @@ void DepthCamera::render(const RenderOptions& opt, RenderResult& res) const {
             // p = v0 + v01*t
             geo::Vec3d v01 = *vIn[1] - *vIn[0];
 
-            float t1 = ((near_clip_z - (*vIn[0]).z) / v01.z );
+            float t1 = ((near_clip_z - vIn[0]->z) / v01.z);
 
             geo::Vec3d new2(vIn[0]->x + v01.x * t1, vIn[0]->y + v01.y * t1, near_clip_z);
 
             // Second vert point
             geo::Vec3d v02 = *vIn[2] - *vIn[0];
 
-            float t2 = ((near_clip_z - (*vIn[0]).z) / v02.z);
+            float t2 = ((near_clip_z - vIn[0]->z) / v02.z);
 
             geo::Vec3d new3(vIn[0]->x + v02.x * t2, vIn[0]->y + v02.y * t2, near_clip_z);
 
@@ -170,16 +173,16 @@ void DepthCamera::render(const RenderOptions& opt, RenderResult& res) const {
             // p = v0 + v01*t
             geo::Vec3d v01 = *vIn[2] - *vIn[0];
 
-            float t1 = ((near_clip_z - (*vIn[0]).z)/v01.z );
+            float t1 = ((near_clip_z - vIn[0]->z)/v01.z);
 
-            geo::Vec3d new2((*vIn[0]).x + v01.x * t1,(*vIn[0]).y + v01.y * t1, near_clip_z);
+            geo::Vec3d new2(vIn[0]->x + v01.x * t1,vIn[0]->y + v01.y * t1, near_clip_z);
 
             // Second point
             geo::Vec3d v02 = *vIn[2] - *vIn[1];
 
-            float t2 = ((near_clip_z - (*vIn[1]).z)/v02.z);
+            float t2 = ((near_clip_z - vIn[1]->z)/v02.z);
 
-            geo::Vec3d new3((*vIn[1]).x + v02.x * t2, (*vIn[1]).y + v02.y * t2, near_clip_z);
+            geo::Vec3d new3(vIn[1]->x + v02.x * t2, vIn[1]->y + v02.y * t2, near_clip_z);
 
             drawTriangle(*vIn[0], *vIn[1], new2, opt, res, i_triangle);
 
