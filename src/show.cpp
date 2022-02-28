@@ -59,7 +59,11 @@ int main(int argc, char **argv) {
         }
 
         cv::imshow("visualization", depth_image);
-        cv::waitKey(10);
+        char key = cv::waitKey(10);
+        if (key == 'q')
+        {
+            break;
+        }
 
         angle += 0.07;
     }
