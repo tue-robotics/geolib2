@@ -249,6 +249,8 @@ public:
 
     inline double getOpticalTranslationY() const { return ty_; }
 
+    inline bool initialized() const { return cache_valid_; }
+
 protected:
 
     static constexpr const double near_clip_z_ = -0.1;
