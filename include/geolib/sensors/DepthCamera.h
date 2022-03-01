@@ -251,6 +251,8 @@ public:
 
 protected:
 
+    static constexpr const double near_clip_z_ = -0.1;
+
     // focal length of the camera
     double fx_, fy_;
 

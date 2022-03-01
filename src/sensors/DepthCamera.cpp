@@ -89,8 +89,6 @@ void DepthCamera::render(const RenderOptions& opt, RenderResult& res) const {
         return;
     }
 
-    double near_clip_z = -0.1;
-
     const std::vector<geo::TriangleI>& triangles = mesh.getTriangleIs();
     const std::vector<geo::Vec3d>& points = mesh.getPoints();
 
@@ -103,7 +101,7 @@ void DepthCamera::render(const RenderOptions& opt, RenderResult& res) const {
     bool in_view = false;
     for (unsigned int i = 0; i < points.size(); ++i) {
         points_t[i] = pose * points[i];
-        points_t_in[i] = (points_t[i].z < near_clip_z);
+        points_t_in[i] = (points_t[i].z < near_clip_z_);
         points_2d[i] = project3Dto2D<double, float>(points_t[i]);
         const cv::Point2f& p_2d = points_2d[i];
         if (!in_view && points_t_in[i] && 0 <= p_2d.x < res.getWidth() && 0 <= p_2d.y < res.getHeight())
@@ -151,16 +149,16 @@ void DepthCamera::render(const RenderOptions& opt, RenderResult& res) const {
             // p = v0 + v01*t
             geo::Vec3d v01 = *vIn[1] - *vIn[0];
 
-            float t1 = ((near_clip_z - vIn[0]->z) / v01.z);
+            float t1 = ((near_clip_z_ - vIn[0]->z) / v01.z);
 
-            geo::Vec3d new2(vIn[0]->x + v01.x * t1, vIn[0]->y + v01.y * t1, near_clip_z);
+            geo::Vec3d new2(vIn[0]->x + v01.x * t1, vIn[0]->y + v01.y * t1, near_clip_z_);
 
             // Second vert point
             geo::Vec3d v02 = *vIn[2] - *vIn[0];
 
-            float t2 = ((near_clip_z - vIn[0]->z) / v02.z);
+            float t2 = ((near_clip_z_ - vIn[0]->z) / v02.z);
 
-            geo::Vec3d new3(vIn[0]->x + v02.x * t2, vIn[0]->y + v02.y * t2, near_clip_z);
+            geo::Vec3d new3(vIn[0]->x + v02.x * t2, vIn[0]->y + v02.y * t2, near_clip_z_);
 
             drawTriangle<double, float>(*vIn[0], new2, new3, opt, res, i_triangle);
         } else if (n_verts_in == 2) {
@@ -172,16 +170,16 @@ void DepthCamera::render(const RenderOptions& opt, RenderResult& res) const {
             // p = v0 + v01*t
             geo::Vec3d v01 = *vIn[2] - *vIn[0];
 
-            float t1 = ((near_clip_z - vIn[0]->z)/v01.z);
+            float t1 = ((near_clip_z_ - vIn[0]->z)/v01.z);
 
-            geo::Vec3d new2(vIn[0]->x + v01.x * t1,vIn[0]->y + v01.y * t1, near_clip_z);
+            geo::Vec3d new2(vIn[0]->x + v01.x * t1,vIn[0]->y + v01.y * t1, near_clip_z_);
 
             // Second point
             geo::Vec3d v02 = *vIn[2] - *vIn[1];
 
-            float t2 = ((near_clip_z - vIn[1]->z)/v02.z);
+            float t2 = ((near_clip_z_ - vIn[1]->z)/v02.z);
 
-            geo::Vec3d new3(vIn[1]->x + v02.x * t2, vIn[1]->y + v02.y * t2, near_clip_z);
+            geo::Vec3d new3(vIn[1]->x + v02.x * t2, vIn[1]->y + v02.y * t2, near_clip_z_);
 
             drawTriangle<double, float>(*vIn[0], *vIn[1], new2, opt, res, i_triangle);
 
