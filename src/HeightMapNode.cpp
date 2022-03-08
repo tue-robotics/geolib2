@@ -54,7 +54,7 @@ bool HeightMapNode::intersect(const Ray& r, float t0, float t1, double& distance
 
     unsigned int i_child_origin = 5;
     for(unsigned int i = 0; i < 4; ++i) {
-        if (children_[i] && children_[i]->box_.contains(r.origin_)) {
+        if (children_[i] && children_[i]->box_.contains(r.getOrigin())) {
             if (children_[i]->intersect(r, t0, t1, distance)) {
                 return true;
             }

@@ -30,7 +30,7 @@ bool CompositeShape::intersect(const Ray& r, float t0, float t1, double& distanc
 
         const Shape& shape = *it->first;
 
-        Ray r_t(pose_inv * r.origin_, pose_inv.getBasis() * r.direction_);
+        Ray r_t(pose_inv * r.getOrigin(), pose_inv.getBasis() * r.getDirection());
 
         double d;
         if (shape.intersect(r_t, t0, min_distance, d)) {

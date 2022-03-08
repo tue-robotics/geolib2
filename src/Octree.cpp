@@ -58,7 +58,7 @@ bool Octree::intersect(const Ray& r, float t0, float t1, double& distance) const
         dist = 0;
     }
 
-    return root_->intersect(Ray(r.origin_ - offset_, r.direction_), t0 + dist + resolution_ * 0.1, t1, distance, offset_);
+    return root_->intersect(Ray(r.getOrigin() - offset_, r.getDirection()), t0 + dist + resolution_ * 0.1, t1, distance, offset_);
 }
 
 double Octree::getMaxRadius() const {
@@ -76,8 +76,8 @@ void Octree::raytrace(const Ray& r, float t0, float t1) {
         dist = 0;
     }
 
-    root_->raytrace(r.origin_ - offset_, r.direction_, t0 + dist + resolution_ * 0.1, t1, offset_);
-    this->add(r.origin_ + r.direction_ * t1);
+    root_->raytrace(r.getOrigin() - offset_, r.getDirection(), t0 + dist + resolution_ * 0.1, t1, offset_);
+    this->add(r.getOrigin() + r.getDirection() * t1);
 
     mesh_.clear();
 }

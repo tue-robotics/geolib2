@@ -192,7 +192,7 @@ int main(int argc, char **argv) {
     for(double y = -2; y < 2; y += tree.getResolution()) {
         for(double x = -2; x < 2; x += tree.getResolution()) {
             Ray r(Vector3(x, y, 5), Vector3(0, 0, -1));
-            r.length_ = 5 - x / 2;
+            r.setLength(5 - x / 2);
             rays.push_back(r);
         }
     }
@@ -200,7 +200,7 @@ int main(int argc, char **argv) {
     Timer timer4;
     timer4.start();
     for(std::vector<Ray>::iterator it = rays.begin(); it != rays.end(); ++it) {
-        tree.raytrace(*it, 0, it->length_);
+        tree.raytrace(*it, 0, it->getLength());
     }
     timer4.stop();
     std::cout << "Octree::raytrace(Ray):\t" << timer4.getElapsedTimeInMilliSec() / rays.size() << " ms" << std::endl;
@@ -209,7 +209,7 @@ int main(int argc, char **argv) {
     for(double y = -2; y < 2; y += tree.getResolution()*2) {
         for(double x = -2; x < 2; x += tree.getResolution()*2) {
             Ray r(Vector3(x, y, 5), Vector3(0, 0, -1));
-            r.length_ = 5 - y / 2;
+            r.setLength(5 - y / 2);
             rays.push_back(r);
         }
     }
@@ -218,7 +218,7 @@ int main(int argc, char **argv) {
     Timer timer5;
     timer5.start();
     for(std::vector<Ray>::iterator it = rays.begin(); it != rays.end(); ++it) {
-        tree.raytrace(*it, 0, it->length_);
+        tree.raytrace(*it, 0, it->getLength());
     }
     timer5.stop();
     std::cout << "Octree::raytrace(Ray):\t" << timer5.getElapsedTimeInMilliSec() / rays.size() << " ms" << std::endl;
