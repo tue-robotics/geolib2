@@ -22,13 +22,8 @@ inline void convert(const geo::Matrix3& m, tf::Matrix3x3& tf) {
 }
 
 inline void convert(const geo::Transform& t, tf::Transform& tf) {
-    tf::Vector3 v_tf;
-    convert(t.getOrigin(), v_tf);
-    tf.setOrigin(v_tf);
-
-    tf::Matrix3x3 m_tf;
-    convert(t.getBasis(), m_tf);
-    tf.setBasis(m_tf);
+    convert(t.getOrigin(), tf.getOrigin());
+    convert(t.getBasis(), tf.getBasis());
 }
 
 // ------------------------------ FROM TF ------------------------------
