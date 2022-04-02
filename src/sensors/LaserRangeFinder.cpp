@@ -288,11 +288,6 @@ void LaserRangeFinder::setAngleLimits(double min, double max) {
     }
 }
 
-void LaserRangeFinder::setRangeLimits(double min, double max) {
-    range_min_ = min;
-    range_max_ = max;
-}
-
 void LaserRangeFinder::setNumBeams(int num_beams) {
     num_beams_ = num_beams;
     if (num_beams > 0 && a_max_ - a_min_ > 0) {
@@ -383,20 +378,8 @@ void LaserRangeFinder::calculateRays() {
     i_half_circle_ = M_PI / getAngleIncrement();
 }
 
-double LaserRangeFinder::getAngleMin() const {
-    return a_min_;
-}
-
-double LaserRangeFinder::getAngleMax() const {
-    return a_max_;
-}
-
 double LaserRangeFinder::getAngleIncrement() const {
     return (a_max_ - a_min_) / std::max(num_beams_ - 1, 1);
-}
-
-const std::vector<double>& LaserRangeFinder::getAngles() const {
-    return angles_;
 }
 
 int LaserRangeFinder::getAngleUpperIndex(double angle) const {
@@ -425,18 +408,6 @@ int LaserRangeFinder::getAngleUpperIndex(double x, double y) const
     int j = (x_abs < y_abs ? 0 : 1) + (x < 0 ? 0 : 2) + (y < 0 ? 0 : 4);
 
     return slope_to_index_[j][k];
-}
-
-double LaserRangeFinder::getRangeMin() const {
-    return range_min_;
-}
-
-double LaserRangeFinder::getRangeMax() const {
-    return range_max_;
-}
-
-int LaserRangeFinder::getNumBeams() const {
-    return num_beams_;
 }
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *

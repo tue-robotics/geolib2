@@ -76,7 +76,7 @@ void DepthCamera::render(const RenderOptions& opt, RenderResult& res) const {
     }
 
     int i_triangle = 0;
-    for(std::vector<TriangleI>::const_iterator it_tri = triangles.begin(); it_tri != triangles.end(); ++it_tri) {
+    for(std::vector<TriangleI>::const_iterator it_tri = triangles.cbegin(); it_tri != triangles.cend(); ++it_tri) {
 
         const Vector3& p1_3d = points_t[it_tri->i1_];
         const Vector3& p2_3d = points_t[it_tri->i2_];
@@ -241,8 +241,6 @@ void DepthCamera::drawTrianglePart(int y_start, int y_end,
                                    float x_start, float x_start_delta, float x_end, float x_end_delta,
                                    float d_start, float d_start_delta, float d_end, float d_end_delta,
                                    const RenderOptions& opt, RenderResult& res, int i_triangle) const {
-
-//    cv::Mat& image = res.image_;
 
     if (y_start < 0) {
         d_start += d_start_delta * -y_start;

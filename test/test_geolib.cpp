@@ -348,7 +348,11 @@ int main(int argc, char **argv) {
 
         angle += 0.05;
 
-        cv::waitKey(3);
+        char key = cv::waitKey(3);
+        if (key == 'q')
+        {
+            break;
+        }
     }
 
     return 0;

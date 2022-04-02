@@ -9,7 +9,7 @@ namespace geo {
 
 class Mesh;
 
-class LaserRangeFinder {    
+class LaserRangeFinder {
 
 public:
 
@@ -17,7 +17,7 @@ public:
 
     public:
 
-        void setMesh(const Mesh& mesh, const geo::Pose3D& pose) {
+        void setMesh(const geo::Mesh& mesh, const geo::Pose3D& pose) {
             mesh_ = &mesh;
             pose_ = pose;
         }
@@ -27,7 +27,7 @@ public:
         const geo::Mesh& getMesh() const { return *mesh_; }
 
     protected:
-        const Mesh* mesh_;
+        const geo::Mesh* mesh_;
         geo::Pose3D pose_;
 
     };
@@ -63,23 +63,23 @@ public:
 
     void setAngleLimits(double min, double max);
 
-    void setRangeLimits(double min, double max);
+    inline void setRangeLimits(double min, double max) { range_min_ = min; range_max_ = max; }
 
     void setNumBeams(int n);
 
-    double getAngleMin() const;
+    inline double getAngleMin() const { return a_min_; }
 
-    double getAngleMax() const;
+    inline double getAngleMax() const { return a_max_; }
 
     double getAngleIncrement() const;
 
-    const std::vector<double>& getAngles() const;
+    inline const std::vector<double>& getAngles() const { return angles_; }
 
-    double getRangeMin() const;
+    inline double getRangeMin() const { return range_min_; }
 
-    double getRangeMax() const;
+    inline double getRangeMax() const { return range_max_; }
 
-    int getNumBeams() const;
+    inline int getNumBeams() const { return num_beams_; }
 
     geo::Vector3 rangeToPoint(double range, int i) const;
 
