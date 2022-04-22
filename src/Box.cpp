@@ -70,7 +70,7 @@ bool Box::intersect(const Vector3& p, const double radius) const {
     Vector3 c = getCenter();
 
     if (p.x > bounds[0].x && p.x < bounds[1].x)
-        c.x = p.getX();
+        c.x = p.x;
     else if (p.x > c.x)
         c.x = bounds[1].x;
     else
