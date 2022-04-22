@@ -42,6 +42,8 @@ public:
 
     T& operator[](const uint i) { return m[i]; }
 
+    const T& operator[](const uint i) const { return m[i]; }
+
     bool operator==(const Vec2T& v) const {
         return (x == v.x && y == v.y);
     }
@@ -134,6 +136,8 @@ public:
     ~Vec3T() {}
 
     T& operator[](const uint i) { return m[i]; }
+
+    const T& operator[](const uint i) const { return m[i]; }
 
     bool operator==(const Vec3T& v) const {
         return (x == v.x && y == v.y && z == v.z);
@@ -235,6 +239,8 @@ public:
 
     T& operator[](const uint i) { return m[i]; }
 
+    const T& operator[](const uint i) const { return m[i]; }
+
     bool operator==(const Mat2T& m) const {
         return (xx == m.xx && xy == m.xy &&
                 yx == m.yx && yy == m.yy );
@@ -329,6 +335,8 @@ public:
 
     T& operator[](const uint i) { return m[i]; }
 
+    const T& operator[](const uint i) const { return m[i]; }
+
     bool operator==(const QuaternionT& q) const {
         return (x == q.x && y == q.y && z == q.z && w == q.w);
     }
@@ -409,6 +417,8 @@ public:
     ~Mat3T() {}
 
     T& operator[](const uint i) { return m[i]; }
+
+    const T& operator[](const uint i) const { return m[i]; }
 
     bool operator==(const Mat3T& m) const {
         return (xx == m.xx && xy == m.xy && xz == m.xz &&
