@@ -71,6 +71,11 @@ public:
 
     inline double getAngleMax() const { return a_max_; }
 
+    /**
+     * @brief Angle increment between two beams
+     *
+     * \f$ \frac{angle_{max} - angle_{min}}{N_{beams} - 1}\f$
+     */
     double getAngleIncrement() const;
 
     inline const std::vector<double>& getAngles() const { return angles_; }
