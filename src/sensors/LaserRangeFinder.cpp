@@ -468,9 +468,10 @@ double LaserRangeFinder::getAngle(double x, double y) {
         }
     }
 
+    // Wrap to (-pi, pi]
     if (a > M_PI) {
         a -= 2 * M_PI ;
-    } else if (a < -M_PI) {
+    } else if (a <= -M_PI) {
         a += 2 * M_PI;
     }
 
