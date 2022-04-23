@@ -299,13 +299,15 @@ void LaserRangeFinder::calculateRays() {
     ray_dirs_.clear();
     angles_.clear();
 
+    ray_dirs_.resize(num_beams_);
+    angles_.resize(num_beams_);
+
     // Pre-calculate the unit direction vectors of all the rays
     double a_incr = getAngleIncrement();
     double a = a_min_;
     for(int i = 0; i < num_beams_; ++i) {
-        Vector3 dir = polarTo2D(a, 1);
-        ray_dirs_.push_back(dir);
-        angles_.push_back(a);
+        ray_dirs_[i] = polarTo2D(a, 1);
+        angles_[i] = a;
         a += a_incr;
     }
 
@@ -315,7 +317,7 @@ void LaserRangeFinder::calculateRays() {
 
     // Determine the needed resolution of the look-up table (TODO: make less ad-hoc)
     slope_factor_ = 1 / tan(getAngleIncrement()) * 10;
-    int N = (int)slope_factor_ + 1;
+    int N = static_cast<int>(slope_factor_) + 1;
 
     for(unsigned int i = 0; i < 8; ++i)
         slope_to_index_[i].resize(N);
@@ -333,7 +335,7 @@ void LaserRangeFinder::calculateRays() {
         for(int k = 0; k < N; ++k)
         {
             // Calculate the slope corresponding to this table entry
-            double slope = (double)k / slope_factor_;
+            double slope = static_cast<double>(k) / slope_factor_;
 
             // Calculate a virtual (x, y) cartesian point which corresponds to this table entry
             // based on the slope. Determine the part of the unit circle in which (x, y) lies
