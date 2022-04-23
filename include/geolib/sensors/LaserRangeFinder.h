@@ -47,7 +47,7 @@ public:
 
         std::vector<double>& ranges;
 
-        const LaserRangeFinder* lrf_;
+        const geo::LaserRangeFinder* lrf_;
 
     };
 
@@ -55,9 +55,9 @@ public:
 
     virtual ~LaserRangeFinder();
 
-    void render(const LaserRangeFinder::RenderOptions& options, LaserRangeFinder::RenderResult& res) const;
+    void render(const geo::LaserRangeFinder::RenderOptions& options, geo::LaserRangeFinder::RenderResult& res) const;
 
-    RenderResult render(const Shape& shape, const Pose3D& cam_pose, const Pose3D& obj_pose, std::vector<double>& ranges) const;
+    RenderResult render(const geo::Shape& shape, const geo::Pose3D& cam_pose, const geo::Pose3D& obj_pose, std::vector<double>& ranges) const;
 
     void renderLine(const geo::Vec2& p1, const geo::Vec2& p2, std::vector<double>& ranges) const;
 
@@ -97,7 +97,7 @@ public:
 
     static double getAngle(double x, double y);
 
-    inline const std::vector<Vector3>& rayDirections() const { return ray_dirs_; }
+    inline const std::vector<geo::Vector3>& rayDirections() const { return ray_dirs_; }
 
 protected:
 
