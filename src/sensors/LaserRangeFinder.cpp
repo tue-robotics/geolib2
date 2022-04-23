@@ -327,6 +327,16 @@ void LaserRangeFinder::calculateRays() {
     // x < 0
     // y < 0
 
+    //    \ 4 | 6 /
+    //     \  |  /
+    //   5  \ | /  7
+    //       \|/
+    // ---------------
+    //       /|\
+    //   1  / | \  3
+    //     /  |  \
+    //    / 0 | 2 \
+
     // This way we can always calculate a slope between 0 and 1 (by dividing the
     // smallest coordinate by the biggest).
     for(int j = 0; j < 8; ++j)
