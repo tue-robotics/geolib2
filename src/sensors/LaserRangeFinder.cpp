@@ -3,7 +3,7 @@
 
 namespace geo {
 
-LaserRangeFinder::LaserRangeFinder() : a_min_(0), a_max_(0), range_min_(0), range_max_(0), num_beams_(0) {
+LaserRangeFinder::LaserRangeFinder() : a_min_(0), a_max_(0), range_min_(0), range_max_(0), num_beams_(0), angle_incr_(0) {
 }
 
 LaserRangeFinder::~LaserRangeFinder() {
@@ -298,17 +298,17 @@ void LaserRangeFinder::setNumBeams(int num_beams) {
 void LaserRangeFinder::calculateRays() {
     ray_dirs_.clear();
     angles_.clear();
+    angle_incr_ = (a_max_ - a_min_) / std::max(num_beams_ - 1, 1);
 
     ray_dirs_.resize(num_beams_);
     angles_.resize(num_beams_);
 
     // Pre-calculate the unit direction vectors of all the rays
-    double a_incr = getAngleIncrement();
     double a = a_min_;
     for(int i = 0; i < num_beams_; ++i) {
         ray_dirs_[i] = polarTo2D(a, 1);
         angles_[i] = a;
-        a += a_incr;
+        a += angle_incr_;
     }
 
     // Create a look-up table which translates slope to ray index. This way,
@@ -387,11 +387,11 @@ void LaserRangeFinder::calculateRays() {
         }
     }
 
-    i_half_circle_ = M_PI / getAngleIncrement();
+    i_half_circle_ = M_PI / angle_incr_;
 }
 
 double LaserRangeFinder::getAngleIncrement() const {
-    return (a_max_ - a_min_) / std::max(num_beams_ - 1, 1);
+    return angle_incr_;
 }
 
 int LaserRangeFinder::getAngleUpperIndex(double angle) const {
