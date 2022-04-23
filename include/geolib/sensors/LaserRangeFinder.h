@@ -100,8 +100,6 @@ public:
 
     static geo::Vector3 polarTo3D(const geo::Pose3D& laser_pose, double angle, double range);
 
-    static double getAngle(double x, double y);
-
     inline const std::vector<geo::Vector3>& rayDirections() const { return ray_dirs_; }
 
 protected:

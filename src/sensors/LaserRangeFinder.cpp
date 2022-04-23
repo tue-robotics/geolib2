@@ -455,27 +455,4 @@ geo::Vector3 LaserRangeFinder::polarTo3D(const geo::Pose3D& laser_pose, double a
     return laser_pose.getBasis() * polarTo2D(angle, range);
 }
 
-double LaserRangeFinder::getAngle(double x, double y) {
-    double a = atan(y / x);
-//    double v = y / x;
-//    double a = M_PI_4*v - v*(fabs(v) - 1)*(0.2447 + 0.0663*fabs(v));
-
-    if (x < 0) {
-        if (y < 0) {
-            a = -M_PI + a;
-        } else {
-            a = M_PI + a;
-        }
-    }
-
-    // Wrap to (-pi, pi]
-    if (a > M_PI) {
-        a -= 2 * M_PI ;
-    } else if (a <= -M_PI) {
-        a += 2 * M_PI;
-    }
-
-    return a;
-}
-
 }
