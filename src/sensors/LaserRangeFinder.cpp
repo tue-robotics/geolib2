@@ -1,6 +1,8 @@
 #include "geolib/sensors/LaserRangeFinder.h"
 #include "geolib/Shape.h"
 
+#include <cmath>
+
 namespace geo {
 
 LaserRangeFinder::LaserRangeFinder() : a_min_(0), a_max_(0), range_min_(0), range_max_(0), num_beams_(0), angle_incr_(0) {
@@ -311,82 +313,6 @@ void LaserRangeFinder::calculateRays() {
         a += angle_incr_;
     }
 
-    // Create a look-up table which translates slope to ray index. This way,
-    // we can later on calculate the approximate polar coordinates a point on the
-    // laser plane without using atan.
-
-    // Determine the needed resolution of the look-up table (TODO: make less ad-hoc)
-    slope_factor_ = 1 / tan(getAngleIncrement()) * 10;
-    int N = static_cast<int>(slope_factor_) + 1;
-
-    for(unsigned int i = 0; i < 8; ++i)
-        slope_to_index_[i].resize(N);
-
-    // We divide the unit circle into 8 parts, split by 3 criteria:
-    // abs(x) < abs(y)
-    // x < 0
-    // y < 0
-
-    //    \ 4 | 6 /
-    //     \  |  /
-    //   5  \ | /  7
-    //       \|/
-    // ---------------
-    //       /|\
-    //   1  / | \  3
-    //     /  |  \
-    //    / 0 | 2 \
-
-    // This way we can always calculate a slope between 0 and 1 (by dividing the
-    // smallest coordinate by the biggest).
-    for(int j = 0; j < 8; ++j)
-    {
-        slope_to_index_[j].resize(N);
-        for(int k = 0; k < N; ++k)
-        {
-            // Calculate the slope corresponding to this table entry
-            double slope = static_cast<double>(k) / slope_factor_;
-
-            // Calculate a virtual (x, y) cartesian point which corresponds to this table entry
-            // based on the slope. Determine the part of the unit circle in which (x, y) lies
-            // base on j
-            double x, y;
-            if (j & 1)
-            {
-                // x_abs > y_abs
-                x = 1;
-                y = slope + 1e-16; // Necessary because of 0-check in getAngle
-            }
-            else
-            {
-                // x_abs < y_abs
-                x = slope + 1e-16; // Necessary because of 0-check in getAngle
-                y = 1;
-            }
-
-            if (!(j & 2))
-            {
-                // x < 0
-                x = -x;
-            }
-
-            if (!(j & 4))
-            {
-                // y < 0
-                y = -y;
-            }
-
-            // Calculate the angle of the virtual point (x, y)
-            double a = getAngle(x, y);
-            double a_temp = a - a_min_;
-            if (a_temp < 0)
-                a_temp += 2 * M_PI;
-
-            // Calculate the ray index based on the angle
-            slope_to_index_[j][k] = a_temp / (a_max_ - a_min_) * num_beams_ + 1;
-        }
-    }
-
     i_half_circle_ = M_PI / angle_incr_;
 }
 
@@ -395,31 +321,14 @@ double LaserRangeFinder::getAngleIncrement() const {
 }
 
 int LaserRangeFinder::getAngleUpperIndex(double angle) const {
-    int i = (angle - a_min_) / (a_max_ - a_min_) * num_beams_ + 1;
+    int i = (angle - a_min_) / angle_incr_ + 1;
     return std::min(num_beams_, std::max(0, i));
 }
 
 int LaserRangeFinder::getAngleUpperIndex(double x, double y) const
 {
     // Calculate the ray index corresponding to the cartesian point (x, y)
-    // We use the look-up table to avoid calculating the atan of (x / y)
-
-    double x_abs = std::abs(x);
-    double y_abs = std::abs(y);
-
-    // Calculcate slope
-    double slope;
-    if (x_abs < y_abs)
-        slope = x_abs / y_abs;
-    else
-        slope = y_abs / x_abs;
-
-    int k = slope_factor_ * slope;
-
-    // Calculate region number (0 - 7)
-    int j = (x_abs < y_abs ? 0 : 1) + (x < 0 ? 0 : 2) + (y < 0 ? 0 : 4);
-
-    return slope_to_index_[j][k];
+    return getAngleUpperIndex(atan2(y, x));
 }
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *

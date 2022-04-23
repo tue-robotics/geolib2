@@ -115,8 +115,8 @@ protected:
     std::vector<geo::Vector3> ray_dirs_;
 
     double angle_incr_;
-    double slope_factor_;
-    std::vector<int> slope_to_index_[8];
+
+    // Number of beams in a half circle
     int i_half_circle_;
 
     void calculateRays();
