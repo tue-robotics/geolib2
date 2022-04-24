@@ -51,6 +51,9 @@ public:
     /// returns dot product
     T dot(const Vec2T& v) const { return x * v.x + y * v.y; }
 
+    /// returns cross product
+    T cross(const Vec2T& v) const { return x * v.y - y * v.x; }
+
     /// returns addition of this and v
     Vec2T operator+(const Vec2T& v) const {  return Vec2T(x + v.x, y + v.y); }
 
