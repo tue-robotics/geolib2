@@ -40,10 +40,10 @@ public:
 
         virtual void renderLine(const Vec2& p1, const Vec2& p2);
 
-        virtual void renderPoint(int index, float depth);
+        virtual void renderPoint(uint index, float depth);
 
-        int min_i;
-        int max_i;
+        uint min_i;
+        uint max_i;
 
         std::vector<double>& ranges;
 
@@ -65,7 +65,7 @@ public:
 
     inline void setRangeLimits(double min, double max) { range_min_ = min; range_max_ = max; }
 
-    void setNumBeams(int n);
+    void setNumBeams(uint n);
 
     inline double getAngleMin() const { return a_min_; }
 
@@ -84,17 +84,17 @@ public:
 
     inline double getRangeMax() const { return range_max_; }
 
-    inline int getNumBeams() const { return num_beams_; }
+    inline uint getNumBeams() const { return num_beams_; }
 
-    geo::Vector3 rangeToPoint(double range, int i) const;
+    geo::Vector3 rangeToPoint(double range, uint i) const;
 
-    const geo::Vector3 getRayDirection(int i) const;
+    const geo::Vector3 getRayDirection(uint i) const;
 
     bool rangesToPoints(const std::vector<double>& ranges, std::vector<geo::Vector3>& points) const;
 
-    int getAngleUpperIndex(double angle) const;
+    uint getAngleUpperIndex(double angle) const;
 
-    int getAngleUpperIndex(double x, double y) const;
+    uint getAngleUpperIndex(double x, double y) const;
 
     static geo::Vector3 polarTo2D(double angle, double range);
 
@@ -108,7 +108,7 @@ protected:
 
     double range_min_, range_max_;
 
-    int num_beams_;
+    uint num_beams_;
 
     std::vector<double> angles_;
 
@@ -117,7 +117,7 @@ protected:
     double angle_incr_;
 
     // Number of beams in a half circle
-    int i_half_circle_;
+    uint i_half_circle_;
 
     void calculateRays();
 
