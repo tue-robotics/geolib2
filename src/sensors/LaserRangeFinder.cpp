@@ -104,7 +104,7 @@ void LaserRangeFinder::RenderResult::renderLine(const Vec2& p1, const Vec2& p2)
 
     // d = (q1 - ray_start) x s / (r x s)
     //   = (q1 x s) / (r x s)
-    Vec2 s = p2 - p1;
+    Vec2& s = diff;
 
     // For all beam regions found above (1 or 2 regions), calculate the intersection
     // of each beam with the line
@@ -112,8 +112,8 @@ void LaserRangeFinder::RenderResult::renderLine(const Vec2& p1, const Vec2& p2)
     // Draw part 1
     for(uint i = i_min1; i < i_max1; ++i)
     {
-        const Vector3& r = lrf_->ray_dirs_[i];
-        double d = (p1.x * s.y - p1.y * s.x) / (r.x * s.y - r.y * s.x);
+        const geo::Vec2& r = lrf_->ray_dirs_[i].projectTo2d();
+        double d = p1.cross(s) / r.cross(s);
         if (d > 0)
             renderPoint(i, d);
     }
@@ -121,8 +121,8 @@ void LaserRangeFinder::RenderResult::renderLine(const Vec2& p1, const Vec2& p2)
     // Draw part 2
     for(uint i = i_min2; i < i_max2; ++i)
     {
-        const Vector3& r = lrf_->ray_dirs_[i];
-        double d = (p1.x * s.y - p1.y * s.x) / (r.x * s.y - r.y * s.x);
+        const geo::Vec2& r = lrf_->ray_dirs_[i].projectTo2d();
+        double d = p1.cross(s) / r.cross(s);
         if (d > 0)
             renderPoint(i, d);
     }
