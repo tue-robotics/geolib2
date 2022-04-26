@@ -1,9 +1,11 @@
 #include "geolib/sensors/LaserRangeFinder.h"
 #include "geolib/Shape.h"
 
+#include <cmath>
+
 namespace geo {
 
-LaserRangeFinder::LaserRangeFinder() : a_min_(0), a_max_(0), range_min_(0), range_max_(0), num_beams_(0) {
+LaserRangeFinder::LaserRangeFinder() : a_min_(0), a_max_(0), range_min_(0), range_max_(0), num_beams_(0), angle_incr_(0) {
 }
 
 LaserRangeFinder::~LaserRangeFinder() {
@@ -48,12 +50,12 @@ void LaserRangeFinder::RenderResult::renderLine(const Vec2& p1, const Vec2& p2)
     }
 
     // Get the angle / beam indices based on the slope
-    int i_p1 = lrf_->getAngleUpperIndex(p1.x, p1.y);
-    int i_p2 = lrf_->getAngleUpperIndex(p2.x, p2.y);
+    uint i_p1 = lrf_->getAngleUpperIndex(p1.x, p1.y);
+    uint i_p2 = lrf_->getAngleUpperIndex(p2.x, p2.y);
 
     // Get the minimum and maximum
-    int i_min = std::min(i_p1, i_p2);
-    int i_max = std::max(i_p1, i_p2);
+    uint i_min = std::min<uint>(i_p1, i_p2);
+    uint i_max = std::max<uint>(i_p1, i_p2);
 
     // We need to differentiate between two cases:
     // - from min to max is less than half a circle
@@ -61,7 +63,7 @@ void LaserRangeFinder::RenderResult::renderLine(const Vec2& p1, const Vec2& p2)
 
     // In the latter case, we may need to render two parts
 
-    int i_min1, i_max1, i_min2, i_max2;
+    uint i_min1, i_max1, i_min2, i_max2;
     if (i_max - i_min < lrf_->i_half_circle_)
     {
         // Back-face culling: if the normal is pointing outwards, ommit this line
@@ -80,8 +82,8 @@ void LaserRangeFinder::RenderResult::renderLine(const Vec2& p1, const Vec2& p2)
         i_min2 = 0;
         i_max2 = 0;
 
-        min_i = std::min(min_i, (int)i_min);
-        max_i = std::max(max_i, (int)i_max);
+        min_i = std::min(min_i, i_min);
+        max_i = std::max(max_i, i_max);
     }
     else
     {
@@ -102,25 +104,25 @@ void LaserRangeFinder::RenderResult::renderLine(const Vec2& p1, const Vec2& p2)
 
     // d = (q1 - ray_start) x s / (r x s)
     //   = (q1 x s) / (r x s)
-    Vec2 s = p2 - p1;
+    Vec2& s = diff;
 
     // For all beam regions found above (1 or 2 regions), calculate the intersection
     // of each beam with the line
 
     // Draw part 1
-    for(int i = i_min1; i < i_max1; ++i)
+    for(uint i = i_min1; i < i_max1; ++i)
     {
-        const Vector3& r = lrf_->ray_dirs_[i];
-        double d = (p1.x * s.y - p1.y * s.x) / (r.x * s.y - r.y * s.x);
+        const geo::Vec2& r = lrf_->ray_dirs_[i].projectTo2d();
+        double d = p1.cross(s) / r.cross(s);
         if (d > 0)
             renderPoint(i, d);
     }
 
     // Draw part 2
-    for(int i = i_min2; i < i_max2; ++i)
+    for(uint i = i_min2; i < i_max2; ++i)
     {
-        const Vector3& r = lrf_->ray_dirs_[i];
-        double d = (p1.x * s.y - p1.y * s.x) / (r.x * s.y - r.y * s.x);
+        const geo::Vec2& r = lrf_->ray_dirs_[i].projectTo2d();
+        double d = p1.cross(s) / r.cross(s);
         if (d > 0)
             renderPoint(i, d);
     }
@@ -128,7 +130,7 @@ void LaserRangeFinder::RenderResult::renderLine(const Vec2& p1, const Vec2& p2)
 
 // ----------------------------------------------------------------------------------------------------
 
-void LaserRangeFinder::RenderResult::renderPoint(int i, float d)
+void LaserRangeFinder::RenderResult::renderPoint(uint i, float d)
 {
     if (ranges[i] == 0 || d < ranges[i]) {
         ranges[i] = d;
@@ -172,7 +174,7 @@ void LaserRangeFinder::render(const LaserRangeFinder::RenderOptions& opt, LaserR
     std::vector<double> zs_t(points.size());
     Vector3 Rz = pose.getBasis().getRow(2);
     double z_offset = pose.getOrigin().getZ();
-    for(unsigned int i = 0; i < points.size(); ++i)
+    for(uint i = 0; i < points.size(); ++i)
         zs_t[i] = Rz.dot(points[i]) + z_offset;
 
     Vector3 Rx = pose.getBasis().getRow(0);
@@ -288,7 +290,7 @@ void LaserRangeFinder::setAngleLimits(double min, double max) {
     }
 }
 
-void LaserRangeFinder::setNumBeams(int num_beams) {
+void LaserRangeFinder::setNumBeams(uint num_beams) {
     num_beams_ = num_beams;
     if (num_beams > 0 && a_max_ - a_min_ > 0) {
         calculateRays();
@@ -298,116 +300,34 @@ void LaserRangeFinder::setNumBeams(int num_beams) {
 void LaserRangeFinder::calculateRays() {
     ray_dirs_.clear();
     angles_.clear();
+    angle_incr_ = (a_max_ - a_min_) / std::max<uint>(num_beams_ - 1, 1);
+
+    ray_dirs_.resize(num_beams_);
+    angles_.resize(num_beams_);
 
     // Pre-calculate the unit direction vectors of all the rays
-    double a_incr = getAngleIncrement();
     double a = a_min_;
-    for(int i = 0; i < num_beams_; ++i) {
-        Vector3 dir = polarTo2D(a, 1);
-        ray_dirs_.push_back(dir);
-        angles_.push_back(a);
-        a += a_incr;
+    for(uint i = 0; i < num_beams_; ++i) {
+        ray_dirs_[i] = polarTo2D(a, 1);
+        angles_[i] = a;
+        a += angle_incr_;
     }
 
-    // Create a look-up table which translates slope to ray index. This way,
-    // we can later on calculate the approximate polar coordinates a point on the
-    // laser plane without using atan.
-
-    // Determine the needed resolution of the look-up table (TODO: make less ad-hoc)
-    slope_factor_ = 1 / tan(getAngleIncrement()) * 10;
-    int N = (int)slope_factor_ + 1;
-
-    for(unsigned int i = 0; i < 8; ++i)
-        slope_to_index_[i].resize(N);
-
-    // We divide the unit circle into 8 parts, split by 3 criteria:
-    // abs(x) < abs(y)
-    // x < 0
-    // y < 0
-
-    // This way we can always calculate a slope between 0 and 1 (by dividing the
-    // smallest coordinate by the biggest).
-    for(int j = 0; j < 8; ++j)
-    {
-        slope_to_index_[j].resize(N);
-        for(int k = 0; k < N; ++k)
-        {
-            // Calculate the slope corresponding to this table entry
-            double slope = (double)k / slope_factor_;
-
-            // Calculate a virtual (x, y) cartesian point which corresponds to this table entry
-            // based on the slope. Determine the part of the unit circle in which (x, y) lies
-            // base on j
-            double x, y;
-            if (j & 1)
-            {
-                // x_abs > y_abs
-                x = 1;
-                y = slope + 1e-16; // Necessary because of 0-check in getAngle
-            }
-            else
-            {
-                // x_abs < y_abs
-                x = slope + 1e-16; // Necessary because of 0-check in getAngle
-                y = 1;
-            }
-
-            if (!(j & 2))
-            {
-                // x < 0
-                x = -x;
-            }
-
-            if (!(j & 4))
-            {
-                // y < 0
-                y = -y;
-            }
-
-            // Calculate the angle of the virtual point (x, y)
-            double a = getAngle(x, y);
-            double a_temp = a - a_min_;
-            if (a_temp < 0)
-                a_temp += 2 * M_PI;
-
-            // Calculate the ray index based on the angle
-            slope_to_index_[j][k] = a_temp / (a_max_ - a_min_) * num_beams_ + 1;
-        }
-    }
-
-    i_half_circle_ = M_PI / getAngleIncrement();
+    i_half_circle_ = M_PI / angle_incr_;
 }
 
 double LaserRangeFinder::getAngleIncrement() const {
-    return (a_max_ - a_min_) / std::max(num_beams_ - 1, 1);
+    return angle_incr_;
 }
 
-int LaserRangeFinder::getAngleUpperIndex(double angle) const {
-    int i = (angle - a_min_) / (a_max_ - a_min_) * num_beams_ + 1;
-    return std::min(num_beams_, std::max(0, i));
+uint LaserRangeFinder::getAngleUpperIndex(double angle) const {
+    int i = (angle - a_min_) / angle_incr_ + 1;
+    return std::min<uint>(num_beams_, std::max<int>(0, i));
 }
 
-int LaserRangeFinder::getAngleUpperIndex(double x, double y) const
-{
+uint LaserRangeFinder::getAngleUpperIndex(double x, double y) const {
     // Calculate the ray index corresponding to the cartesian point (x, y)
-    // We use the look-up table to avoid calculating the atan of (x / y)
-
-    double x_abs = std::abs(x);
-    double y_abs = std::abs(y);
-
-    // Calculcate slope
-    double slope;
-    if (x_abs < y_abs)
-        slope = x_abs / y_abs;
-    else
-        slope = y_abs / x_abs;
-
-    int k = slope_factor_ * slope;
-
-    // Calculate region number (0 - 7)
-    int j = (x_abs < y_abs ? 0 : 1) + (x < 0 ? 0 : 2) + (y < 0 ? 0 : 4);
-
-    return slope_to_index_[j][k];
+    return getAngleUpperIndex(atan2(y, x));
 }
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -416,11 +336,11 @@ int LaserRangeFinder::getAngleUpperIndex(double x, double y) const
 //
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 
-geo::Vector3 LaserRangeFinder::rangeToPoint(double range, int i) const {
+geo::Vector3 LaserRangeFinder::rangeToPoint(double range, uint i) const {
     return ray_dirs_[i] * range;
 }
 
-const geo::Vector3 LaserRangeFinder::getRayDirection(int i) const {
+const geo::Vector3 LaserRangeFinder::getRayDirection(uint i) const {
     return ray_dirs_[i];
 }
 
@@ -429,7 +349,7 @@ bool LaserRangeFinder::rangesToPoints(const std::vector<double>& ranges, std::ve
         return false;
     }
     points.resize(ray_dirs_.size());
-    for(unsigned int i = 0; i < ray_dirs_.size(); ++i) {
+    for(uint i = 0; i < ray_dirs_.size(); ++i) {
         points[i] = ray_dirs_[i] * ranges[i];
     }
     return true;
@@ -441,28 +361,6 @@ geo::Vector3 LaserRangeFinder::polarTo2D(double angle, double range) {
 
 geo::Vector3 LaserRangeFinder::polarTo3D(const geo::Pose3D& laser_pose, double angle, double range) {
     return laser_pose.getBasis() * polarTo2D(angle, range);
-}
-
-double LaserRangeFinder::getAngle(double x, double y) {
-    double a = atan(y / x);
-//    double v = y / x;
-//    double a = M_PI_4*v - v*(fabs(v) - 1)*(0.2447 + 0.0663*fabs(v));
-
-    if (x < 0) {
-        if (y < 0) {
-            a = -M_PI + a;
-        } else {
-            a = M_PI + a;
-        }
-    }
-
-    if (a > M_PI) {
-        a -= 2 * M_PI ;
-    } else if (a < -M_PI) {
-        a += 2 * M_PI;
-    }
-
-    return a;
 }
 
 }
