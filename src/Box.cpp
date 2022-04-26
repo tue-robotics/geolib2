@@ -69,26 +69,13 @@ bool Box::intersect(const Box& other) const {
 bool Box::intersect(const Vector3& p, const double radius) const {
     Vector3 c = getCenter();
 
-    if (p.x > bounds[0].x && p.x < bounds[1].x)
-        c.x = p.getX();
-    else if (p.x > c.x)
-        c.x = bounds[1].x;
-    else
-        c.x = bounds[0].x;
-
-    if (p.y > bounds[0].y && p.y < bounds[1].y)
-        c.y = p.y;
-    else if (p.y > c.y)
-        c.y = bounds[1].y;
-    else
-        c.y = bounds[0].y;
-
-    if (p.z > bounds[0].z && p.z < bounds[1].z)
-        c.z = p.z;
-    else if (p.z > c.z)
-        c.z = bounds[1].z;
-    else
-        c.z = bounds[0].z;
+    for (uint i = 0; i<3; ++i)
+    {
+        if (p[i] > bounds[0][i] && p[i] < bounds[1][i])
+            c[i] = p[i]; // If p is inside both bounds for this axis
+        else
+            c[i] = bounds[p[i] > c[i]][i]; // If p bigger than center take upper bound, otherwise lower bound
+    }
 
     return radius*radius > (p-c).length2();
 }

@@ -40,6 +40,10 @@ public:
 
     ~Vec2T() {}
 
+    T& operator[](const uint i) { return m[i]; }
+
+    const T& operator[](const uint i) const { return m[i]; }
+
     bool operator==(const Vec2T& v) const {
         return (x == v.x && y == v.y);
     }
@@ -130,6 +134,10 @@ public:
     }
 
     ~Vec3T() {}
+
+    T& operator[](const uint i) { return m[i]; }
+
+    const T& operator[](const uint i) const { return m[i]; }
 
     bool operator==(const Vec3T& v) const {
         return (x == v.x && y == v.y && z == v.z);
@@ -229,6 +237,10 @@ public:
 
     ~Mat2T() {}
 
+    T& operator[](const uint i) { return m[i]; }
+
+    const T& operator[](const uint i) const { return m[i]; }
+
     bool operator==(const Mat2T& m) const {
         return (xx == m.xx && xy == m.xy &&
                 yx == m.yx && yy == m.yy );
@@ -286,8 +298,8 @@ public:
 
     // serialize matrix to stream
     friend std::ostream& operator<< (std::ostream& out, const Mat2T& m) {
-        out << "[ " << m.m[0] << " " << m.m[1] << " ; "
-                    << m.m[2] << " " << m.m[3] << " " << " ]";
+        out << "[ " << m[0] << " " << m[1] << " ; "
+                    << m[2] << " " << m[3] << " " << " ]";
         return out;
     }
 
@@ -320,6 +332,10 @@ public:
     }
 
     ~QuaternionT() {}
+
+    T& operator[](const uint i) { return m[i]; }
+
+    const T& operator[](const uint i) const { return m[i]; }
 
     bool operator==(const QuaternionT& q) const {
         return (x == q.x && y == q.y && z == q.z && w == q.w);
@@ -399,6 +415,10 @@ public:
     }
 
     ~Mat3T() {}
+
+    T& operator[](const uint i) { return m[i]; }
+
+    const T& operator[](const uint i) const { return m[i]; }
 
     bool operator==(const Mat3T& m) const {
         return (xx == m.xx && xy == m.xy && xz == m.xz &&
@@ -538,9 +558,9 @@ public:
 
     // Serialize matrix to stream
     friend std::ostream& operator<< (std::ostream& out, const Mat3T& m) {
-        out << "[ " << m.m[0] << " " << m.m[1] << " " << m.m[2] << " ; "
-                    << m.m[3] << " " << m.m[4] << " " << m.m[5] << " ; "
-                    << m.m[6] << " " << m.m[7] << " " << m.m[8] << " ]";
+        out << "[ " << m[0] << " " << m[1] << " " << m[2] << " ; "
+                    << m[3] << " " << m[4] << " " << m[5] << " ; "
+                    << m[6] << " " << m[7] << " " << m[8] << " ]";
         return out;
     }
 
@@ -579,6 +599,8 @@ public:
 
     Transform2T(const Mat2T<T>& r, const Vec2T<T>& v) : R(r), t(v) {
     }
+
+    ~Transform2T() {}
 
     Transform2T &operator=(const Transform2T &tr) {
         if (this != &tr) {
@@ -662,8 +684,9 @@ public:
         setRPY(roll, pitch, yaw);
     }
 
-    Transform3T(const Mat3T<T>& r, const Vec3T<T>& v) : R(r), t(v) {
-    }
+    Transform3T(const Mat3T<T>& r, const Vec3T<T>& v) : R(r), t(v) {}
+
+    ~Transform3T() {}
 
     Transform3T &operator=(const Transform3T &tr) {
         if (this != &tr) {
