@@ -92,8 +92,19 @@ public:
 
     bool rangesToPoints(const std::vector<double>& ranges, std::vector<geo::Vector3>& points) const;
 
+    /**
+     * @brief Get the index of the first beam with a higher angle than this beam
+     * @param angle radial angle of the beam
+     * @return Index of the beam, which bounded to be the number of beams [0, N_BEAMS]
+     */
     uint getAngleUpperIndex(double angle) const;
 
+    /**
+     * @overload uint getAngleUpperIndex(double x, double y) const
+     * @param x x-coordinate
+     * @param y y-coordinate
+     * @return Index of the beam, which bounded to be the number of beams [0, N_BEAMS]
+     */
     uint getAngleUpperIndex(double x, double y) const;
 
     static geo::Vector3 polarTo2D(double angle, double range);
