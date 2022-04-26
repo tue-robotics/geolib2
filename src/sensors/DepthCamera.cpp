@@ -94,17 +94,17 @@ void DepthCamera::render(const RenderOptions& opt, RenderResult& res) const {
 
     // transform points
     std::vector<geo::Vec3d> points_t(points.size());
-    std::vector<bool> points_t_in(points.size());
+    std::vector<bool> points_t_in_view(points.size());
     std::vector<cv::Point2f> points_2d(points.size());
 
     // Do not render in case no point of the mesh is inside the field of view
     bool in_view = false;
     for (unsigned int i = 0; i < points.size(); ++i) {
         points_t[i] = pose * points[i];
-        points_t_in[i] = (points_t[i].z < near_clip_z_);
+        points_t_in_view[i] = (points_t[i].z < near_clip_z_);
         points_2d[i] = project3Dto2D<double, float>(points_t[i]);
         const cv::Point2f& p_2d = points_2d[i];
-        if (!in_view && points_t_in[i] && 0 <= p_2d.x < res.getWidth() && 0 <= p_2d.y < res.getHeight())
+        if (!in_view && points_t_in_view[i] && 0 <= p_2d.x < res.getWidth() && 0 <= p_2d.y < res.getHeight())
         {
             in_view = true;
         }
@@ -125,17 +125,17 @@ void DepthCamera::render(const RenderOptions& opt, RenderResult& res) const {
         bool v3_in = false;
         std::array<const geo::Vec3d*, 3> vIn;
 
-        if (points_t_in[it_tri->i1_]) {
+        if (points_t_in_view[it_tri->i1_]) {
             ++n_verts_in;
             v1_in = true;
         }
 
-        if (points_t_in[it_tri->i2_]) {
+        if (points_t_in_view[it_tri->i2_]) {
             ++n_verts_in;
             v2_in = true;
         }
 
-        if (points_t_in[it_tri->i3_]) {
+        if (points_t_in_view[it_tri->i3_]) {
             ++n_verts_in;
             v3_in = true;
         }
