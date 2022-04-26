@@ -3,6 +3,8 @@
 #include "geolib/Mesh.h"
 #include "geolib/Shape.h"
 
+#include <cmath>
+
 namespace geo
 {
 
@@ -15,7 +17,7 @@ void createCylinder(geo::Shape& shape, double radius, double height, unsigned in
     // Calculate vertices
     for(unsigned int i = 0; i < num_corners; ++i)
     {
-        double a = 6.283 * i / num_corners;
+        double a = 2 * M_PI * i / num_corners;
         double x = sin(a) * radius;
         double y = cos(a) * radius;
 
