@@ -23,16 +23,16 @@ void DefaultRenderResult::renderPixel(int x, int y, float depth, int i_triangle)
     }
 }
 
-DepthCamera::DepthCamera() : fx_(0), fy_(0), cx_(0), cy_(0), tx_(0), ty_(0), cx_plus_tx_(0), cy_plus_ty_(0), cache_valid_(false)
+DepthCamera::DepthCamera() : fx_(0), fy_(0), cx_(0), cy_(0), tx_(0), ty_(0), initialized_(false), cx_plus_tx_(0), cy_plus_ty_(0), cache_valid_(false)
 {
 }
 
-DepthCamera::DepthCamera(const image_geometry::PinholeCameraModel& cam_model) : cache_valid_(false)
+DepthCamera::DepthCamera(const image_geometry::PinholeCameraModel& cam_model) : initialized_(false), cache_valid_(false)
 {
     initFromCamModel(cam_model);
 }
 
-DepthCamera::DepthCamera(const sensor_msgs::CameraInfo& cam_info) : cache_valid_(false)
+DepthCamera::DepthCamera(const sensor_msgs::CameraInfo& cam_info) : initialized_(false), cache_valid_(false)
 {
     image_geometry::PinholeCameraModel cam_model;
     cam_model.fromCameraInfo(cam_info);
@@ -50,6 +50,7 @@ void DepthCamera::initFromCamModel(const image_geometry::PinholeCameraModel& cam
     cy_ = cam_model.cy();
     tx_ = cam_model.Tx();
     ty_ = cam_model.Ty();
+    initialized_ = true;
     updateCache();
 }
 

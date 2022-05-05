@@ -249,7 +249,11 @@ public:
 
     inline double getOpticalTranslationY() const { return ty_; }
 
-    inline bool initialized() const { return cache_valid_; }
+    /**
+     * @brief Indicates whether the camera parameters are set. Using the camera when not initialized is useless.
+     * @return initiliazed or not initialized
+     */
+    inline bool initialized() const { return initialized_; }
 
 protected:
 
@@ -263,6 +267,8 @@ protected:
 
     // optical translation of the camera
     double tx_, ty_;
+
+    bool initialized_;
 
     // sums stored for optimisation
     mutable double cx_plus_tx_;
