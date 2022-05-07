@@ -13,6 +13,12 @@ struct TriangleI {
     TriangleI(unsigned int i1, unsigned int i2, unsigned int i3) : i1_(i1), i2_(i2), i3_(i3) {}
 
     unsigned int i1_, i2_, i3_; ///< Points in the Mesh::points_ vector.
+
+    // serialize TriangleI to stream
+    friend std::ostream& operator<< (std::ostream& out, const TriangleI& tri) {
+        out << "[ " << tri.i1_ << " " << tri.i2_ << " " << tri.i3_ << " ]";
+        return out;
+    }
 };
 
 /** Mesh storage. */

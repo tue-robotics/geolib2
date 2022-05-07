@@ -6,6 +6,9 @@
 #include "geolib/Ray.h"
 #include "geolib/math_types.h"
 
+#include <image_geometry/pinhole_camera_model.h>
+#include <sensor_msgs/CameraInfo.h>
+
 #include <vector>
 
 namespace geo {
@@ -43,14 +46,12 @@ public:
 
     RenderOptions() : back_face_culling_(true) {}
 
-    void setMesh(const geo::Mesh& mesh) { mesh_ = &mesh; }
-
     /**
      * @brief setMesh: set mesh to be rendered
      * @param mesh: mesh describing the shape to be rendered
-     * @param pose: pose of the origin of the mesh with respect to the virtual camera
+     * @param pose: pose of the origin of the mesh with respect to the virtual camera (default: Identity)
      */
-    void setMesh(const geo::Mesh& mesh, const Pose3D& pose) {
+    void setMesh(const geo::Mesh& mesh, const geo::Pose3D& pose = geo::Pose3D::identity()) {
         mesh_ = &mesh;
         pose_ = pose;
     }
@@ -161,7 +162,17 @@ public:
 
     DepthCamera();
 
+    DepthCamera(const image_geometry::PinholeCameraModel& cam_model);
+
+    DepthCamera(const sensor_msgs::CameraInfo& cam_info);
+
     virtual ~DepthCamera();
+
+    /**
+     * @brief Set camera parameters from pinhole camera model
+     * @param cam_model pinhole camera model
+     */
+    void initFromCamModel(const image_geometry::PinholeCameraModel& cam_model);
 
     void render(const RenderOptions& opt, RenderResult& res) const;
 
@@ -183,8 +194,9 @@ public:
                               PointerMap& pointer_map = EMPTY_POINTER_MAP,
                               void* pointer = 0, TriangleMap& triangle_map = EMPTY_TRIANGLE_MAP) const;
 
-    inline cv::Point2d project3Dto2D(const Vector3& p, int width = 0, int height = 0) const {
-        return cv::Point2d((fx_ * p.x + tx_) / -p.z + cx_, (fy_ * -p.y + ty_) / -p.z + cy_);
+    template<typename Tin=double, typename Tout=double>
+    inline cv::Point_<Tout> project3Dto2D(const geo::Vec3T<Tin>& p) const {
+        return cv::Point_<Tout>((fx_ * p.x + tx_) / -p.z + cx_, (fy_ * -p.y + ty_) / -p.z + cy_);
     }
 
     inline double project2Dto3DX(int x) const {
@@ -203,8 +215,9 @@ public:
      * @param y: y index of the 2d point in the image
      * @returns: (semi) unit vector indicating the direction of the beam corresponding to the pixel.
      */
-    inline Vector3 project2Dto3D(int x, int y) const {
-        return Vector3(project2Dto3DX(x), project2Dto3DY(y), -1.0);
+    template<typename T=double>
+    inline geo::Vec3T<T> project2Dto3D(int x, int y) const {
+        return geo::Vec3T<T>(project2Dto3DX(x), project2Dto3DY(y), -1.0);
     }
 
     inline void setFocalLengths(double fx, double fy) {
@@ -236,7 +249,15 @@ public:
 
     inline double getOpticalTranslationY() const { return ty_; }
 
+    /**
+     * @brief Indicates whether the camera parameters are set. Using the camera when not initialized is useless.
+     * @return initiliazed or not initialized
+     */
+    inline bool initialized() const { return initialized_; }
+
 protected:
+
+    static constexpr const double near_clip_z_ = -0.1;
 
     // focal length of the camera
     double fx_, fy_;
@@ -246,6 +267,8 @@ protected:
 
     // optical translation of the camera
     double tx_, ty_;
+
+    bool initialized_;
 
     // sums stored for optimisation
     mutable double cx_plus_tx_;
@@ -259,19 +282,21 @@ protected:
         cache_valid_ = true;
     }
 
-    void drawTriangle(const Vector3& p1, const Vector3& p2, const Vector3& p3,
-                      const RenderOptions& opt, RenderResult& res, int i_triangle) const;
+    template<typename Tin=double, typename Tout=double>
+    void drawTriangle(const geo::Vec3T<Tin>& p1, const geo::Vec3T<Tin>& p2, const geo::Vec3T<Tin>& p3,
+                      const RenderOptions& opt, RenderResult& res, uint i_triangle) const;
 
-    void drawTriangle2D(const Vec3f& p1, const Vec3f& p2, const Vec3f& p3,
-                        const RenderOptions& opt, RenderResult& res, int i_triangle) const;
+    template<typename T=double>
+    void drawTriangle2D(const geo::Vec3T<T>& p1, const geo::Vec3T<T>& p2, const geo::Vec3T<T>& p3,
+                        const RenderOptions& opt, RenderResult& res, uint i_triangle) const;
 
     void drawTrianglePart(int y_start, int y_end,
                           float x_start, float x_start_delta, float x_end, float x_end_delta,
                           float d_start, float d_start_delta, float d_end, float d_end_delta,
-                          const RenderOptions& opt, RenderResult& res, int i_triangle) const;
+                          const RenderOptions& opt, RenderResult& res, uint i_triangle) const;
 
-    void sort(const geo::Vec3f& p1, const geo::Vec3f& p2, const geo::Vec3f& p3, int dim,
-              Vec3f& p_min,geo::Vec3f& p_mid, geo::Vec3f& p_max) const;
+    template<typename T=double>
+    void sort(const geo::Vec3T<T>*& p_min, const geo::Vec3T<T>*& p_mid, const geo::Vec3T<T>*& p_max, uchar dim) const;
 
 };
 

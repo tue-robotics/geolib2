@@ -4,6 +4,8 @@ project(geolib2)
 find_package(catkin REQUIRED COMPONENTS
   code_profiler
   cv_bridge
+  image_geometry
+  sensor_msgs
   shape_msgs
   tf
   tf2
