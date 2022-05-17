@@ -11,7 +11,7 @@
 namespace geo {
 
 /**
- * @brief Check whether a point p is within distance radius of the line segment whose first vertex is described by ${v} and second vertex by ${v-e}
+ * @brief Check whether a point p is within distance radius of the line segment. The starting point is described by @b a and the vector from the starting point to the end point @b ab
  * @param p Point to check
  * @param radius2 Radius squared to check with
  * @param a Starting point of linesegment
@@ -20,7 +20,7 @@ namespace geo {
  */
 bool check_linesegment(const Vector3& p, const double radius2, const Vector3& a, const Vector3& ab) {
     geo::Vector3 ap = p-a;
-    double d1_2 = ap.length2();  // Distance between v and p, squared
+    double d1_2 = ap.length2();  // Distance between a and p, squared
     double d2 = ab.dot(ap);  // Dot product between ab and a-p; projection of p on linesegment ab,
 
     if (d2 < 0)
@@ -50,7 +50,10 @@ bool Shape::intersect(const Ray& /*r*/, float /*t0*/, float /*t1*/, double& /*di
 }
 
 /**
+ *  Main logic:
  *  @math http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.49.9172&rep=rep1&type=pdf
+ *  Projection in triangle logic:
+ *  @math https://www.baeldung.com/cs/check-if-point-is-in-2d-triangle#1-mathematical-idea-2
  **/
 bool Shape::intersect(const Vector3& p, const double radius) const {
     const Mesh& mesh = getMesh();
