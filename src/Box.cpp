@@ -68,6 +68,9 @@ bool Box::intersect(const Box& other) const {
 
 bool Box::intersect(const Vector3& p, const double radius) const {
     Vector3 c = getCenter();
+    if (radius <= 0) {
+        return contains(p);
+    }
 
     for (uint i = 0; i<3; ++i)
     {
@@ -77,13 +80,13 @@ bool Box::intersect(const Vector3& p, const double radius) const {
             c[i] = bounds[p[i] > c[i]][i]; // If p bigger than center take upper bound, otherwise lower bound
     }
 
-    return radius*radius > (p-c).length2();
+    return radius*radius >= (p-c).length2();
 }
 
 bool Box::contains(const Vector3& p) const {
-    return (p.x > bounds[0].x && p.x < bounds[1].x
-            && p.y > bounds[0].y && p.y < bounds[1].y
-            && p.z > bounds[0].z && p.z < bounds[1].z);
+    return (p.x >= bounds[0].x && p.x <= bounds[1].x
+            && p.y >= bounds[0].y && p.y <= bounds[1].y
+            && p.z >= bounds[0].z && p.z <= bounds[1].z);
 }
 
 Box Box::getBoundingBox() const {
