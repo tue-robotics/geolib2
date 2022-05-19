@@ -90,9 +90,9 @@ void CompositeShape::addShape(const Shape& shape, const Pose3D& pose) {
     // add to mesh
     const std::vector<Triangle>& triangles = shape.getMesh().getTriangles();
     for(std::vector<Triangle>::const_iterator it = triangles.begin(); it != triangles.end(); ++it) {
-        Vector3 p1 = pose * it->p1_;
-        Vector3 p2 = pose * it->p2_;
-        Vector3 p3 = pose * it->p3_;
+        Vector3 p1 = pose * it->p1();
+        Vector3 p2 = pose * it->p2();
+        Vector3 p3 = pose * it->p3();
 
         max_radius_ = std::max<double>(max_radius_, p1.length());
         max_radius_ = std::max<double>(max_radius_, p2.length());
