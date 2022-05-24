@@ -105,8 +105,14 @@ add_executable(test_matrix test/test_matrix.cpp)
 # ------------------------------------------------------------------------------------------------
 
 if(CATKIN_ENABLE_TESTING)
-  catkin_add_gtest(test_intersect test/test_intersect.cpp)
-  target_link_libraries(test_intersect geolib)
+  catkin_add_gtest(test_box test/test_box.cpp)
+  target_link_libraries(test_box geolib)
+
+  catkin_add_gtest(test_composite_shape test/test_composite_shape.cpp)
+  target_link_libraries(test_composite_shape geolib)
+
+  catkin_add_gtest(test_shape test/test_shape.cpp)
+  target_link_libraries(test_shape geolib)
 
   catkin_add_gtest(test_lrf test/test_lrf.cpp)
   target_link_libraries(test_lrf geolib)
