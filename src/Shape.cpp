@@ -28,7 +28,7 @@ bool check_linesegment(const Vector3& p, const double radius2, const Vector3& a,
         return false;
 
     double d2_2 = d2*d2 / ab.length2(); // Distance between a and the projection of p on linesegment ab, squared
-    return d2 < ab.length2() && d1_2-d2_2 < radius2;
+    return d2 <= ab.length2() && d1_2-d2_2 <= radius2;
 }
 
 const std::string Shape::TYPE = "mesh";
