@@ -21,14 +21,14 @@ namespace geo {
 bool check_linesegment(const Vector3& p, const double radius2, const Vector3& a, const Vector3& ab) {
     geo::Vector3 ap = p-a;
     double d1_2 = ap.length2();  // Distance between a and p, squared
-    double d2 = ab.dot(ap);  // Dot product between ab and a-p; projection of p on linesegment ab,
+    double d2 = ab.dot(ap);  // Dot product between ab and ap; projection of p on linesegment ab
 
     if (d2 < 0)
         // If ab dot ap < 0, there can't be any intersection, because the orientated linesegment points away
         return false;
 
     double d2_2 = d2*d2 / ab.length2(); // Distance between a and the projection of p on linesegment ab, squared
-    return d2 <= ab.length2() && d1_2-d2_2 <= radius2;
+    return d2_2 <= ab.length2() * (1 + 1e-9) && d1_2-d2_2 <= radius2 * (1 + 1e-9); // To prevent any numerical issues
 }
 
 const std::string Shape::TYPE = "mesh";
