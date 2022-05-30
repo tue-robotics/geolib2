@@ -745,9 +745,8 @@ public:
     void setRPY(T roll, T pitch, T yaw)  {
         R.setRPY(roll, pitch, yaw);
     }
-
-    double getYaw()  {
-        double roll, pitch, yaw;        
+    
+    void getRPY(T &roll, T &pitch, T& yaw){
         double epsilon = 1e-12;
         pitch = atan2(-R.zx, sqrt( R.zy*R.zy + R.zz*R.zz));
         std::cout<<pitch<<std::endl;
@@ -757,14 +756,20 @@ public:
             roll= 0;
             std::cout<<"This Case"<<std::endl;
             // At singularity roll is set to zero, yaw is equal to sum of both
-            return yaw;
+            return;
         }
         else
         {
             roll = atan2(R.zy, R.zz);
             yaw  = atan2(R.yx, R.xx);
-            return yaw;
+            return;
         }
+    }
+
+    double getYaw()  {
+    	T roll, pitch, yaw;
+    	getRPY(roll, pitch, yaw);
+    	return yaw;
     }
 
     static Transform3T identity() { return Transform3T(Mat3T<T>::identity(), Vec3T<T>(0, 0, 0));  }
