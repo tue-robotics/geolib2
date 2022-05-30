@@ -746,7 +746,7 @@ public:
         R.setRPY(roll, pitch, yaw);
     }
     
-    void getRPY(T &roll, T &pitch, T& yaw) const{
+    void getRPY(T& roll, T& pitch, T& yaw) const{
         double epsilon = 1e-12;
         pitch = atan2(-R.zx, sqrt(R.zy*R.zy + R.zz*R.zz));
         if (std::fabs(pitch - M_PI/2) < epsilon) // detect singularity
