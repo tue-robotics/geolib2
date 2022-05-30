@@ -749,7 +749,7 @@ public:
     double getYaw()  {
         double roll, pitch, yaw;        
         double epsilon = 1e-12;
-        pitch = atan2(-R.zx, sqrt( R.zy*R.zy + R.zz*R.zz));
+        pitch = atan2(-R.zx, sqrt(R.zy*R.zy + R.zz*R.zz));
         if (std::fabs(pitch - M_PI/2) < epsilon) // detect singularity
         {
             yaw = atan2(-R.xy, R.yy);
