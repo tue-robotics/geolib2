@@ -760,7 +760,7 @@ public:
         else
         {
             roll = atan2(R.zy, R.zz);
-            yaw  = atan2(R.yx, R.xx);
+            yaw = atan2(R.yx, R.xx);
             return yaw;
         }
     }
