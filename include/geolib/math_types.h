@@ -753,7 +753,7 @@ public:
         if (std::fabs(pitch - M_PI/2) < epsilon) // detect singularity
         {
             yaw = atan2(-R.xy, R.yy);
-            roll= 0;
+            roll = 0;
             // At singularity roll is set to zero, yaw is equal to sum of both
             return yaw;
         }
