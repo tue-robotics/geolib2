@@ -742,7 +742,7 @@ public:
         return Transform3T(inv, inv * -t);
     }
 
-    void setRPY(double roll, double pitch, double yaw)  {
+    void setRPY(double roll, double pitch, double yaw) {
         R.setRPY(roll, pitch, yaw);
     }
     
