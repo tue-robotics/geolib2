@@ -742,11 +742,11 @@ public:
         return Transform3T(inv, inv * -t);
     }
 
-    void setRPY(T roll, T pitch, T yaw)  {
+    void setRPY(double roll, double pitch, double yaw)  {
         R.setRPY(roll, pitch, yaw);
     }
     
-    void getRPY(T& roll, T& pitch, T& yaw) const{
+    void getRPY(double& roll, double& pitch, double& yaw) const{
         double epsilon = 1e-12;
         pitch = atan2(-R.zx, sqrt(R.zy*R.zy + R.zz*R.zz));
         if (std::fabs(pitch - M_PI/2) < epsilon) // detect singularity
@@ -766,7 +766,7 @@ public:
     }
 
     double getYaw() const {
-    	T roll, pitch, yaw;
+    	double roll, pitch, yaw;
     	getRPY(roll, pitch, yaw);
     	return yaw;
     }
