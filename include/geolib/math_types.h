@@ -754,14 +754,11 @@ public:
             // At singularity roll is set to zero, yaw is equal to sum of both
             yaw = atan2(-R.xy, R.yy);
             roll = 0;
-            return;
         }
         else
         {
             roll = atan2(R.zy, R.zz);
             yaw = atan2(R.yx, R.xx);
-            return;
-
         }
     }
 
