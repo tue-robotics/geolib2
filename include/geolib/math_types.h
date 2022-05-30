@@ -742,14 +742,30 @@ public:
         return Transform3T(inv, inv * -t);
     }
 
-    void setRPY(T roll, T pitch, T yaw)  {
+    void setRPY(double roll, double pitch, double yaw) {
         R.setRPY(roll, pitch, yaw);
     }
+    
+    void getRPY(double& roll, double& pitch, double& yaw) const {
+        double epsilon = 1e-12;
+        pitch = atan2(-R.zx, sqrt(R.zy*R.zy + R.zz*R.zz));
+        if (std::fabs(pitch - M_PI/2) < epsilon) // detect singularity
+        {
+            // At singularity roll is set to zero, yaw is equal to sum of both
+            yaw = atan2(-R.xy, R.yy);
+            roll = 0;
+        }
+        else
+        {
+            roll = atan2(R.zy, R.zz);
+            yaw = atan2(R.yx, R.xx);
+        }
+    }
 
-    double getYaw()  {
-        QuaternionT<T> q;
-        R.getRotation(q);
-        return atan2(2.0*(q.y*q.z + q.w*q.x), q.w*q.w - q.x*q.x - q.y*q.y + q.z*q.z);
+    double getYaw() const {
+    	double roll, pitch, yaw;
+    	getRPY(roll, pitch, yaw);
+    	return yaw;
     }
 
     static Transform3T identity() { return Transform3T(Mat3T<T>::identity(), Vec3T<T>(0, 0, 0));  }
