@@ -748,21 +748,20 @@ public:
     
     void getRPY(T &roll, T &pitch, T& yaw){
         double epsilon = 1e-12;
-        pitch = atan2(-R.zx, sqrt( R.zy*R.zy + R.zz*R.zz));
-        std::cout<<pitch<<std::endl;
+        pitch = atan2(-R.zx, sqrt(R.zy*R.zy + R.zz*R.zz));
         if (std::fabs(pitch - M_PI/2) < epsilon) // detect singularity
         {
             yaw = atan2(-R.xy, R.yy);
-            roll= 0;
-            std::cout<<"This Case"<<std::endl;
+            roll = 0;
             // At singularity roll is set to zero, yaw is equal to sum of both
             return;
         }
         else
         {
             roll = atan2(R.zy, R.zz);
-            yaw  = atan2(R.yx, R.xx);
-            return;
+            yaw = atan2(R.yx, R.xx);
+            return yaw;
+
         }
     }
 
