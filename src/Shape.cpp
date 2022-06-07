@@ -262,11 +262,11 @@ bool Shape::contains(const Vector3& p) const {
         }
         else if (clockwise && counterclockwise) { // s1=0; s2=0; s3=0
             // Coplanar
-            if (!compute_2D_intersection(Triangle(v1, v2, v3), line)) {
-                continue;
+            if (compute_2D_intersection(Triangle(v1, v2, v3), line)) {
+                return true;
             }
-            // Need to do something with the intersect_count
-            intersect_plane = true;
+
+            continue;
         }
         else if (clockwise && clockwise_nz > 0 || counterclockwise && counterclockwise_nz > 0) {
             // Proper intersection with the line.
@@ -278,13 +278,18 @@ bool Shape::contains(const Vector3& p) const {
             double s4 = side_product(l4, e2);
             double s5 = side_product(l5, e2);
 
-            if (s4*s5>=-1e-16) {
+            if (s4*s5>=-1e-16) { // s4*s5 >= 0
                 intersect_count += clockwise-counterclockwise;
             }
         }
     }
 
-    return intersect_count != 0 || intersect_plane;
+    if (intersect_count < 0 || intersect_count > 1) {
+        CONSOLE_BRIDGE_logError("intersect_count is %i, it should be 0 or 1! Is your shape constructed correctly?", intersect_count);
+        return false;
+    }
+
+    return intersect_count > 0;
 }
 
 Box Shape::getBoundingBox() const {
