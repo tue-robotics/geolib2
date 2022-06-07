@@ -269,8 +269,8 @@ bool Shape::contains(const Vector3& p) const {
             intersect_plane = true;
         }
         else if (clockwise && clockwise_nz > 0 || counterclockwise && counterclockwise_nz > 0) {
-            // Proper intersection.
-            // Now check the line segment
+            // Proper intersection with the line.
+            // Now check whether the intersection lies in the line segment
 
             geo::Line l4(p_out, v1);
             geo::Line l5(v1, p);
