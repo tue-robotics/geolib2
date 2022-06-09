@@ -31,10 +31,13 @@ bool check_linesegment(const Vector3& p, const double radius2, const Vector3& a,
     return d2_2 <= ab.length2() * (1 + 1e-9) && d1_2-d2_2 <= radius2 * (1 + 1e-9); // To prevent any numerical issues
 }
 
-class Line
+/**
+ * @link https://members.loria.fr/SLazard/ARC-Visi3D/Pant-project/files/Line_Segment_Triangle.html
+ */
+class LineSegment
 {
 public:
-    Line(const geo::Vector3& a, const geo::Vector3& b) : a_(a), b_(b)
+    LineSegment(const geo::Vector3& a, const geo::Vector3& b) : a_(a), b_(b)
     {
         U_ = b_-a_;
         V_ = a_.cross(b_);
@@ -49,6 +52,7 @@ protected:
     const geo::Vector3& a_, b_;
     geo::Vector3 U_, V_;
 };
+typedef geo::LineSegment LS;
 
 /**
  * @brief Determining the direction in which \a \bold q passes around \a \bold p.
@@ -60,7 +64,7 @@ protected:
  * @param q Second line
  * @return side value
  */
-double side_product(const geo::Line& p, const geo::Line& q) {
+double side_product(const geo::LS& p, const geo::LS& q) {
     return p.U().dot(q.V()) + q.U().dot(p.V());
 }
 
@@ -71,15 +75,15 @@ double side_product(const geo::Line& p, const geo::Line& q) {
  * @param outside A point outside the plane which contains both the line and the linesegment
  * @return Intersection or not
  */
-bool line_linesegment_intersection(const geo::Line& l, const geo::Line& ls, const geo::Vector3& outside)
+bool line_linesegment_intersection(const geo::LS& l, const geo::LS& ls, const geo::Vector3& outside)
 {
     double s = side_product(l, ls);
     if (s !=0 ) {
         return false;
     }
 
-    double s1 = side_product(l, geo::Line(outside, ls.a()));
-    double s2 = side_product(l, geo::Line(ls.b(), outside));
+    double s1 = side_product(l, geo::LS(outside, ls.a()));
+    double s2 = side_product(l, geo::LS(ls.b(), outside));
 
     return s1 * s2 >= 0;
 }
@@ -90,7 +94,7 @@ bool line_linesegment_intersection(const geo::Line& l, const geo::Line& ls, cons
  * @param line line
  * @return Intersection or not
  */
-bool compute_2D_intersection(const geo::Triangle& t, const geo::Line& line)
+bool compute_2D_intersection(const geo::Triangle& t, const geo::LS& line)
 {
     bool intersection = 0;
     double s2,s3;
@@ -102,8 +106,8 @@ bool compute_2D_intersection(const geo::Triangle& t, const geo::Line& line)
         p3 = geo::Vector3(t.p3());
         p3[i] += 1; // Move point outside the plane
 
-        s2 = side_product(line, geo::Line(t.p2(), p3));
-        s3 = side_product(line, geo::Line(p3, t.p1()));
+        s2 = side_product(line, geo::LS(t.p2(), p3));
+        s3 = side_product(line, geo::LS(p3, t.p1()));
 
         if (!(std::abs(s2)<1e-16 && std::abs(s3)<1e-16)) // s2==0 && s3==0
             break;
@@ -112,14 +116,14 @@ bool compute_2D_intersection(const geo::Triangle& t, const geo::Line& line)
     for (uint i=0; i<3; ++i) {
         const geo::Vector3& p1 = t[i];
         const geo::Vector3& p2 = t[(i+1) % 3];
-        s2 = side_product(line, geo::Line(p2, p3));
-        s3 = side_product(line, geo::Line(p3, p1));
+        s2 = side_product(line, geo::LS(p2, p3));
+        s3 = side_product(line, geo::LS(p3, p1));
 
         if (s2*s3 >= 0) { // s2 and s3 have the same sign and are non zero
             for (uint i=0; i<3; ++i) {
                 const geo::Vector3& v1 = t[i];
                 const geo::Vector3& v2 = t[(i+1) % 3];
-                if (line_linesegment_intersection(line, geo::Line(v1, v2), p3)) {
+                if (line_linesegment_intersection(line, geo::LS(v1, v2), p3)) {
                     return true;
                 }
             }
@@ -231,7 +235,7 @@ bool Shape::contains(const Vector3& p) const {
 
     // determine plucker coordinates of line p
     Vector3 p_out = Vector3(1.1 * mesh.getMaxRadius(), 0, 0);
-    geo::Line line(p, p_out);
+    geo::LS line(p, p_out);
 
     // create hit maps
     std::map<uint, std::map<uint, int>> edge_hit_map;
@@ -245,9 +249,9 @@ bool Shape::contains(const Vector3& p) const {
         const Vector3 &v2 = t_points[it->i2_];
         const Vector3 &v3 = t_points[it->i3_];
 
-        geo::Line e1(v1, v2);
-        geo::Line e2(v2, v3);
-        geo::Line e3(v3, v1);
+        geo::LS e1(v1, v2);
+        geo::LS e2(v2, v3);
+        geo::LS e3(v3, v1);
 
         double s1 = side_product(line, e1);
         double s2 = side_product(line, e2);
@@ -281,8 +285,8 @@ bool Shape::contains(const Vector3& p) const {
             // 2 zero, 1 non-zero -> intersection at vertex
 
             // Now check whether the intersection lies in the line segment
-            geo::Line l4(p_out, v1);
-            geo::Line l5(v1, p);
+            geo::LS l4(p_out, v1);
+            geo::LS l5(v1, p);
 
             double s4 = side_product(l4, e2);
             double s5 = side_product(l5, e2);
