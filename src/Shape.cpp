@@ -236,6 +236,15 @@ bool Shape::contains(const Vector3& p) const {
     // load triangles
     const std::vector<geo::Vector3>& t_points = mesh.getPoints();
     const std::vector<TriangleI>& triangles_i = mesh.getTriangleIs();
+
+    // create cache
+    std::vector<std::vector<int>> edge_cache;
+    edge_cache.resize(t_points.size() - 1);
+    for (uint i = 0; i < edge_cache.size(); ++i)
+        edge_cache[i].resize(edge_cache.size() - i, 0);
+
+    std::vector<int> vertex_cache(t_points.size(), 0);
+
     for (auto it = triangles_i.cbegin(); it != triangles_i.cend(); ++it) {
         const Vector3 &v1 = t_points[it->i1_];
         const Vector3 &v2 = t_points[it->i2_];
@@ -251,21 +260,24 @@ bool Shape::contains(const Vector3& p) const {
 
         // Determine whether v1, v2 and v3 circle line p (counter) clockwise.
         bool clockwise = s1 >= -1e-16 && s2 >= -1e-16 && s3 >= -1e-16; // >=0
-        ushort clockwise_nz = (s1 > -1e-16) + (s2 > -1e-16) + (s3 > -1e-16); // >0
+        ushort clockwise_nz = (s1 > 1e-16) + (s2 > 1e-16) + (s3 > 1e-16); // >0
         bool counterclockwise = s1 <= 1e-16 && s2 <= 1e-16 && s3 <= 1e-16; // <=0
-        ushort counterclockwise_nz = (s1 < 1e-16) + (s2 < 1e-16) + (s3 < 1e-16); // <0
+        ushort counterclockwise_nz = (s1 < -1e-16) + (s2 < -1e-16) + (s3 < -1e-16); // <0
 
 
         if (!clockwise && !counterclockwise) {
             // No intersection
+            CONSOLE_BRIDGE_logDebug("No intersection");
             continue;
         }
         else if (clockwise && counterclockwise) { // s1=0; s2=0; s3=0
             // Coplanar
+            CONSOLE_BRIDGE_logDebug("Coplanar");
             if (compute_2D_intersection(Triangle(v1, v2, v3), line)) {
+                CONSOLE_BRIDGE_logDebug("Coplanar in the triangle");
                 return true;
             }
-
+            CONSOLE_BRIDGE_logDebug("Coplanar outside the triangle");
             continue;
         }
         else if (clockwise && clockwise_nz > 0 || counterclockwise && counterclockwise_nz > 0) {
@@ -281,6 +293,70 @@ bool Shape::contains(const Vector3& p) const {
             double s5 = side_product(l5, e2);
 
             if (s4*s5>=-1e-16) { // s4*s5 >= 0
+                if (clockwise_nz == 2 || counterclockwise_nz == 2) {
+                    // Edge intersection
+                    CONSOLE_BRIDGE_logDebug("Edge intersection");
+                    uint i1, i2;
+                    if (std::abs(s1) < 1e-16) {
+                        i1 = it->i1_;
+                        i2 = it->i2_;
+                    }
+                    else if (std::abs(s2) < 1e-16) {
+                        i1 = it->i2_;
+                        i2 = it->i3_;
+                    }
+                    else if (std::abs(s3) < 1e-16) {
+                        i1 = it->i3_;
+                        i2 = it->i1_;
+                    }
+                    uint& i_min = i1, i_max = i2;
+                    if (i_max < i_min)
+                        std::swap(i_min, i_max);
+                    if (std::abs((p-t_points[i_min]).length() + (t_points[i_max]-p).length() - (t_points[i_max]-t_points[i_min]).length()) <= 1e-12) { // For numerical issues
+                        CONSOLE_BRIDGE_logDebug("Point is on an edge of the mesh");
+                        return true;
+                    }
+
+                    int& cache_entry = edge_cache[i_min][i_max-i_min-1];
+                    if (cache_entry == clockwise-counterclockwise) {
+                        // Don't count an edge multiple times with the same direction
+                        continue;
+                    }
+                    else {
+                        cache_entry += clockwise-counterclockwise;
+                    }
+                }
+                else if (clockwise_nz == 1 || counterclockwise_nz == 1) {
+                    // vertex intersection
+                    CONSOLE_BRIDGE_logDebug("Vertex intersection");
+                    // vertex intersection
+                    uint i;
+                    if (std::abs(s2) > 1e-16)
+                        i = it->i1_;
+                    else if (std::abs(s3) > 1e-16)
+                        i = it->i2_;
+                    else if (std::abs(s1) > 1e-16)
+                        i = it->i3_;
+
+                    if (t_points[i] == p) {
+                        CONSOLE_BRIDGE_logDebug("Point is a vertex of the mesh");
+                        return true;
+                    }
+
+                    int& cache_entry = vertex_cache[i];
+                    if (cache_entry == clockwise-counterclockwise) {
+                        // Don't count a vertex multiple times with the same direction
+                        continue;
+                    }
+                    else {
+                        cache_entry += clockwise-counterclockwise;
+                    }
+                }
+                else {
+                    // Proper intersection
+                    CONSOLE_BRIDGE_logDebug("Proper intersection");
+                }
+                // Update intersect count
                 intersect_count += clockwise-counterclockwise;
             }
         }
