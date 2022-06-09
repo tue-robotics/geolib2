@@ -50,6 +50,84 @@ protected:
     geo::Vector3 U_, V_;
 };
 
+/**
+ * @brief Determining the direction in which \a \bold q passes around \a \bold p.
+ * The direction is taken from looking from the base to tip of the vector \a \bold p.
+ * Zero means intersection
+ * Positive means \a \bold q passses clockwise around \a \bold p.
+ * Negative means \a \bold q passes counter clockwise around \a \bold p.
+ * @param p First line
+ * @param q Second line
+ * @return side value
+ */
+double side_product(const geo::Line& p, const geo::Line& q) {
+    return p.U().dot(q.V()) + q.U().dot(p.V());
+}
+
+/**
+ * @brief Check if linesegment does intersect with line
+ * @param l line
+ * @param ls linesegment
+ * @param outside A point outside the plane which contains both the line and the linesegment
+ * @return Intersection or not
+ */
+bool line_linesegment_intersection(const geo::Line& l, const geo::Line& ls, const geo::Vector3& outside)
+{
+    double s = side_product(l, ls);
+    if (s !=0 ) {
+        return false;
+    }
+
+    double s1 = side_product(l, geo::Line(outside, ls.a()));
+    double s2 = side_product(l, geo::Line(ls.b(), outside));
+
+    return s1 * s2 >= 0;
+}
+
+/**
+ * @brief Check if a line that is in the same plane as the triangle does actually intersect with the triangle
+ * @param t Triangle
+ * @param line line
+ * @return Intersection or not
+ */
+bool compute_2D_intersection(const geo::Triangle& t, const geo::Line& line)
+{
+    bool intersection = 0;
+    double s2,s3;
+
+    // Skipping s1, as we don't change v1 and v2, so that edge, doesn't change
+
+    geo::Vector3 p3;
+    for (uint i=0; i<3; ++i) {
+        p3 = geo::Vector3(t.p3());
+        p3[i] += 1; // Move point outside the plane
+
+        s2 = side_product(line, geo::Line(t.p2(), p3));
+        s3 = side_product(line, geo::Line(p3, t.p1()));
+
+        if (!(std::abs(s2)<1e-16 && std::abs(s3)<1e-16)) // s2==0 && s3==0
+            break;
+    }
+
+    for (uint i=0; i<3; ++i) {
+        const geo::Vector3& p1 = t[i];
+        const geo::Vector3& p2 = t[(i+1) % 3];
+        s2 = side_product(line, geo::Line(p2, p3));
+        s3 = side_product(line, geo::Line(p3, p1));
+
+        if (s2*s3 >= 0) { // s2 and s3 have the same sign and are non zero
+            for (uint i=0; i<3; ++i) {
+                const geo::Vector3& v1 = t[i];
+                const geo::Vector3& v2 = t[(i+1) % 3];
+                if (line_linesegment_intersection(line, geo::Line(v1, v2), p3)) {
+                    return true;
+                }
+            }
+        }
+    }
+    return false;
+}
+
 const std::string Shape::TYPE = "mesh";
 
 Shape::Shape() : mesh_(), bounding_box_cache_valid_(false) {
@@ -136,13 +214,6 @@ bool Shape::intersect(const Vector3& p, const double radius) const {
     return contains(p);
 }
 
-
-static double side_operator(Vector3& p_U, Vector3& p_V, Vector3& q_U, Vector3& q_V) {
-    // calculate the side-operator of directed lines p and q given their plucker coordinates.
-    // this indicates whether p and q pass eachother clockwise or counterclockwise
-    return p_U.dot(q_V) + q_U.dot(p_V);
-}
-
 /**
  *  @math Let the line segment P connect points p and an arbitrary point p_out outside of the shape
  *  We count the number of intersections between P and the shape. A positive number means point p is inside the shape.
@@ -156,11 +227,11 @@ bool Shape::contains(const Vector3& p) const {
     }
 
     int intersect_count = 0;
+    bool intersect_plane = false;
 
     // determine plucker coordinates of line p
     Vector3 p_out = Vector3(1.1 * mesh.getMaxRadius(), 0, 0);
-    Vector3 p_U = p - p_out;
-    Vector3 p_V = p.cross(p_out);
+    geo::Line line(p, p_out);
 
     // load triangles
     const std::vector<geo::Vector3>& t_points = mesh.getPoints();
@@ -170,44 +241,50 @@ bool Shape::contains(const Vector3& p) const {
         const Vector3 &v2 = t_points[it->i2_];
         const Vector3 &v3 = t_points[it->i3_];
 
-        Vector3 e1_U = v1 - v2;
-        Vector3 e2_U = v2 - v3;
-        Vector3 e3_U = v3 - v1;
+        geo::Line e1(v1, v2);
+        geo::Line e2(v2, v3);
+        geo::Line e3(v3, v1);
 
-        Vector3 e1_V = v1.cross(v2);
-        Vector3 e2_V = v2.cross(v3);
-        Vector3 e3_V = v3.cross(v1);
-
-        double s1 = side_operator(p_U, p_V, e1_U, e1_V);
-        double s2 = side_operator(p_U, p_V, e2_U, e2_V);
-        double s3 = side_operator(p_U, p_V, e3_U, e3_V);
+        double s1 = side_product(line, e1);
+        double s2 = side_product(line, e2);
+        double s3 = side_product(line, e3);
 
         // Determine whether v1, v2 and v3 circle line p (counter) clockwise.
-        bool clockwise = s1 < 0 && s2 < 0 && s3 < 0;
-        bool counterclockwise = s1 > 0 && s2 > 0 && s3 > 0;
+        bool clockwise = s1 >= -1e-16 && s2 >= -1e-16 && s3 >= -1e-16; // >=0
+        ushort clockwise_nz = (s1 > -1e-16) + (s2 > -1e-16) + (s3 > -1e-16); // >0
+        bool counterclockwise = s1 <= 1e-16 && s2 <= 1e-16 && s3 <= 1e-16; // <=0
+        ushort counterclockwise_nz = (s1 < 1e-16) + (s2 < 1e-16) + (s3 < 1e-16); // <0
 
-        if (clockwise || counterclockwise) { // the line passes through the triangle. now check the line segment
-            Vector3 l1_U = p_out - v1;
-            Vector3 l2_U = v1 - p;
 
-            Vector3 l1_V = p_out.cross(v1);
-            Vector3 l2_V = v1.cross(p);
+        if (!clockwise && !counterclockwise) {
+            // No intersection
+            continue;
+        }
+        else if (clockwise && counterclockwise) { // s1=0; s2=0; s3=0
+            // Coplanar
+            if (!compute_2D_intersection(Triangle(v1, v2, v3), line)) {
+                continue;
+            }
+            // Need to do something with the intersect_count
+            intersect_plane = true;
+        }
+        else if (clockwise && clockwise_nz > 0 || counterclockwise && counterclockwise_nz > 0) {
+            // Proper intersection.
+            // Now check the line segment
 
-            double s4 = side_operator(l1_U, l1_V, e2_U, e2_V);
-            double s5 = side_operator(l2_U, l2_V, e2_U, e2_V);
+            geo::Line l4(p_out, v1);
+            geo::Line l5(v1, p);
 
-            if ((s4 > 0 && s5 < 0) || (s4 < 0 && s5 > 0)) {
-                intersect_count+= counterclockwise-clockwise;
+            double s4 = side_product(l4, e2);
+            double s5 = side_product(l5, e2);
+
+            if (s4*s5>=-1e-16) {
+                intersect_count += clockwise-counterclockwise;
             }
         }
     }
 
-    if (intersect_count < 0 || intersect_count > 1) {
-        CONSOLE_BRIDGE_logError("intersect_count is %i, it should be 0 or 1! Is your shape constructed correctly?", intersect_count);
-        return false;
-    }
-
-    return intersect_count > 0;
+    return intersect_count != 0 || intersect_plane;
 }
 
 Box Shape::getBoundingBox() const {
