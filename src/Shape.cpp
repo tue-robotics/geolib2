@@ -10,6 +10,27 @@
 
 namespace geo {
 
+/**
+ * @brief Check whether a point p is within distance radius of the line segment. The starting point is described by @b a and the vector from the starting point to the end point @b ab
+ * @param p Point to check
+ * @param radius2 Radius squared to check with
+ * @param a Starting point of linesegment
+ * @param ab Linesegment from A to B
+ * @return
+ */
+bool check_linesegment(const Vector3& p, const double radius2, const Vector3& a, const Vector3& ab) {
+    geo::Vector3 ap = p-a;
+    double d1_2 = ap.length2();  // Distance between a and p, squared
+    double d2 = ab.dot(ap);  // Dot product between ab and ap; projection of p on linesegment ab
+
+    if (d2 < 0)
+        // If ab dot ap < 0, there can't be any intersection, because the orientated linesegment points away
+        return false;
+
+    double d2_2 = d2*d2 / ab.length2(); // Distance between a and the projection of p on linesegment ab, squared
+    return d2_2 <= ab.length2() * (1 + 1e-9) && d1_2-d2_2 <= radius2 * (1 + 1e-9); // To prevent any numerical issues
+}
+
 const std::string Shape::TYPE = "mesh";
 
 Shape::Shape() : mesh_(), bounding_box_cache_valid_(false) {
@@ -29,70 +50,69 @@ bool Shape::intersect(const Ray& /*r*/, float /*t0*/, float /*t1*/, double& /*di
 }
 
 /**
- * Check whether a point p is within distance radius of the line segment whose first vertex is described by v and second vertex by v-e
- **/
-bool check_linesegment(const Vector3& p, const double radius, const Vector3& v, const Vector3& e){
-    double d1 = (v-p).length2();  // distance between v and p, squared
-    double d2 = e.dot(v-p);  // dot product between e and v-p
-    if (d2>0) {
-        d2 = d2*d2 / e.length2(); // distance between v and the projection of p on e
-        return d1-d2 < radius && d2 < e.length2();
-    }
-    return false;
-}
-
-/**
+ *  Main logic:
  *  @math http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.49.9172&rep=rep1&type=pdf
+ *  Projection in triangle logic:
+ *  @math https://www.baeldung.com/cs/check-if-point-is-in-2d-triangle#1-mathematical-idea-2
  **/
 bool Shape::intersect(const Vector3& p, const double radius) const {
     const Mesh& mesh = getMesh();
-    if (p.length()-radius > mesh.getMaxRadius()){
+    if (p.length()-radius > mesh.getMaxRadius()) {
         return false;
     }
 
-    if (radius > 0.0) {
+    if (radius > 0.) {
         const double radius2 = radius*radius;
         // load triangles
         const std::vector<geo::Vector3>& t_points = mesh.getPoints();
         const std::vector<TriangleI>& triangles_i = mesh.getTriangleIs();
-        for(auto it = triangles_i.begin(); it != triangles_i.end(); ++it) {
+        for (std::vector<TriangleI>::const_iterator it = triangles_i.cbegin(); it != triangles_i.cend(); ++it) {
             const Vector3 &v1 = t_points[it->i1_];
             const Vector3 &v2 = t_points[it->i2_];
             const Vector3 &v3 = t_points[it->i3_];
 
-            Vector3 e1 = v1 - v2;
-            Vector3 e2 = v2 - v3;
-            Vector3 e3 = v3 - v1;
-
             // check endpoints
-            if ((v1-p).length2() < radius2) return true;
-            if ((v2-p).length2() < radius2) return true;
-            if ((v3-p).length2() < radius2) return true;
+            if ((v1-p).length2() < radius2)
+                return true;
+            if ((v2-p).length2() < radius2)
+                return true;
+            if ((v3-p).length2() < radius2)
+                return true;
+
+            Vector3 e1 = v2 - v1;
+            Vector3 e2 = v3 - v2;
+            Vector3 e3 = v1 - v3;
 
             // check line segments
-            if (check_linesegment(p, radius, v1, e1)) return true;
-            if (check_linesegment(p, radius, v2, e2)) return true;
-            if (check_linesegment(p, radius, v3, e3)) return true;
+            if (check_linesegment(p, radius2, v1, e1))
+                return true;
+            if (check_linesegment(p, radius2, v2, e2))
+                return true;
+            if (check_linesegment(p, radius2, v3, e3))
+                return true;
 
             // check surface
-            Vector3 norm = e1.cross(e2);
-            double projected_distance2 = (p-v1).dot(norm); // projected_distance^2 = ((p-v1) dot norm)^2 / |norm|^2
-            projected_distance2 = projected_distance2 * projected_distance2 / norm.length2();
+            Vector3 n = e1.cross(e2); // normal vector
+            double projected_distance2 = (v1-p).dot(n); // projected_distance^2 = ((p-v1) dot n)^2 / |n|^2
+            projected_distance2 = projected_distance2 * projected_distance2 / n.length2();
 
-            if (projected_distance2 < radius2) {
-                // check that the projection falls within the triangle
-                Vector3 r = p+sqrt(projected_distance2)*norm/norm.length();
+            if (projected_distance2 > radius2)
+                // If projection distance is too big, no intersection for this triangle
+                continue;
 
-                Vector3 cross1  = e1.cross(r-v2);
-                Vector3 cross2  = e2.cross(r-v3);
-                Vector3 cross3  = e3.cross(r-v1);
+            // check that the projection falls within the triangle
+            Vector3 q = p - sqrt(projected_distance2) * n.normalized();
 
-                double dot1 = cross1.dot(cross2);
-                double dot2 = cross2.dot(cross3);
-                double dot3 = cross3.dot(cross1);
+            Vector3 cross1  = e1.cross(q-v1);
+            Vector3 cross2  = e2.cross(q-v2);
+            Vector3 cross3  = e3.cross(q-v3);
 
-                if (dot1 > 0 && dot2 > 0 && dot3 > 0) return true;
-            }
+            double dot1 = cross1.dot(cross2);
+            double dot2 = cross2.dot(cross3);
+            double dot3 = cross3.dot(cross1);
+
+            if (dot1 > 0 && dot2 > 0 && dot3 > 0)
+                return true;
         }
     }
     return contains(p);
@@ -127,7 +147,7 @@ bool Shape::contains(const Vector3& p) const {
     // load triangles
     const std::vector<geo::Vector3>& t_points = mesh.getPoints();
     const std::vector<TriangleI>& triangles_i = mesh.getTriangleIs();
-    for (std::vector<TriangleI>::const_iterator it = triangles_i.begin(); it != triangles_i.end(); ++it) {
+    for (auto it = triangles_i.cbegin(); it != triangles_i.cend(); ++it) {
         const Vector3 &v1 = t_points[it->i1_];
         const Vector3 &v2 = t_points[it->i2_];
         const Vector3 &v3 = t_points[it->i3_];
@@ -164,7 +184,7 @@ bool Shape::contains(const Vector3& p) const {
         }
     }
 
-   if (intersect_count < 0 || intersect_count > 1) {
+    if (intersect_count < 0 || intersect_count > 1) {
         CONSOLE_BRIDGE_logError("intersect_count is %i, it should be 0 or 1! Is your shape constructed correctly?", intersect_count);
         return false;
     }
@@ -179,7 +199,7 @@ Box Shape::getBoundingBox() const {
         const std::vector<geo::Vector3>& points = mesh.getPoints();
         double x_min = 1e9, y_min = 1e9, z_min = 1e9;
         double x_max = -1e9, y_max = -1e9, z_max = -1e9;
-        for (std::vector<geo::Vector3>::const_iterator it = points.begin(); it != points.end(); ++it)
+        for (auto it = points.cbegin(); it != points.cend(); ++it)
         {
             x_min = std::min<double>(it->x, x_min);
             x_max = std::max<double>(it->x, x_max);
