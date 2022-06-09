@@ -60,6 +60,7 @@ typedef geo::LineSegment LS;
  * Zero means intersection
  * Positive means \a \bold q passses clockwise around \a \bold p.
  * Negative means \a \bold q passes counter clockwise around \a \bold p.
+ * @link https://members.loria.fr/SLazard/ARC-Visi3D/Pant-project/files/Line_Segment_Triangle.html
  * @param p First line
  * @param q Second line
  * @return side value
@@ -70,6 +71,7 @@ double side_product(const geo::LS& p, const geo::LS& q) {
 
 /**
  * @brief Check if linesegment does intersect with line
+ * @link https://members.loria.fr/SLazard/ARC-Visi3D/Pant-project/files/Line_Segment_Triangle.html
  * @param l line
  * @param ls linesegment
  * @param outside A point outside the plane which contains both the line and the linesegment
@@ -90,6 +92,7 @@ bool line_linesegment_intersection(const geo::LS& l, const geo::LS& ls, const ge
 
 /**
  * @brief Check if a line that is in the same plane as the triangle does actually intersect with the triangle
+ * @link https://members.loria.fr/SLazard/ARC-Visi3D/Pant-project/files/Line_Segment_Triangle.html
  * @param t Triangle
  * @param line line
  * @return Intersection or not
@@ -151,9 +154,9 @@ bool Shape::intersect(const Ray& /*r*/, float /*t0*/, float /*t1*/, double& /*di
 
 /**
  *  Main logic:
- *  @math http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.49.9172&rep=rep1&type=pdf
+ *  @link http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.49.9172&rep=rep1&type=pdf
  *  Projection in triangle logic:
- *  @math https://www.baeldung.com/cs/check-if-point-is-in-2d-triangle#1-mathematical-idea-2
+ *  @link https://www.baeldung.com/cs/check-if-point-is-in-2d-triangle#1-mathematical-idea-2
  **/
 bool Shape::intersect(const Vector3& p, const double radius) const {
     const Mesh& mesh = getMesh();
@@ -219,10 +222,10 @@ bool Shape::intersect(const Vector3& p, const double radius) const {
 }
 
 /**
- *  @math Let the line segment P connect points p and an arbitrary point p_out outside of the shape
+ *  Let the line segment P connect points p and an arbitrary point p_out outside of the shape
  *  We count the number of intersections between P and the shape. A positive number means point p is inside the shape.
  *  We use plucker coordinates to determine whether or not a triangle intersects line segment P.
- *  more details https://members.loria.fr/SLazard/ARC-Visi3D/Pant-project/files/Line_Segment_Triangle.html
+ *  more details @link https://members.loria.fr/SLazard/ARC-Visi3D/Pant-project/files/Line_Segment_Triangle.html
  **/
 bool Shape::contains(const Vector3& p) const {
     const Mesh& mesh = getMesh();
