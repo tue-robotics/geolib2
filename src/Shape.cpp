@@ -31,13 +31,31 @@ bool check_linesegment(const Vector3& p, const double radius2, const Vector3& a,
     return d2_2 <= ab.length2() * (1 + 1e-9) && d1_2-d2_2 <= radius2 * (1 + 1e-9); // To prevent any numerical issues
 }
 
+class Line
+{
+public:
+    Line(const geo::Vector3& a, const geo::Vector3& b) : a_(a), b_(b)
+    {
+        U_ = b_-a_;
+        V_ = a_.cross(b_);
+    }
+
+    inline const geo::Vector3& a() const { return a_; }
+    inline const geo::Vector3& b() const { return b_; }
+    inline const geo::Vector3& U() const { return U_; }
+    inline const geo::Vector3& V() const { return V_; }
+
+protected:
+    const geo::Vector3& a_, b_;
+    geo::Vector3 U_, V_;
+};
+
 const std::string Shape::TYPE = "mesh";
 
 Shape::Shape() : mesh_(), bounding_box_cache_valid_(false) {
 }
 
 Shape::~Shape() {
-
 }
 
 Shape* Shape::clone() const {
