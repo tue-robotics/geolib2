@@ -233,18 +233,13 @@ bool Shape::contains(const Vector3& p) const {
     Vector3 p_out = Vector3(1.1 * mesh.getMaxRadius(), 0, 0);
     geo::Line line(p, p_out);
 
+    // create hit maps
+    std::map<uint, std::map<uint, int>> edge_hit_map;
+    std::map<uint, int> vertex_hit_map;
+
     // load triangles
     const std::vector<geo::Vector3>& t_points = mesh.getPoints();
     const std::vector<TriangleI>& triangles_i = mesh.getTriangleIs();
-
-    // create cache
-    std::vector<std::vector<int>> edge_cache;
-    edge_cache.resize(t_points.size() - 1);
-    for (uint i = 0; i < edge_cache.size(); ++i)
-        edge_cache[i].resize(edge_cache.size() - i, 0);
-
-    std::vector<int> vertex_cache(t_points.size(), 0);
-
     for (auto it = triangles_i.cbegin(); it != triangles_i.cend(); ++it) {
         const Vector3 &v1 = t_points[it->i1_];
         const Vector3 &v2 = t_points[it->i2_];
@@ -317,13 +312,23 @@ bool Shape::contains(const Vector3& p) const {
                         return true;
                     }
 
-                    int& cache_entry = edge_cache[i_min][i_max-i_min-1];
-                    if (cache_entry == clockwise-counterclockwise) {
+                    // Make sure map entries exist
+                    auto search = edge_hit_map.find(i_min);
+                    if (search == edge_hit_map.end()) {
+                        edge_hit_map[i_min] = std::map<uint, int>();
+                    }
+                    auto search2 = edge_hit_map[i_min].find(i_max-i_min-1);
+                    if (search2 == edge_hit_map[i_min].end()) {
+                        edge_hit_map[i_min][i_max-i_min-1] = 0;
+                    }
+
+                    int& hit_entry = edge_hit_map[i_min][i_max-i_min-1];
+                    if (hit_entry == clockwise-counterclockwise) {
                         // Don't count an edge multiple times with the same direction
                         continue;
                     }
                     else {
-                        cache_entry += clockwise-counterclockwise;
+                        hit_entry += clockwise-counterclockwise;
                     }
                 }
                 else if (clockwise_nz == 1 || counterclockwise_nz == 1) {
@@ -343,13 +348,19 @@ bool Shape::contains(const Vector3& p) const {
                         return true;
                     }
 
-                    int& cache_entry = vertex_cache[i];
-                    if (cache_entry == clockwise-counterclockwise) {
+                    // Make sure map entries exist
+                    auto search = vertex_hit_map.find(i);
+                    if (search == vertex_hit_map.end()) {
+                        vertex_hit_map[i] = 0;
+                    }
+
+                    int& hit_entry = vertex_hit_map[i];
+                    if (hit_entry == clockwise-counterclockwise) {
                         // Don't count a vertex multiple times with the same direction
                         continue;
                     }
                     else {
-                        cache_entry += clockwise-counterclockwise;
+                        hit_entry += clockwise-counterclockwise;
                     }
                 }
                 else {
