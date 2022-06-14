@@ -13,6 +13,7 @@ TEST_F(BoxTest, Contains)
     ASSERT_TRUE(box.contains(max));
 
     ASSERT_TRUE(box.contains(side_center));
+    ASSERT_TRUE(box.contains(side_center_triangle));
 
     ASSERT_FALSE(box.contains(side_center_distance));
 
@@ -31,6 +32,8 @@ TEST_F(BoxTest, Intersect)
 
     ASSERT_TRUE(box.intersect(side_center, 0));
     ASSERT_TRUE(box.intersect(side_center, 0.1));
+    ASSERT_TRUE(box.intersect(side_center_triangle, 0));
+    ASSERT_TRUE(box.intersect(side_center_triangle, 0.1));
 
     ASSERT_FALSE(box.intersect(side_center_distance, 0));
     ASSERT_FALSE(box.intersect(side_center_distance, 0.1));
