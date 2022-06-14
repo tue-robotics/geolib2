@@ -5,6 +5,8 @@
 
 namespace geo {
 
+double triangleArea(const Vector3& p1, const Vector3& p2, const Vector3& p3);
+
 class Triangle {
 
 public:
@@ -28,6 +30,8 @@ public:
     inline geo::Vector3& operator[](const uint i) { return m[i]; }
 
     inline const geo::Vector3& operator[](const uint i) const { return m[i]; }
+
+    double area() const;
 
     // serialize Triangle to stream
     friend std::ostream& operator<< (std::ostream& out, const Triangle& t);
