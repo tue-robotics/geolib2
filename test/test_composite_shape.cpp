@@ -27,6 +27,7 @@ TEST_F(CompShapeTest, Contains)
     ASSERT_TRUE(comp.contains(max));
 
     ASSERT_TRUE(comp.contains(side_center));
+    ASSERT_TRUE(comp.contains(side_center_triangle));
 
     ASSERT_FALSE(comp.contains(side_center_distance));
 
@@ -45,6 +46,8 @@ TEST_F(CompShapeTest, Intersect)
 
     ASSERT_TRUE(comp.intersect(side_center, 0));
     ASSERT_TRUE(comp.intersect(side_center, 0.1));
+    ASSERT_TRUE(comp.intersect(side_center_triangle, 0));
+    ASSERT_TRUE(comp.intersect(side_center_triangle, 0.1));
 
     ASSERT_FALSE(comp.intersect(side_center_distance, 0));
     ASSERT_FALSE(comp.intersect(side_center_distance, 0.1));
