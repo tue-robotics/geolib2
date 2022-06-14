@@ -373,6 +373,19 @@ bool Shape::contains(const Vector3& p) const {
                 else {
                     // Proper intersection
                     CONSOLE_BRIDGE_logDebug("Proper intersection");
+                    // https://www.geeksforgeeks.org/check-whether-a-given-point-lies-inside-a-triangle-or-not/
+                    double s = geo::triangleArea(v1, v2, v3);
+                    if (s < 1e-12)
+                        CONSOLE_BRIDGE_logError("Triangle has a zero area");
+
+                    double s1 = geo::triangleArea(v2, p, v3);
+                    double s2 = geo::triangleArea(p, v1, v3);
+                    double s3 = geo::triangleArea(p, v1, v2);
+
+                    if (std::abs(s1 + s2 + s3 - s) < 1e-12) {
+                        CONSOLE_BRIDGE_logDebug("Point is on a triangle");
+                        return true;
+                    }
                 }
                 // Update intersect count
                 intersect_count += clockwise-counterclockwise;
