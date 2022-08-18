@@ -131,7 +131,7 @@ inline void convert(const geometry_msgs::Vector3& msg, geo::Vector3& v) {
 /**
  * @brief converting geometry_msgs::Quaternion to geo::Quaternion
  * @param msg geometry_msgs::Quaternion as input
- * @param v geo::Quaternion as output
+ * @param q geo::Quaternion as output
  */
 inline void convert(const geometry_msgs::Quaternion& msg, geo::Quaternion& q) {
     q.x = msg.x; q.y = msg.y; q.z = msg.z; q.w = msg.w;
@@ -140,7 +140,7 @@ inline void convert(const geometry_msgs::Quaternion& msg, geo::Quaternion& q) {
 /**
  * @brief converting geometry_msgs::Quaternion to geo::Matrix3
  * @param msg geometry_msgs::Quaternion as input
- * @param v geo::Matrix3 as output
+ * @param r geo::Matrix3 as output
  */
 inline void convert(const geometry_msgs::Quaternion& msg, geo::Matrix3& r) {
     Quaternion q;
@@ -151,7 +151,7 @@ inline void convert(const geometry_msgs::Quaternion& msg, geo::Matrix3& r) {
 /**
  * @brief converting geometry_msgs::Pose to geo::Transform
  * @param msg geometry_msgs::Pose as input
- * @param v geo::Transform as output
+ * @param t geo::Transform as output
  */
 inline void convert(const geometry_msgs::Pose& msg, geo::Transform& t) {
     convert(msg.orientation, t.R);
@@ -161,7 +161,7 @@ inline void convert(const geometry_msgs::Pose& msg, geo::Transform& t) {
 /**
  * @brief converting geometry_msgs::Transform to geo::Transform
  * @param msg geometry_msgs::Transform as input
- * @param v geo::Transform as output
+ * @param t geo::Transform as output
  */
 inline void convert(const geometry_msgs::Transform& msg, geo::Transform& t) {
     convert(msg.rotation, t.R);
