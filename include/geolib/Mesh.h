@@ -50,7 +50,7 @@ public:
      * Add a triangle to the mesh.
      * @param i1 First point of the triangle to add.
      * @param i2 Second point of the triangle to add.
-     * @param i2 Third point of the triangle to add.
+     * @param i3 Third point of the triangle to add.
      */
     void addTriangle(unsigned int i1, unsigned int i2, unsigned int i3);
 
