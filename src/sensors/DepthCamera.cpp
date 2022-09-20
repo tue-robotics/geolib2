@@ -62,7 +62,7 @@ void DepthCamera::initFromCamModel(const image_geometry::PinholeCameraModel& cam
 
 RasterizeResult DepthCamera::rasterize(const Shape& shape, const Pose3D& cam_pose, const Pose3D& obj_pose, cv::Mat& image,
                                        PointerMap& pointer_map, void* pointer, TriangleMap& triangle_map) const {
-    return rasterize(shape, cam_pose.inverse() * obj_pose, image, pointer_map, pointer);
+    return rasterize(shape, cam_pose.inverse() * obj_pose, image, pointer_map, pointer, triangle_map);
 }
 
 // -------------------------------------------------------------------------------
