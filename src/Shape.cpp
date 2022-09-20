@@ -280,7 +280,7 @@ bool Shape::contains(const Vector3& p) const {
             CONSOLE_BRIDGE_logDebug("Coplanar outside the triangle");
             continue;
         }
-        else if (clockwise && clockwise_nz > 0 || counterclockwise && counterclockwise_nz > 0) {
+        else if ((clockwise && clockwise_nz > 0) || (counterclockwise && counterclockwise_nz > 0)) {
             // 3 same sign -> proper intersection
             // 2 same sign, 1 zero -> intersection on edge
             // 2 zero, 1 non-zero -> intersection at vertex
