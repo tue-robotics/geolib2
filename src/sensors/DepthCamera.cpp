@@ -104,7 +104,6 @@ void DepthCamera::render(const RenderOptions& opt, RenderResult& res) const {
         points_t[i] = pose * points[i];
         points_t_in_view[i] = (points_t[i].z < near_clip_z_);
         points_2d[i] = project3Dto2D<double, float>(points_t[i]);
-        const cv::Point2f& p_2d = points_2d[i];
         if (!in_view && points_t_in_view[i])
         {
             in_view = true;

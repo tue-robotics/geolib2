@@ -99,7 +99,6 @@ bool line_linesegment_intersection(const geo::LS& l, const geo::LS& ls, const ge
  */
 bool compute_2D_intersection(const geo::Triangle& t, const geo::LS& line)
 {
-    bool intersection = 0;
     double s2,s3;
 
     // Skipping s1, as we don't change v1 and v2, so that edge, doesn't change
@@ -234,7 +233,6 @@ bool Shape::contains(const Vector3& p) const {
     }
 
     int intersect_count = 0;
-    bool intersect_plane = false;
 
     // determine plucker coordinates of line p
     Vector3 p_out = Vector3(1.1 * mesh.getMaxRadius(), 0, 0);
