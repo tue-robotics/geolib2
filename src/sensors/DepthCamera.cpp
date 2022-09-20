@@ -122,7 +122,7 @@ void DepthCamera::render(const RenderOptions& opt, RenderResult& res) const {
         uchar n_verts_in = 0;
         bool v1_in = false;
         bool v2_in = false;
-        bool v3_in = false;
+        // bool v3_in = false; // Not used, because of logic can be concluded this would be true or false
         std::array<const geo::Vec3d*, 3> vIn;
 
         if (points_t_in_view[it_tri->i1_]) {
@@ -137,13 +137,13 @@ void DepthCamera::render(const RenderOptions& opt, RenderResult& res) const {
 
         if (points_t_in_view[it_tri->i3_]) {
             ++n_verts_in;
-            v3_in = true;
+            // v3_in = true; // Not used, because of logic can be concluded this would be true or false
         }
 
         if (n_verts_in == 1) {
             if (v1_in) { vIn[0] = &(p1_3d); vIn[1] = &(p2_3d); vIn[2] = &(p3_3d); }
-            if (v2_in) { vIn[0] = &(p2_3d); vIn[1] = &(p3_3d); vIn[2] = &(p1_3d); }
-            if (v3_in) { vIn[0] = &(p3_3d); vIn[1] = &(p1_3d); vIn[2] = &(p2_3d); }
+            else if (v2_in) { vIn[0] = &(p2_3d); vIn[1] = &(p3_3d); vIn[2] = &(p1_3d); }
+            else { vIn[0] = &(p3_3d); vIn[1] = &(p1_3d); vIn[2] = &(p2_3d); } // if (v3_in)
 
             //Parametric line stuff
             // p = v0 + v01*t
@@ -163,8 +163,8 @@ void DepthCamera::render(const RenderOptions& opt, RenderResult& res) const {
             drawTriangle<double, float>(*vIn[0], new2, new3, opt, res, i_triangle);
         } else if (n_verts_in == 2) {
             if (!v1_in) { vIn[0]=&(p2_3d); vIn[1]=&(p3_3d); vIn[2]=&(p1_3d); }
-            if (!v2_in) { vIn[0]=&(p3_3d); vIn[1]=&(p1_3d); vIn[2]=&(p2_3d); }
-            if (!v3_in) { vIn[0]=&(p1_3d); vIn[1]=&(p2_3d); vIn[2]=&(p3_3d); }
+            else if (!v2_in) { vIn[0]=&(p3_3d); vIn[1]=&(p1_3d); vIn[2]=&(p2_3d); }
+            else { vIn[0]=&(p1_3d); vIn[1]=&(p2_3d); vIn[2]=&(p3_3d); } // if (!v3_in)
 
             //Parametric line stuff
             // p = v0 + v01*t
