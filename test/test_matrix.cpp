@@ -83,7 +83,7 @@ bool equals(const geo::Transform3& T, const tf::Transform& T_tf, const std::stri
 
 // ----------------------------------------------------------------------------------------------------
 
-int main(int argc, char **argv) {
+int main() {
 
     // initialize random seed
     srand (time(NULL));
