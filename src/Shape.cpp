@@ -305,7 +305,7 @@ bool Shape::contains(const Vector3& p) const {
                         i1 = it->i2_;
                         i2 = it->i3_;
                     }
-                    else if (std::abs(s3) < 1e-16) {
+                    else { // if (std::abs(s3) < 1e-16)
                         i1 = it->i3_;
                         i2 = it->i1_;
                     }
@@ -345,7 +345,7 @@ bool Shape::contains(const Vector3& p) const {
                         i = it->i1_;
                     else if (std::abs(s3) > 1e-16)
                         i = it->i2_;
-                    else if (std::abs(s1) > 1e-16)
+                    else // if (std::abs(s1) > 1e-16)
                         i = it->i3_;
 
                     if (t_points[i] == p) {
