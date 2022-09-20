@@ -25,7 +25,7 @@ class Vec2T
 {
 
 public:
-    Vec2T() {}
+    Vec2T() : x(), y() {}
     Vec2T(const Vec2T& v) = default;
     Vec2T(T x_, T y_) : x(x_), y(y_) {}
     Vec2T(T value) : x(value), y(value) {}
@@ -123,7 +123,7 @@ class Vec3T
 {
 
 public:
-    Vec3T() {}
+    Vec3T() : x(), y(), z() {}
     Vec3T(const Vec3T& v) = default;
     Vec3T(T x_, T y_, T z_) : x(x_), y(y_), z(z_) {}
     Vec3T(T value) : x(value), y(value), z(value) {}
@@ -226,7 +226,7 @@ class Mat2T
 {
 
 public:
-    Mat2T() {}
+    Mat2T() : xx(), xy(), yx(), yy() {}
     Mat2T(const Mat2T& v) = default;
     Mat2T(T xx_, T xy_, T yx_, T yy_) : xx(xx_), xy(xy_), yx(yx_), yy(yy_) {}
     Mat2T(T value) : xx(value), xy(value), yx(value), yy(value) {}
@@ -324,7 +324,7 @@ class QuaternionT
 
 public:
 
-    QuaternionT() {}
+    QuaternionT() : x(), y(), z(), w() {}
     QuaternionT(const QuaternionT& q) = default;
     QuaternionT(T x_, T y_, T z_, T w_) : x(x_), y(y_), z(z_), w(w_) {}
 
