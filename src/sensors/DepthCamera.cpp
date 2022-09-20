@@ -279,7 +279,7 @@ void DepthCamera::drawTriangle2D(const geo::Vec3T<T>& p1, const geo::Vec3T<T>& p
 void DepthCamera::drawTrianglePart(int y_start, int y_end,
                                    float x_start, float x_start_delta, float x_end, float x_end_delta,
                                    float d_start, float d_start_delta, float d_end, float d_end_delta,
-                                   const RenderOptions& opt, RenderResult& res, uint i_triangle) const {
+                                   const RenderOptions& /*opt*/, RenderResult& res, uint i_triangle) const {
 
     if (y_start < 0) {
         d_start += d_start_delta * -y_start;
