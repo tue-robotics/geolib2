@@ -26,6 +26,7 @@ class Vec2T
 
 public:
     Vec2T() {}
+    Vec2T(const Vec2T& v) = default;
     Vec2T(T x_, T y_) : x(x_), y(y_) {}
     Vec2T(T value) : x(value), y(value) {}
     Vec2T(const T* values) { memcpy(m, values, 2 * sizeof(T)); }
@@ -123,6 +124,7 @@ class Vec3T
 
 public:
     Vec3T() {}
+    Vec3T(const Vec3T& v) = default;
     Vec3T(T x_, T y_, T z_) : x(x_), y(y_), z(z_) {}
     Vec3T(T value) : x(value), y(value), z(value) {}
     Vec3T(const T* values) { memcpy(m, values, 3 * sizeof(T)); }
@@ -225,6 +227,7 @@ class Mat2T
 
 public:
     Mat2T() {}
+    Mat2T(const Mat2T& v) = default;
     Mat2T(T xx_, T xy_, T yx_, T yy_) : xx(xx_), xy(xy_), yx(yx_), yy(yy_) {}
     Mat2T(T value) : xx(value), xy(value), yx(value), yy(value) {}
 
@@ -322,6 +325,7 @@ class QuaternionT
 public:
 
     QuaternionT() {}
+    QuaternionT(const QuaternionT& q) = default;
     QuaternionT(T x_, T y_, T z_, T w_) : x(x_), y(y_), z(z_), w(w_) {}
 
     QuaternionT &operator=(const QuaternionT &q) {
@@ -397,6 +401,7 @@ class Mat3T
 
 public:
     Mat3T() {}
+    Mat3T(const Mat3T& v) = default;
 
     Mat3T(T xx_, T xy_, T xz_, T yx_, T yy_, T yz_, T zx_, T zy_, T zz_)
         : xx(xx_), xy(xy_), xz(xz_), yx(yx_), yy(yy_), yz(yz_), zx(zx_), zy(zy_), zz(zz_) {}
@@ -595,6 +600,7 @@ class Transform2T {
 public:
 
     Transform2T() {}
+    Transform2T(const Transform2T& tr) = default;
 
     Transform2T(T x, T y, T yaw = 0) : t(x, y) {
         setRotation(yaw);
@@ -682,6 +688,7 @@ class Transform3T {
 public:
 
     Transform3T() {}
+    Transform3T(const Transform3T& tr) = default;
 
     Transform3T(T x, T y, T z, T roll = 0, T pitch = 0, T yaw = 0) : t(x, y, z) {
         setRPY(roll, pitch, yaw);
