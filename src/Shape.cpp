@@ -99,7 +99,6 @@ bool line_linesegment_intersection(const geo::LS& l, const geo::LS& ls, const ge
  */
 bool compute_2D_intersection(const geo::Triangle& t, const geo::LS& line)
 {
-    bool intersection = 0;
     double s2,s3;
 
     // Skipping s1, as we don't change v1 and v2, so that edge, doesn't change
@@ -234,7 +233,6 @@ bool Shape::contains(const Vector3& p) const {
     }
 
     int intersect_count = 0;
-    bool intersect_plane = false;
 
     // determine plucker coordinates of line p
     Vector3 p_out = Vector3(1.1 * mesh.getMaxRadius(), 0, 0);
@@ -282,7 +280,7 @@ bool Shape::contains(const Vector3& p) const {
             CONSOLE_BRIDGE_logDebug("Coplanar outside the triangle");
             continue;
         }
-        else if (clockwise && clockwise_nz > 0 || counterclockwise && counterclockwise_nz > 0) {
+        else if ((clockwise && clockwise_nz > 0) || (counterclockwise && counterclockwise_nz > 0)) {
             // 3 same sign -> proper intersection
             // 2 same sign, 1 zero -> intersection on edge
             // 2 zero, 1 non-zero -> intersection at vertex
@@ -307,7 +305,7 @@ bool Shape::contains(const Vector3& p) const {
                         i1 = it->i2_;
                         i2 = it->i3_;
                     }
-                    else if (std::abs(s3) < 1e-16) {
+                    else { // if (std::abs(s3) < 1e-16)
                         i1 = it->i3_;
                         i2 = it->i1_;
                     }
@@ -347,7 +345,7 @@ bool Shape::contains(const Vector3& p) const {
                         i = it->i1_;
                     else if (std::abs(s3) > 1e-16)
                         i = it->i2_;
-                    else if (std::abs(s1) > 1e-16)
+                    else // if (std::abs(s1) > 1e-16)
                         i = it->i3_;
 
                     if (t_points[i] == p) {

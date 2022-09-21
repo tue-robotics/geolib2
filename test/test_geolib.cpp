@@ -50,7 +50,7 @@ double renderDepthCamera(cv::Mat& image, const Shape& shape, bool show) {
     return timer.getElapsedTimeInMilliSec() / N;
 }
 
-double renderLRF(cv::Mat& image, const Shape& shape, bool rasterize, bool show) {
+double renderLRF(cv::Mat& image, const Shape& shape, bool show) {
     LaserRangeFinder lrf;
     lrf.setAngleLimits(-2, 2);
     lrf.setNumBeams(1000);
@@ -275,13 +275,13 @@ int main(int argc, char **argv) {
         std::cout << "DepthCamera::rasterize(input_mesh):\t" << renderDepthCamera(image, *mesh, false) << " ms" << std::endl;
     }
 
-    std::cout << "LaserRangeFinder::render(box):\t" << renderLRF(image, shape, true, false) << " ms" << std::endl;
-    std::cout << "LaserRangeFinder::render(table):\t" << renderLRF(image, table, true, false) << " ms" << std::endl;
-    std::cout << "LaserRangeFinder::render(heightmap):\t" << renderLRF(image, hmap, true, false) << " ms" << std::endl;
+    std::cout << "LaserRangeFinder::render(box):\t" << renderLRF(image, shape, false) << " ms" << std::endl;
+    std::cout << "LaserRangeFinder::render(table):\t" << renderLRF(image, table, false) << " ms" << std::endl;
+    std::cout << "LaserRangeFinder::render(heightmap):\t" << renderLRF(image, hmap, false) << " ms" << std::endl;
 //    std::cout << "DepthCamera::rasterize(abstract_shape):\t" << renderLRF(image, tree, true, false) << " ms" << std::endl;
 
     if (mesh) {
-        std::cout << "LaserRangeFinder::rasterize(input_mesh):\t" << renderLRF(image, *mesh, true, false) << " ms" << std::endl;
+        std::cout << "LaserRangeFinder::rasterize(input_mesh):\t" << renderLRF(image, *mesh, false) << " ms" << std::endl;
     }
 
 

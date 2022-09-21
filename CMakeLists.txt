@@ -1,6 +1,9 @@
 cmake_minimum_required(VERSION 3.0.2)
 project(geolib2)
 
+add_compile_options(-Wall -Werror=all)
+add_compile_options(-Wextra -Werror=extra)
+
 find_package(catkin REQUIRED COMPONENTS
   code_profiler
   cv_bridge

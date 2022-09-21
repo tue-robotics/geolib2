@@ -62,7 +62,7 @@ void DepthCamera::initFromCamModel(const image_geometry::PinholeCameraModel& cam
 
 RasterizeResult DepthCamera::rasterize(const Shape& shape, const Pose3D& cam_pose, const Pose3D& obj_pose, cv::Mat& image,
                                        PointerMap& pointer_map, void* pointer, TriangleMap& triangle_map) const {
-    return rasterize(shape, cam_pose.inverse() * obj_pose, image, pointer_map, pointer);
+    return rasterize(shape, cam_pose.inverse() * obj_pose, image, pointer_map, pointer, triangle_map);
 }
 
 // -------------------------------------------------------------------------------
@@ -104,7 +104,6 @@ void DepthCamera::render(const RenderOptions& opt, RenderResult& res) const {
         points_t[i] = pose * points[i];
         points_t_in_view[i] = (points_t[i].z < near_clip_z_);
         points_2d[i] = project3Dto2D<double, float>(points_t[i]);
-        const cv::Point2f& p_2d = points_2d[i];
         if (!in_view && points_t_in_view[i])
         {
             in_view = true;
@@ -123,7 +122,7 @@ void DepthCamera::render(const RenderOptions& opt, RenderResult& res) const {
         uchar n_verts_in = 0;
         bool v1_in = false;
         bool v2_in = false;
-        bool v3_in = false;
+        // bool v3_in = false; // Not used, because of logic can be concluded this would be true or false
         std::array<const geo::Vec3d*, 3> vIn;
 
         if (points_t_in_view[it_tri->i1_]) {
@@ -138,13 +137,13 @@ void DepthCamera::render(const RenderOptions& opt, RenderResult& res) const {
 
         if (points_t_in_view[it_tri->i3_]) {
             ++n_verts_in;
-            v3_in = true;
+            // v3_in = true; // Not used, because of logic can be concluded this would be true or false
         }
 
         if (n_verts_in == 1) {
             if (v1_in) { vIn[0] = &(p1_3d); vIn[1] = &(p2_3d); vIn[2] = &(p3_3d); }
-            if (v2_in) { vIn[0] = &(p2_3d); vIn[1] = &(p3_3d); vIn[2] = &(p1_3d); }
-            if (v3_in) { vIn[0] = &(p3_3d); vIn[1] = &(p1_3d); vIn[2] = &(p2_3d); }
+            else if (v2_in) { vIn[0] = &(p2_3d); vIn[1] = &(p3_3d); vIn[2] = &(p1_3d); }
+            else { vIn[0] = &(p3_3d); vIn[1] = &(p1_3d); vIn[2] = &(p2_3d); } // if (v3_in)
 
             //Parametric line stuff
             // p = v0 + v01*t
@@ -164,8 +163,8 @@ void DepthCamera::render(const RenderOptions& opt, RenderResult& res) const {
             drawTriangle<double, float>(*vIn[0], new2, new3, opt, res, i_triangle);
         } else if (n_verts_in == 2) {
             if (!v1_in) { vIn[0]=&(p2_3d); vIn[1]=&(p3_3d); vIn[2]=&(p1_3d); }
-            if (!v2_in) { vIn[0]=&(p3_3d); vIn[1]=&(p1_3d); vIn[2]=&(p2_3d); }
-            if (!v3_in) { vIn[0]=&(p1_3d); vIn[1]=&(p2_3d); vIn[2]=&(p3_3d); }
+            else if (!v2_in) { vIn[0]=&(p3_3d); vIn[1]=&(p1_3d); vIn[2]=&(p2_3d); }
+            else { vIn[0]=&(p1_3d); vIn[1]=&(p2_3d); vIn[2]=&(p3_3d); } // if (!v3_in)
 
             //Parametric line stuff
             // p = v0 + v01*t
@@ -279,7 +278,7 @@ void DepthCamera::drawTriangle2D(const geo::Vec3T<T>& p1, const geo::Vec3T<T>& p
 void DepthCamera::drawTrianglePart(int y_start, int y_end,
                                    float x_start, float x_start_delta, float x_end, float x_end_delta,
                                    float d_start, float d_start_delta, float d_end, float d_end_delta,
-                                   const RenderOptions& opt, RenderResult& res, uint i_triangle) const {
+                                   const RenderOptions& /*opt*/, RenderResult& res, uint i_triangle) const {
 
     if (y_start < 0) {
         d_start += d_start_delta * -y_start;
