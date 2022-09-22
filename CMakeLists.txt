@@ -14,6 +14,7 @@ find_package(catkin REQUIRED COMPONENTS
   tf2
 )
 
+SET(CMAKE_POLICY_DEFAULT_CMP0012 NEW)  # Fixed in Assimp 5.1.0, but is not released on Ubuntu Focal
 find_package(ASSIMP REQUIRED)
 find_package(console_bridge REQUIRED)
 find_package(OpenCV REQUIRED)
