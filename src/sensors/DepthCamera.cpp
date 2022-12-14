@@ -23,16 +23,68 @@ void DefaultRenderResult::renderPixel(int x, int y, float depth, int i_triangle)
     }
 }
 
-DepthCamera::DepthCamera() : fx_(0), fy_(0), cx_(0), cy_(0), tx_(0), ty_(0), initialized_(false), cx_plus_tx_(0), cy_plus_ty_(0), cache_valid_(false)
+DepthCamera::DepthCamera()
 {
 }
 
-DepthCamera::DepthCamera(const image_geometry::PinholeCameraModel& cam_model) : initialized_(false), cache_valid_(false)
+DepthCamera::DepthCamera(uint width, uint height, double fx, double fy, double cx, double cy, double tx, double ty)
+{
+    sensor_msgs::CameraInfo cam_info;
+    cam_info.D.resize(5, 0);
+    cam_info.K[0] = fx;
+    // Intrinsic camera matrix for the raw (distorted) images.
+    //     [fx  0 cx]
+    // K = [ 0 fy cy]
+    //     [ 0  0  1]
+    cam_info.K[0] = fx;
+    cam_info.K[1] = 0;
+    cam_info.K[2] = cx;
+    cam_info.K[3] = 0;
+    cam_info.K[4] = fy;
+    cam_info.K[5] = cy;
+    cam_info.K[6] = 0;
+    cam_info.K[7] = 0;
+    cam_info.K[8] = 1;
+
+    // Rectification matrix (stereo cameras only)
+    cam_info.R[0] = 1;
+    cam_info.R[1] = 0;
+    cam_info.R[2] = 0;
+    cam_info.R[3] = 0;
+    cam_info.R[4] = 1;
+    cam_info.R[5] = 0;
+    cam_info.R[6] = 0;
+    cam_info.R[7] = 0;
+    cam_info.R[8] = 1;
+
+    // Projection/camera matrix
+    //     [fx'  0  cx' Tx]
+    // P = [ 0  fy' cy' Ty]
+    //     [ 0   0   1   0]
+    cam_info.P[0] = fx;
+    cam_info.P[1] = 0;
+    cam_info.P[2] = cx;
+    cam_info.P[3] = tx;
+    cam_info.P[4] = 0;
+    cam_info.P[5] = fy;
+    cam_info.P[6] = cy;
+    cam_info.P[7] = ty;
+    cam_info.P[8] = 0;
+    cam_info.P[9] = 0;
+    cam_info.P[10] = 1;
+    cam_info.P[11] = 0;
+
+    cam_info.width = width;
+    cam_info.height = height;
+    cam_model_.fromCameraInfo(cam_info);
+}
+
+DepthCamera::DepthCamera(const image_geometry::PinholeCameraModel& cam_model)
 {
     initFromCamModel(cam_model);
 }
 
-DepthCamera::DepthCamera(const sensor_msgs::CameraInfo& cam_info) : initialized_(false), cache_valid_(false)
+DepthCamera::DepthCamera(const sensor_msgs::CameraInfo& cam_info)
 {
     image_geometry::PinholeCameraModel cam_model;
     cam_model.fromCameraInfo(cam_info);
@@ -44,14 +96,7 @@ DepthCamera::~DepthCamera() {
 
 void DepthCamera::initFromCamModel(const image_geometry::PinholeCameraModel& cam_model)
 {
-    fx_ = cam_model.fx();
-    fy_ = cam_model.fy();
-    cx_ = cam_model.cx();
-    cy_ = cam_model.cy();
-    tx_ = cam_model.Tx();
-    ty_ = cam_model.Ty();
-    initialized_ = true;
-    updateCache();
+    cam_model_ = cam_model;
 }
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *

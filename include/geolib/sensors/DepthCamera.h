@@ -162,6 +162,8 @@ public:
 
     DepthCamera();
 
+    DepthCamera(uint width, uint height, double fx, double fy, double cx, double cy, double tx, double ty);
+
     DepthCamera(const image_geometry::PinholeCameraModel& cam_model);
 
     DepthCamera(const sensor_msgs::CameraInfo& cam_info);
@@ -196,18 +198,12 @@ public:
 
     template<typename Tin=double, typename Tout=double>
     inline cv::Point_<Tout> project3Dto2D(const geo::Vec3T<Tin>& p) const {
-        return cv::Point_<Tout>((fx_ * p.x + tx_) / -p.z + cx_, (fy_ * -p.y + ty_) / -p.z + cy_);
+        return cv::Point_<Tout>((fx() * p.x + Tx()) / -p.z + cx(), (fy() * -p.y + Ty()) / -p.z + cy());
     }
 
-    inline double project2Dto3DX(int x) const {
-        if (!cache_valid_) updateCache();
-        return (x - cx_plus_tx_) / fx_;
-    }
+    inline double project2Dto3DX(int x) const { return (x - (cx() + Tx())) / fx(); }
 
-    inline double project2Dto3DY(int y) const {
-        if (!cache_valid_) updateCache();
-        return -(y - cy_plus_ty_) / fy_;
-    }
+    inline double project2Dto3DY(int y) const { return -(y - (cy() + Ty())) / fy(); }
 
     /**
      * convert points in an image to points in 3D space
@@ -220,67 +216,39 @@ public:
         return geo::Vec3T<T>(project2Dto3DX(x), project2Dto3DY(y), -1.0);
     }
 
-    inline void setFocalLengths(double fx, double fy) {
-        fx_ = fx;
-        fy_ = fy;
-    }
+    inline double fx() const { return cam_model_.fx(); }
+    inline double getFocalLengthX() const { return fx(); }
 
-    inline void setOpticalCenter(double cx, double cy) {
-        cx_ = cx;
-        cy_ = cy;
-        updateCache();
-    }
+    inline double fy() const { return cam_model_.fy(); }
+    inline double getFocalLengthY() const { return fy(); }
 
-    inline void setOpticalTranslation(double tx, double ty) {
-        tx_ = tx;
-        ty_ = ty;
-        updateCache();
-    }
+    inline double cx() const { return cam_model_.cx(); }
+    inline double getOpticalCenterX() const { return cx(); }
 
-    inline double getFocalLengthX() const { return fx_; }
+    inline double cy() const { return cam_model_.cy(); }
+    inline double getOpticalCenterY() const { return cam_model_.cy(); }
 
-    inline double getFocalLengthY() const { return fy_; }
+    inline double Tx() const { return cam_model_.Tx(); }
+    inline double getOpticalTranslationX() const { return Tx(); }
 
-    inline double getOpticalCenterX() const { return cx_; }
+    inline double Ty() const { return cam_model_.Ty(); }
+    inline double getOpticalTranslationY() const { return Ty(); }
 
-    inline double getOpticalCenterY() const { return cy_; }
+    inline int height() const { return cam_model_.fullResolution().height; }
 
-    inline double getOpticalTranslationX() const { return tx_; }
-
-    inline double getOpticalTranslationY() const { return ty_; }
+    inline int width() const { return cam_model_.fullResolution().width; }
 
     /**
      * @brief Indicates whether the camera parameters are set. Using the camera when not initialized is useless.
      * @return initiliazed or not initialized
      */
-    inline bool initialized() const { return initialized_; }
+    inline bool initialized() const { return cam_model_.initialized(); }
 
 protected:
 
     static constexpr const double near_clip_z_ = -0.1;
 
-    // focal length of the camera
-    double fx_, fy_;
-
-    // optical center of the camera
-    double cx_, cy_;
-
-    // optical translation of the camera
-    double tx_, ty_;
-
-    bool initialized_;
-
-    // sums stored for optimisation
-    mutable double cx_plus_tx_;
-    mutable double cy_plus_ty_;
-    mutable bool cache_valid_;
-
-    inline void updateCache() const
-    {
-        cx_plus_tx_ = cx_ + tx_;
-        cy_plus_ty_ = cy_ + ty_;
-        cache_valid_ = true;
-    }
+    image_geometry::PinholeCameraModel cam_model_;
 
     template<typename Tin=double, typename Tout=double>
     void drawTriangle(const geo::Vec3T<Tin>& p1, const geo::Vec3T<Tin>& p2, const geo::Vec3T<Tin>& p3,
