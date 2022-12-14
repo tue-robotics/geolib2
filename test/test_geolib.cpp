@@ -18,13 +18,12 @@
 double CANVAS_WIDTH = 640;
 double CANVAS_HEIGHT = 480;
 
-using namespace geo;
-
-double renderDepthCamera(cv::Mat& image, const Shape& shape, bool show) {
-    DepthCamera cam;
-    cam.setFocalLengths(554.2559327880068 * CANVAS_WIDTH / 640, 554.2559327880068 * CANVAS_HEIGHT / 480);
-    cam.setOpticalCenter(320.5 * CANVAS_WIDTH / 640, 240.5 * CANVAS_HEIGHT / 480);
-    cam.setOpticalTranslation(0, 0);
+double renderDepthCamera(cv::Mat& image, const geo::Shape& shape, bool show)
+{
+    geo::DepthCamera cam(CANVAS_WIDTH, CANVAS_HEIGHT,
+                         554.2559327880068 * CANVAS_WIDTH / 640, 554.2559327880068 * CANVAS_HEIGHT / 480,
+                         320.5 * CANVAS_WIDTH / 640, 240.5 * CANVAS_HEIGHT / 480,
+                         0, 0);
 
     Timer timer;
     timer.start();
@@ -284,13 +283,12 @@ int main(int argc, char **argv) {
         std::cout << "LaserRangeFinder::rasterize(input_mesh):\t" << renderLRF(image, *mesh, false) << " ms" << std::endl;
     }
 
+    geo::DepthCamera cam(CANVAS_WIDTH, CANVAS_HEIGHT,
+                         554.2559327880068 * CANVAS_WIDTH / 640, 554.2559327880068 * CANVAS_HEIGHT / 480,
+                         320.5 * CANVAS_WIDTH / 640, 240.5 * CANVAS_HEIGHT / 480,
+                         0, 0);
 
-    DepthCamera cam;
-    cam.setFocalLengths(554.2559327880068 * CANVAS_WIDTH / 640, 554.2559327880068 * CANVAS_HEIGHT / 480);
-    cam.setOpticalCenter(320.5 * CANVAS_WIDTH / 640, 240.5 * CANVAS_HEIGHT / 480);
-    cam.setOpticalTranslation(0, 0);
-
-    LaserRangeFinder lrf;
+    geo::LaserRangeFinder lrf;
     lrf.setAngleLimits(-2.3, 2.3);
     lrf.setNumBeams(1000);
     lrf.setRangeLimits(0, 10);

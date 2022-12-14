@@ -31,10 +31,10 @@ int main(int argc, char **argv) {
         }
     }
 
-    geo::DepthCamera cam;
-    cam.setFocalLengths(554.2559327880068 * CANVAS_WIDTH / 640, 554.2559327880068 * CANVAS_HEIGHT / 480);
-    cam.setOpticalCenter(320.5 * CANVAS_WIDTH / 640, 240.5 * CANVAS_HEIGHT / 480);
-    cam.setOpticalTranslation(0, 0);
+    geo::DepthCamera cam(CANVAS_WIDTH, CANVAS_HEIGHT,
+                         554.2559327880068 * CANVAS_WIDTH / 640, 554.2559327880068 * CANVAS_HEIGHT / 480,
+                         320.5 * CANVAS_WIDTH / 640, 240.5 * CANVAS_HEIGHT / 480,
+                         0, 0);
 
     double r = shape->getMaxRadius();
     double dist = r * 3;
