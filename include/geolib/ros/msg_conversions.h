@@ -2,11 +2,13 @@
 #define GEOLIB_ROS_MSG_CONVERSIONS_H_
 
 #include "geolib/datatypes.h"
-#include <geolib/Mesh.h>
+#include "geolib/Mesh.h"
+#include "geolib/sensors/DepthCamera.h"
 #include <geometry_msgs/Pose.h>
 #include <geometry_msgs/Point.h>
 #include <geometry_msgs/Point32.h>
 #include <geometry_msgs/Transform.h>
+#include <sensor_msgs/CameraInfo.h>
 #include <shape_msgs/Mesh.h>
 
 namespace geo {
@@ -98,6 +100,13 @@ inline void convert(const geo::TriangleI& t, shape_msgs::MeshTriangle& msg) {
  * @param msg filled shape_msgs::Mesh message as output
  */
 void convert(const geo::Mesh& m, shape_msgs::Mesh& msg);
+
+/**
+ * @brief Convert DepthCamera to CameraInfo message
+ * @param cam_model Depthcamera
+ * @param cam_model_msg CameraInfo message to fill
+ */
+void convert(const geo::DepthCamera& cam_model, sensor_msgs::CameraInfo& msg);
 
 // ------------------------------ FROM ROS ------------------------------
 
