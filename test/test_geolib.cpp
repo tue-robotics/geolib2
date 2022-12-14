@@ -35,7 +35,7 @@ double renderDepthCamera(cv::Mat& image, const geo::Shape& shape, bool show)
         }
 
 
-        Pose3D pose(0, -0.5, -5, -1.57, angle, 0);
+        geo::Pose3D pose(0, -0.5, -5, -1.57, angle, 0);
         cam.rasterize(shape, pose, image);
 
         if (show) {
@@ -49,8 +49,8 @@ double renderDepthCamera(cv::Mat& image, const geo::Shape& shape, bool show)
     return timer.getElapsedTimeInMilliSec() / N;
 }
 
-double renderLRF(cv::Mat& image, const Shape& shape, bool show) {
-    LaserRangeFinder lrf;
+double renderLRF(cv::Mat& image, const geo::Shape& shape, bool show) {
+    geo::LaserRangeFinder lrf;
     lrf.setAngleLimits(-2, 2);
     lrf.setNumBeams(1000);
     lrf.setRangeLimits(0, 10);
@@ -60,10 +60,10 @@ double renderLRF(cv::Mat& image, const Shape& shape, bool show) {
 
     int N = 0;
     for(double angle = 0; angle < 6.283; angle += 0.05) {
-        Pose3D pose(5, 0, -0.5, -1.57, 0, angle);
+        geo::Pose3D pose(5, 0, -0.5, -1.57, 0, angle);
 
         std::vector<double> ranges;
-        lrf.render(shape, Pose3D(0, 0, 0), pose, ranges);
+        lrf.render(shape, geo::Pose3D(0, 0, 0), pose, ranges);
 
         if (show) {
             image = cv::Mat(image.rows, image.cols, CV_32FC1, 0.0);
@@ -89,10 +89,9 @@ double renderLRF(cv::Mat& image, const Shape& shape, bool show) {
 
 
 int main(int argc, char **argv) {
+    geo::serialization::registerDeserializer<geo::Shape>();
 
-    serialization::registerDeserializer<Shape>();
-
-    ShapePtr mesh;
+    geo::ShapePtr mesh;
     if (argc > 1) {
         std::string filename = argv[1];
 
@@ -120,14 +119,14 @@ int main(int argc, char **argv) {
         mesh = geo::serialization::fromFile("/tmp/test_geolib.geo");
     }
 
-    Octree tree(10);
+    geo::Octree tree(10);
 
-    std::vector<Vector3> points;
+    std::vector<geo::Vector3> points;
 
     for(double x = -5; x < 5; x += 0.5) {
         for(double y = -5; y < 5; y += 0.5) {
             for(double z = -5; z < 5; z += 0.5) {
-                points.push_back(Vector3(x, y, z));
+                points.push_back(geo::Vector3(x, y, z));
             }
         }
     }
@@ -141,13 +140,13 @@ int main(int argc, char **argv) {
     std::cout << "Octree::add(Vector3):\t" << timer.getElapsedTimeInMilliSec() / points.size() << " ms" << std::endl;
 
 
-    Octree table(4);
+    geo::Octree table(4);
     double res = table.setResolution(0.1);
     std::cout << "True resolution = " << res << std::endl;
 
     for(double x = -0.8; x < 0.8; x += res) {
         for(double y = -0.35; y < 0.35; y += res) {
-            table.add(Vector3(x, y, 0.75));
+            table.add(geo::Vector3(x, y, 0.75));
         }
     }
 
@@ -155,14 +154,14 @@ int main(int argc, char **argv) {
         for(int my = -1; my <= 1; my += 2) {
             if (mx != 1 || my != 1) {
                 for(double z = 0.05; z < 0.75; z += res) {
-                    table.add(Vector3(0.7 * mx, 0.25 * my, z));
+                    table.add(geo::Vector3(0.7 * mx, 0.25 * my, z));
                 }
             }
         }
     }
 
     double distance;
-    Ray r(Vector3(0, 0, 5), Vector3(0, 0, -1));
+    geo::Ray r(geo::Vector3(0, 0, 5), geo::Vector3(0, 0, -1));
 
     int N = 10000;
     Timer timer2;
@@ -173,7 +172,7 @@ int main(int argc, char **argv) {
     timer2.stop();
     std::cout << "Octree::intersect(Ray):\t" << timer2.getElapsedTimeInMilliSec() / N << " ms" << std::endl;
 
-    Box b(Vector3(-0.5, -0.5, 0.5), Vector3(0.5, 0.5, 2));
+    geo::Box b(geo::Vector3(-0.5, -0.5, 0.5), geo::Vector3(0.5, 0.5, 2));
 
     N = 10000;
     Timer timer3;
@@ -187,10 +186,10 @@ int main(int argc, char **argv) {
     // * * * * * RAYTRACING * * * * * * *
 
     tree.clear();
-    std::vector<Ray> rays;
+    std::vector<geo::Ray> rays;
     for(double y = -2; y < 2; y += tree.getResolution()) {
         for(double x = -2; x < 2; x += tree.getResolution()) {
-            Ray r(Vector3(x, y, 5), Vector3(0, 0, -1));
+            geo::Ray r(geo::Vector3(x, y, 5), geo::Vector3(0, 0, -1));
             r.setLength(5 - x / 2);
             rays.push_back(r);
         }
@@ -198,7 +197,7 @@ int main(int argc, char **argv) {
 
     Timer timer4;
     timer4.start();
-    for(std::vector<Ray>::iterator it = rays.begin(); it != rays.end(); ++it) {
+    for(std::vector<geo::Ray>::iterator it = rays.begin(); it != rays.end(); ++it) {
         tree.raytrace(*it, 0, it->getLength());
     }
     timer4.stop();
@@ -207,7 +206,7 @@ int main(int argc, char **argv) {
     rays.clear();
     for(double y = -2; y < 2; y += tree.getResolution()*2) {
         for(double x = -2; x < 2; x += tree.getResolution()*2) {
-            Ray r(Vector3(x, y, 5), Vector3(0, 0, -1));
+            geo::Ray r(geo::Vector3(x, y, 5), geo::Vector3(0, 0, -1));
             r.setLength(5 - y / 2);
             rays.push_back(r);
         }
@@ -216,18 +215,18 @@ int main(int argc, char **argv) {
 
     Timer timer5;
     timer5.start();
-    for(std::vector<Ray>::iterator it = rays.begin(); it != rays.end(); ++it) {
+    for(std::vector<geo::Ray>::iterator it = rays.begin(); it != rays.end(); ++it) {
         tree.raytrace(*it, 0, it->getLength());
     }
     timer5.stop();
     std::cout << "Octree::raytrace(Ray):\t" << timer5.getElapsedTimeInMilliSec() / rays.size() << " ms" << std::endl;
 
 
-    Octree axis(2);
+    geo::Octree axis(2);
     double res2 = table.setResolution(0.1);
-    for(double v = 0; v < 1; v += res2) { axis.add(Vector3(v, 0, 0)); }
-    for(double v = 0; v < 1; v += res2 * 2) { axis.add(Vector3(0, v, 0)); }
-    for(double v = 0; v < 1; v += res2 * 4) { axis.add(Vector3(0, 0, v)); }
+    for(double v = 0; v < 1; v += res2) { axis.add(geo::Vector3(v, 0, 0)); }
+    for(double v = 0; v < 1; v += res2 * 2) { axis.add(geo::Vector3(0, v, 0)); }
+    for(double v = 0; v < 1; v += res2 * 4) { axis.add(geo::Vector3(0, 0, v)); }
 
 
     // * * * * * * * * * * * * * * * * * * * *
@@ -236,7 +235,7 @@ int main(int argc, char **argv) {
 
 //    DepthCamera cam;
     //cam.render(Box(Vector3(-2, -5, -5), Vector3(2, 5, 5)), Pose3D(-2.82, 0, 1.82, 0, 0.5, 0), image);
-    Box shape(Vector3(-0.3, -0.5, -0.5), Vector3(0.3, 0.5, 0.5));
+    geo::Box shape(geo::Vector3(-0.3, -0.5, -0.5), geo::Vector3(0.3, 0.5, 0.5));
 
 //    std::cout << "DepthCamera::raytrace(box):\t" << render(image, shape, false, false) << " ms" << std::endl;
 
@@ -261,9 +260,9 @@ int main(int argc, char **argv) {
         }
     }
 
-    HeightMap hmap = HeightMap::fromGrid(map, 0.1);
+    geo::HeightMap hmap = geo::HeightMap::fromGrid(map, 0.1);
 
-    Box plane(Vector3(-10, -10, -0.1), Vector3(10, 10, 0));
+    geo::Box plane(geo::Vector3(-10, -10, -0.1), geo::Vector3(10, 10, 0));
 
     std::cout << "DepthCamera::rasterize(box):\t" << renderDepthCamera(image, shape, false) << " ms" << std::endl;
     std::cout << "DepthCamera::rasterize(table):\t" << renderDepthCamera(image, table, false) << " ms" << std::endl;
@@ -298,20 +297,20 @@ int main(int argc, char **argv) {
     double angle = 0;
 
     while (true) {
-        Shape* shape1 = &hmap;
+        geo::Shape* shape1 = &hmap;
         if (mesh) {
             shape1 = mesh.get();
         }
-        Pose3D pose1(5, 1, -0.5, 0, 0, angle);
+        geo::Pose3D pose1(5, 1, -0.5, 0, 0, angle);
 
-        Shape& shape2 = shape;
-        Pose3D pose2(5, 2, -0.5, 0, 0.3, angle);
+        geo::Shape& shape2 = shape;
+        geo::Pose3D pose2(5, 2, -0.5, 0, 0.3, angle);
 
         // * * * * * * DEPTH CAMERA * * * * * *
 
         cv::Mat depth_image = cv::Mat(CANVAS_HEIGHT, CANVAS_WIDTH, CV_32FC1, 0.0);
-        cam.rasterize(*shape1, Pose3D(0, 0, 0, 1.57, 0, -1.57), pose1, depth_image);
-        cam.rasterize(shape2, Pose3D(0, 0, 0, 1.57, 0, -1.57), pose2, depth_image);
+        cam.rasterize(*shape1, geo::Pose3D(0, 0, 0, 1.57, 0, -1.57), pose1, depth_image);
+        cam.rasterize(shape2, geo::Pose3D(0, 0, 0, 1.57, 0, -1.57), pose2, depth_image);
 
         cv::Mat depth_image2 = depth_image / 8;
         cv::Mat destinationROI = display_image(cv::Rect(cv::Point(0, 0), cv::Size(CANVAS_WIDTH, CANVAS_HEIGHT)));
@@ -320,9 +319,9 @@ int main(int argc, char **argv) {
         // * * * * * * LRF * * * * * *
 
         std::vector<double> ranges;
-        lrf.render(*shape1, Pose3D(0, 0, 0), pose1, ranges);
-        lrf.render(shape2, Pose3D(0, 0, 0), pose2, ranges);
-        lrf.render(Box(Vector3(-0.5, -3.5, -0.5), Vector3(0.5, 3.5, 0.5)), Pose3D(0, 0, 0), geo::Pose3D(-2, 0, 0), ranges);
+        lrf.render(*shape1, geo::Pose3D(0, 0, 0), pose1, ranges);
+        lrf.render(shape2, geo::Pose3D(0, 0, 0), pose2, ranges);
+        lrf.render(geo::Box(geo::Vector3(-0.5, -3.5, -0.5), geo::Vector3(0.5, 3.5, 0.5)), geo::Pose3D(0, 0, 0), geo::Pose3D(-2, 0, 0), ranges);
 
         cv::Mat lrf_image = cv::Mat(CANVAS_HEIGHT, CANVAS_WIDTH, CV_32FC1, 0.0);
 
