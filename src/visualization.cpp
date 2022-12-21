@@ -7,11 +7,12 @@
 
 namespace geo {
 
-void visualization::showKinect(ShapeConstPtr shape, double canvas_width, double canvas_height) {
-    DepthCamera cam;
-    cam.setFocalLengths(554.2559327880068 * canvas_width / 640, 554.2559327880068 * canvas_height / 480);
-    cam.setOpticalCenter(320.5 * canvas_width / 640, 240.5 * canvas_height / 480);
-    cam.setOpticalTranslation(0, 0);
+void visualization::showKinect(ShapeConstPtr shape, double canvas_width, double canvas_height)
+{
+    DepthCamera cam(canvas_width, canvas_height,
+                    554.2559327880068 * canvas_width / 640, 554.2559327880068 * canvas_height / 480,
+                    320.5 * canvas_width / 640, 240.5 * canvas_height / 480,
+                    0, 0);
 
     double r = shape->getMaxRadius();
     double dist = r / 2;
