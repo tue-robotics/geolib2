@@ -31,7 +31,6 @@ DepthCamera::DepthCamera(uint width, uint height, double fx, double fy, double c
 {
     sensor_msgs::CameraInfo cam_info;
     cam_info.D.resize(5, 0);
-    cam_info.K[0] = fx;
     // Intrinsic camera matrix for the raw (distorted) images.
     //     [fx  0 cx]
     // K = [ 0 fy cy]
