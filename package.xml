@@ -5,7 +5,7 @@
 <package format="3">
   <name>geolib2</name>
   <version>0.1.0</version>
-  <description>The geolib2 package</description>
+  <description>Shape and pose library used in many TUe applications/libraries</description>
 
   <author email="S.v.d.Dries@tue.nl">Sjoerd van den Dries</author>
 
@@ -17,13 +17,18 @@
 
   <depend>assimp</depend>
   <depend>libconsole-bridge-dev</depend>
-  <depend>code_profiler</depend>
   <depend>cv_bridge</depend>
   <depend>image_geometry</depend>
   <depend>sensor_msgs</depend>
   <depend>shape_msgs</depend>
   <depend>tf</depend>
   <depend>tf2</depend>
+
+  <build_depend>code_profiler</build_depend>
+
+  <exec_depend>code_profiler</exec_depend>
+
+  <test_depend>catkin_lint_cmake</test_depend>
 
   <doc_depend>doxygen</doc_depend>
 

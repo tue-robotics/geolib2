@@ -14,7 +14,7 @@ find_package(catkin REQUIRED COMPONENTS
   tf2
 )
 
-SET(CMAKE_POLICY_DEFAULT_CMP0012 NEW)  # Fixed in Assimp 5.1.0, but is not released on Ubuntu Focal
+set(CMAKE_POLICY_DEFAULT_CMP0012 NEW)  # Fixed in Assimp 5.1.0, but is not released on Ubuntu Focal
 find_package(ASSIMP REQUIRED)
 find_package(console_bridge REQUIRED)
 find_package(OpenCV REQUIRED)
@@ -22,15 +22,13 @@ find_package(OpenCV REQUIRED)
 catkin_package(
   INCLUDE_DIRS include
   LIBRARIES geolib
-  CATKIN_DEPENDS cv_bridge shape_msgs tf
-  DEPENDS console_bridge OpenCV ASSIMP
+  CATKIN_DEPENDS cv_bridge sensor_msgs shape_msgs tf
+  DEPENDS ASSIMP OpenCV console_bridge
 )
 
 ###########
 ## Build ##
 ###########
-
-link_directories(${console_bridge_LIBRARY_DIRS})
 
 include_directories(
   include
@@ -48,33 +46,28 @@ if(EXISTS "/usr/include/assimp/Importer.hpp" OR EXISTS "/usr/local/include/assim
 endif()
 
 ## Declare a cpp library
-add_library(geolib  src/Box.cpp
-                    src/CompositeShape.cpp
-                    src/HeightMap.cpp
-                    src/HeightMapNode.cpp
-                    src/Mesh.cpp
-                    src/Octree.cpp
-                    src/OctreeNode.cpp
-                    src/Ray.cpp
-                    src/Shape.cpp
+add_library(geolib
+    ${HEADER_FILES}
 
-                    src/Triangle.cpp
-
-
-                    src/shapes.cpp
-
-                    src/sensors/DepthCamera.cpp
-                    src/sensors/LaserRangeFinder.cpp
-
-                    src/ros/msg_conversions.cpp
-
-                    src/Importer.cpp
-                    src/Exporter.cpp
-
-                    src/serialization.cpp
-                    src/visualization.cpp
-
-                    ${HEADER_FILES})
+    src/Box.cpp
+    src/CompositeShape.cpp
+    src/Exporter.cpp
+    src/HeightMap.cpp
+    src/HeightMapNode.cpp
+    src/Importer.cpp
+    src/Mesh.cpp
+    src/Octree.cpp
+    src/OctreeNode.cpp
+    src/Ray.cpp
+    src/Shape.cpp
+    src/Triangle.cpp
+    src/ros/msg_conversions.cpp
+    src/sensors/DepthCamera.cpp
+    src/sensors/LaserRangeFinder.cpp
+    src/serialization.cpp
+    src/shapes.cpp
+    src/visualization.cpp
+)
 
 target_link_libraries(geolib ${ASSIMP_LIBRARIES} ${catkin_LIBRARIES} ${console_bridge_LIBRARIES} ${OpenCV_LIBRARIES})
 
@@ -85,11 +78,11 @@ target_link_libraries(show geolib)
 #                                                TOOLS
 # ------------------------------------------------------------------------------------------------
 
-add_executable(height-map-to-shape tools/height_image_to_shape.cpp)
-target_link_libraries(height-map-to-shape geolib)
-
 add_executable(height-map-to-file tools/height_image_to_file.cpp)
 target_link_libraries(height-map-to-file geolib)
+
+add_executable(height-map-to-shape tools/height_image_to_shape.cpp)
+target_link_libraries(height-map-to-shape geolib)
 
 # ------------------------------------------------------------------------------------------------
 #                                                TESTS
@@ -102,6 +95,35 @@ add_executable(test_geolib_lrf test/test_geolib_lrf.cpp)
 target_link_libraries(test_geolib_lrf geolib)
 
 add_executable(test_matrix test/test_matrix.cpp)
+target_link_libraries(test_matrix geolib)
+
+# ------------------------------------------------------------------------------------------------
+#                                               INSTALL
+# ------------------------------------------------------------------------------------------------
+
+install(
+  DIRECTORY include/
+  DESTINATION ${CATKIN_GLOBAL_INCLUDE_DESTINATION}
+)
+
+install(
+  TARGETS
+    geolib
+  ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+  LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+  RUNTIME DESTINATION ${CATKIN_GLOBAL_BIN_DESTINATION}
+)
+
+install(
+  TARGETS
+    height-map-to-file
+    height-map-to-shape
+    show
+    test_geolib
+    test_geolib_lrf
+    test_matrix
+  DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+)
 
 
 # ------------------------------------------------------------------------------------------------
@@ -109,6 +131,9 @@ add_executable(test_matrix test/test_matrix.cpp)
 # ------------------------------------------------------------------------------------------------
 
 if(CATKIN_ENABLE_TESTING)
+  find_package(catkin_lint_cmake REQUIRED)
+  catkin_add_catkin_lint_test("-W2 --ignore HEADER_OUTSIDE_PACKAGE_INCLUDE_PATH")
+
   catkin_add_gtest(test_box test/test_box.cpp)
   target_link_libraries(test_box geolib)
 
