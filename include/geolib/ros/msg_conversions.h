@@ -104,7 +104,7 @@ void convert(const geo::Mesh& m, shape_msgs::Mesh& msg);
 /**
  * @brief Convert DepthCamera to CameraInfo message
  * @param cam_model Depthcamera
- * @param cam_model_msg CameraInfo message to fill
+ * @param msg CameraInfo message to fill
  */
 void convert(const geo::DepthCamera& cam_model, sensor_msgs::CameraInfo& msg);
 
