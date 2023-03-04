@@ -1,12 +1,77 @@
 #include <gtest/gtest.h>
 
 #include <geolib/sensors/LaserRangeFinder.h>
+#include <geolib/datatypes.h>
 
 #include <cmath>
 
 double ANGLE_MIN = -M_PI_2;
 double ANGLE_MAX = M_PI_2;
+double RANGE_MIN = 0.2;
+double RANGE_MAX = 60.0;
 uint N_BEAMS = 9;
+
+TEST(TestLRF, renderLineFront)
+{
+    geo::LaserRangeFinder lrf;
+    lrf.setAngleLimits(-M_PI, M_PI);
+    lrf.setNumBeams(9);
+    lrf.setRangeLimits(RANGE_MIN, RANGE_MAX);
+
+    geo::Vec2d p1(1.0, -1.0);
+    geo::Vec2d p2(1.0, 1.0);
+    std::vector<double> ranges(N_BEAMS, RANGE_MAX);
+
+    lrf.renderLine(p1, p2, ranges);
+    ASSERT_EQ(lrf.getAngleUpperIndex(0.0) -1, 4);
+    ASSERT_EQ(ranges[lrf.getAngleUpperIndex(0.0) -1], 1);
+}
+
+TEST(TestLRF, renderLineLeft)
+{
+    geo::LaserRangeFinder lrf;
+    lrf.setAngleLimits(-M_PI, M_PI);
+    lrf.setNumBeams(9);
+    lrf.setRangeLimits(RANGE_MIN, RANGE_MAX);
+
+    geo::Vec2d p1(1.0, 1.0);
+    geo::Vec2d p2(-1.0, 1.0);
+    std::vector<double> ranges(N_BEAMS, RANGE_MAX);
+
+    lrf.renderLine(p1, p2, ranges);
+    ASSERT_EQ(ranges[lrf.getAngleUpperIndex(M_PI_2) -1], 1.0);
+}
+
+TEST(TestLRF, renderLineRight)
+{
+    geo::LaserRangeFinder lrf;
+    lrf.setAngleLimits(-M_PI, M_PI);
+    lrf.setNumBeams(9);
+    lrf.setRangeLimits(RANGE_MIN, RANGE_MAX);
+
+    geo::Vec2d p1(-1.0, -1.0);
+    geo::Vec2d p2(1.0, -1.0);
+    std::vector<double> ranges(N_BEAMS, RANGE_MAX);
+
+    lrf.renderLine(p1, p2, ranges);
+    ASSERT_EQ(ranges[lrf.getAngleUpperIndex(-M_PI_2) -1], 1.0);
+}
+
+TEST(TestLRF, renderLineBack)
+{
+    geo::LaserRangeFinder lrf;
+    lrf.setAngleLimits(-M_PI, M_PI);
+    lrf.setNumBeams(9);
+    lrf.setRangeLimits(RANGE_MIN, RANGE_MAX);
+
+    geo::Vec2d p1(-1.0, 1.0);
+    geo::Vec2d p2(-1.0, -1.0);
+    std::vector<double> ranges(N_BEAMS, RANGE_MAX);
+
+    lrf.renderLine(p1, p2, ranges);
+    ASSERT_EQ(ranges[lrf.getAngleUpperIndex(-M_PI) -1], 1.0);
+    ASSERT_EQ(ranges[lrf.getAngleUpperIndex(M_PI) - 1], 1.0);
+}
 
 TEST(TestLRF, getAngleUpperIndexAngle)
 {
@@ -30,6 +95,22 @@ TEST(TestLRF, getAngleUpperIndexXY)
     ASSERT_EQ(lrf.getAngleUpperIndex(cos(0.5*ANGLE_MIN + 0.5*ANGLE_MAX), sin(0.5*ANGLE_MIN + 0.5*ANGLE_MAX)), std::floor(0.5*N_BEAMS-0.5)+1);
     ASSERT_EQ(lrf.getAngleUpperIndex(cos(ANGLE_MAX), sin(ANGLE_MAX)), N_BEAMS);
     ASSERT_EQ(lrf.getAngleUpperIndex(cos(1.5*ANGLE_MAX), sin(1.5*ANGLE_MAX)), N_BEAMS);
+}
+
+TEST(TestLRF, getAngleUpperIndexUnitCircle)
+{
+    geo::LaserRangeFinder lrf;
+    lrf.setAngleLimits(-M_PI, M_PI);
+    lrf.setNumBeams(9);
+    ASSERT_EQ(lrf.getAngleUpperIndex(-1.0, 0.0)-1, 8);
+    ASSERT_EQ(lrf.getAngleUpperIndex(-1.0, -1.0)-1, 1);
+    ASSERT_EQ(lrf.getAngleUpperIndex(0.0, -1.0)-1, 2);
+    ASSERT_EQ(lrf.getAngleUpperIndex(1.0, -1.0)-1, 3);
+    ASSERT_EQ(lrf.getAngleUpperIndex(1.0, 0.0)-1, 4);
+    ASSERT_EQ(lrf.getAngleUpperIndex(1.0, 1.0)-1, 5);
+    ASSERT_EQ(lrf.getAngleUpperIndex(0.0, 1.0)-1, 6);
+    ASSERT_EQ(lrf.getAngleUpperIndex(-1.0, 1.0)-1, 7);
+    ASSERT_EQ(lrf.getAngleUpperIndex(0.0, 0.0), 5);
 }
 
 int main(int argc, char **argv)
