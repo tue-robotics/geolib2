@@ -73,6 +73,26 @@ TEST(TestLRF, renderLineBack)
     ASSERT_EQ(ranges[lrf.getAngleUpperIndex(M_PI) - 1], 1.0);
 }
 
+TEST(TestLRF, renderLineWeird)
+{
+    geo::LaserRangeFinder lrf;
+    lrf.setAngleLimits(-1, 1); // angle limits +- 120 degrees
+    lrf.setNumBeams(30);
+    lrf.setRangeLimits(RANGE_MIN, RANGE_MAX);
+
+    geo::Vec2d p1(1.05, 1.52); // point in view of the robot. at an angle < PI-amin
+    geo::Vec2d p2(-2.05, -0.73); // in the blind spot of the robot but with a positive angle
+    // the line connecting these two points passes behind the robot
+    std::vector<double> ranges(N_BEAMS, RANGE_MAX);
+
+    lrf.renderLine(p1, p2, ranges);
+    ASSERT_EQ(ranges[0], RANGE_MAX);
+    ASSERT_LT(ranges[N_BEAMS-1], RANGE_MAX);
+    ASSERT_EQ(ranges[lrf.getAngleUpperIndex(p1.x, p1.y)-1], RANGE_MAX);
+    ASSERT_LT(ranges[lrf.getAngleUpperIndex(p1.x, p1.y)], RANGE_MAX);
+
+}
+
 TEST(TestLRF, getAngleUpperIndexAngle)
 {
     geo::LaserRangeFinder lrf;
