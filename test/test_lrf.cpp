@@ -76,21 +76,29 @@ TEST(TestLRF, renderLineBack)
 TEST(TestLRF, renderLineWeird)
 {
     geo::LaserRangeFinder lrf;
-    lrf.setAngleLimits(-1, 1); // angle limits +- 120 degrees
     lrf.setNumBeams(30);
     lrf.setRangeLimits(RANGE_MIN, RANGE_MAX);
 
-    geo::Vec2d p1(1.05, 1.52); // point in view of the robot. at an angle < PI-amin
-    geo::Vec2d p2(-2.05, -0.73); // in the blind spot of the robot but with a positive angle
-    // the line connecting these two points passes behind the robot
+    double a_max = M_PI_2;
+    double a1 = a_max - 0.1; // point in view of the robot -> -a_max < a1 < a_max
+    double a2 = -a_max - 1.0; // in the blind spot of the robot but with a positive angle -> a2 > 0
+    // the line connecting these two points should pass behind the robot -> a1 + a2 > M_PI
+
+    lrf.setAngleLimits(-a_max, a_max);
+
+    geo::Vec2d p1(cos(a1), sin(a1)); 
+    geo::Vec2d p2(cos(a2), sin(a2)); 
     std::vector<double> ranges(N_BEAMS, RANGE_MAX);
 
     lrf.renderLine(p1, p2, ranges);
-    ASSERT_EQ(ranges[0], RANGE_MAX);
-    ASSERT_LT(ranges[N_BEAMS-1], RANGE_MAX);
-    ASSERT_EQ(ranges[lrf.getAngleUpperIndex(p1.x, p1.y)-1], RANGE_MAX);
-    ASSERT_LT(ranges[lrf.getAngleUpperIndex(p1.x, p1.y)], RANGE_MAX);
 
+    // the rendered line passes behind the robot. But not through the blindspot. Therefore the first index should remain untouched
+    ASSERT_EQ(ranges[0], RANGE_MAX);
+    // the rendered line passes behind the robot. So the last index should be rendered. i.e. less than 1.0
+    ASSERT_LT(ranges[N_BEAMS-1], 1.0);
+    // At a2 we should see the switch between rendered and not rendered. indices above a2 should be rendered.
+    ASSERT_EQ(ranges[lrf.getAngleUpperIndex(a1)-1], RANGE_MAX);
+    ASSERT_LT(ranges[lrf.getAngleUpperIndex(a1)], 1.0);
 }
 
 TEST(TestLRF, getAngleUpperIndexAngle)
