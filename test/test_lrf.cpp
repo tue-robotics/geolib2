@@ -76,13 +76,13 @@ TEST(TestLRF, renderLineBack)
 TEST(TestLRF, renderLineWeird)
 {
     geo::LaserRangeFinder lrf;
-    lrf.setAngleLimits(-1, 1); // angle limits +- 120 degrees
+    lrf.setAngleLimits(-M_PI_2, M_PI_2); // angle limits +- 90 degrees
     lrf.setNumBeams(30);
     lrf.setRangeLimits(RANGE_MIN, RANGE_MAX);
 
-    geo::Vec2d p1(1.05, 1.52); // point in view of the robot. at an angle < PI-amin
-    geo::Vec2d p2(-2.05, -0.73); // in the blind spot of the robot but with a positive angle
-    // the line connecting these two points passes behind the robot
+    geo::Vec2d p1(1.0, 1.5); // point in view of the robot
+    geo::Vec2d p2(-2.0, -0.75); // in the blind spot of the robot at a negative angle ~ -2.78 RAD
+    // the line connecting these two points passes behind the robot. But the difference in angle in view of the robot is less than 180%
     std::vector<double> ranges(N_BEAMS, RANGE_MAX);
 
     lrf.renderLine(p1, p2, ranges);
