@@ -321,13 +321,21 @@ double LaserRangeFinder::getAngleIncrement() const {
 }
 
 uint LaserRangeFinder::getAngleUpperIndex(double angle) const {
-    int i = (angle - a_min_) / angle_incr_ + 1;
-    return std::min<uint>(num_beams_, std::max<int>(0, i));
+    return std::min<uint>(num_beams_, std::max<int>(0, getAngleUpperIndexRaw(angle)));
 }
 
 uint LaserRangeFinder::getAngleUpperIndex(double x, double y) const {
     // Calculate the ray index corresponding to the cartesian point (x, y)
     return getAngleUpperIndex(atan2(y, x));
+}
+
+int LaserRangeFinder::getAngleUpperIndexRaw(double angle) const {
+    return (angle - a_min_) / angle_incr_ + 1;
+}
+
+int LaserRangeFinder::getAngleUpperIndexRaw(double x, double y) const {
+    // Calculate the ray index corresponding to the cartesian point (x, y)
+    return getAngleUpperIndexRaw(atan2(y, x));
 }
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
