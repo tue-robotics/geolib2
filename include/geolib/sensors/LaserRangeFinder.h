@@ -3,6 +3,7 @@
 
 #include "geolib/Ray.h"
 
+#include <climits>
 #include <vector>
 
 namespace geo {
@@ -36,7 +37,7 @@ public:
 
     public:
 
-        RenderResult(std::vector<double>& ranges_) : ranges(ranges_) {}
+        RenderResult(std::vector<double>& ranges_) : min_i(ranges_.size()-1), max_i(0), ranges(ranges_) {}
 
         virtual void renderLine(const Vec2& p1, const Vec2& p2);
 

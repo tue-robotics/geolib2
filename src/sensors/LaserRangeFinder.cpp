@@ -82,8 +82,8 @@ void LaserRangeFinder::RenderResult::renderLine(const Vec2& p1, const Vec2& p2)
         i_min2 = 0;
         i_max2 = 0;
 
-        min_i = std::min<uint>(min_i, i_min);
-        max_i = std::max<uint>(max_i, i_max);
+        min_i = std::min<uint>(min_i, i_min1);
+        max_i = std::max<uint>(max_i, i_max1);
     }
     else
     {
