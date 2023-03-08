@@ -129,6 +129,21 @@ protected:
 
     // Number of beams in a half circle
     uint i_half_circle_;
+    
+    /**
+     * @brief Get the index of the first beam with a higher angle than this beam
+     * @param angle radial angle of the beam
+     * @return Index of the beam
+     */
+    int getAngleUpperIndexRaw(double angle) const;
+
+    /**
+     * @overload int getAngleUpperIndexRaw(double x, double y) const
+     * @param x x-coordinate
+     * @param y y-coordinate
+     * @return Index of the beam
+     */
+    int getAngleUpperIndexRaw(double x, double y) const;
 
     void calculateRays();
 
