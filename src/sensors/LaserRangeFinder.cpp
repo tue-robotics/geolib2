@@ -76,7 +76,7 @@ void LaserRangeFinder::RenderResult::renderLine(const Vec2& p1, const Vec2& p2)
 
         // The line is fully in view, so only need to render one part
         i_min1 = static_cast<uint>(i_min);
-        i_max1 = std::min<uint>(lrf_->num_beams_, static_cast<uint>(i_max));
+        i_max1 = std::min<uint>(lrf_->num_beams_, static_cast<uint>(std::max<int>(0, i_max)));
 
         // No second part
         i_min2 = 0;
@@ -96,7 +96,7 @@ void LaserRangeFinder::RenderResult::renderLine(const Vec2& p1, const Vec2& p2)
         i_max1 = lrf_->num_beams_;
 
         i_min2 = 0;
-        i_max2 = std::min<uint>(lrf_->num_beams_, static_cast<uint>(i_min));
+        i_max2 = std::min<uint>(lrf_->num_beams_, static_cast<uint>(std::max<int>(0, i_min)));
 
         min_i = 0;
         max_i = lrf_->num_beams_;
