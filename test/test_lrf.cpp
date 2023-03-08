@@ -82,7 +82,8 @@ TEST(TestLRF, renderLineWeird)
     double a_max = M_PI_2;
     double a1 = a_max - 0.1; // point in view of the robot -> -a_max < a1 < a_max
     double a2 = -a_max - 1.0; // in the blind spot of the robot but with a positive angle -> a2 > 0
-    // the line connecting these two points should pass behind the robot -> a1 + a2 > M_PI
+    // the line connecting these two points should pass behind the robot -> a1 - a2 > M_PI
+    // However the difference between the a1 and the lower angle limit is less than half a circle -> a1 + a_max < M_PI
 
     lrf.setAngleLimits(-a_max, a_max);
 
@@ -92,13 +93,17 @@ TEST(TestLRF, renderLineWeird)
 
     lrf.renderLine(p1, p2, ranges);
 
+    uint upper_index_a1 = lrf.getAngleUpperIndex(a1);
     // the rendered line passes behind the robot. But not through the blindspot. Therefore the first index should remain untouched
-    ASSERT_EQ(ranges[0], RANGE_MAX);
-    // the rendered line passes behind the robot. So the last index should be rendered. i.e. less than 1.0
-    ASSERT_LT(ranges[N_BEAMS-1], 1.0);
-    // At a2 we should see the switch between rendered and not rendered. indices above a2 should be rendered.
-    ASSERT_EQ(ranges[lrf.getAngleUpperIndex(a1)-1], RANGE_MAX);
-    ASSERT_LT(ranges[lrf.getAngleUpperIndex(a1)], 1.0);
+    for (uint i = 0; i< upper_index_a1-1; i++)
+    {
+        ASSERT_EQ(ranges[i], RANGE_MAX) << "range at index [" << i << "] should not be rendered. Instead is rendered to " << ranges[i];
+    }
+    // At a1 we should see the switch between rendered and not rendered. indices above a1 should be rendered. Because points lie on a unit circle they should be <= 1
+    for (uint i = upper_index_a1; i< N_BEAMS; i++)
+    {
+        ASSERT_LE(ranges[i], 1.0) << "range at index [" << i << "] should be rendered to <=1. Instead its value is " << ranges[i];
+    }
 }
 
 TEST(TestLRF, getAngleUpperIndexAngle)
