@@ -132,7 +132,7 @@ protected:
     uint i_half_circle_;
     
     /**
-     * @brief Get the index of the first beam with a higher angle than this beam
+     * @brief Get the index of the first beam with a higher angle than \p angle. Results may lie outside of the sensor range.
      * @param angle radial angle of the beam
      * @return Index of the beam
      */
