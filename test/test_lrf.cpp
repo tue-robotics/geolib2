@@ -102,7 +102,6 @@ TEST_F(TestLRF, renderLineBack)
 
 TEST_F(TestLRF3, renderLineWeird)
 {
-
     double a1 = angle_max - 0.1; // Point in view of the robot -> angle_min < a1 < angle_max
     double a2 = angle_min - 1.0; // Point in the blind spot of the robot but with a positive angle -> a2 > 0
 
@@ -123,6 +122,25 @@ TEST_F(TestLRF3, renderLineWeird)
     for (uint i = upper_index_a1; i<n_beams; ++i)
     {
         ASSERT_LE(ranges[i], 1.) << "Range at index [" << i << "] should be rendered to <=1. Instead its value is " << ranges[i];
+    }
+}
+
+TEST_F(TestLRF3, renderLineRight2)
+{
+    geo::Vec2d p1(-1.0, -1.0);
+    geo::Vec2d p2(1.0, -1.0);
+
+    lrf.renderLine(p1, p2, ranges);
+
+    uint upper_index_p2 = lrf.getAngleUpperIndex(p2.x, p2.y);
+    // The rendered line passes the robot on the right and ends in the blindspot.
+    for (uint i = 0; i<upper_index_p2-1; ++i)
+    {
+        ASSERT_LE(ranges[i], sqrt(2)) << "Range at index [" << i << "] should be rendered to <=" << sqrt(2) << ". Instead its value is " << ranges[i];
+    }
+    for (uint i = upper_index_p2; i<n_beams; ++i)
+    {
+        ASSERT_EQ(ranges[i], range_max) << "Range at index [" << i << "] should not be rendered. Instead is rendered to " << ranges[i];
     }
 }
 
