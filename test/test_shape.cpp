@@ -27,7 +27,6 @@ TEST_F(ShapeTest, Contains)
     ASSERT_TRUE(shape.contains(max));
 
     ASSERT_TRUE(shape.contains(side_center));
-    std::cout << "Side_center_triangle" << std::endl << std::endl << std::endl << std::endl << std::endl;
     ASSERT_TRUE(shape.contains(side_center_triangle));
 
     ASSERT_FALSE(shape.contains(side_center_distance));

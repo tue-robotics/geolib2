@@ -3,6 +3,7 @@
 
 #include "geolib/Ray.h"
 
+#include <climits>
 #include <vector>
 
 namespace geo {
@@ -36,7 +37,7 @@ public:
 
     public:
 
-        RenderResult(std::vector<double>& ranges_) : ranges(ranges_) {}
+        RenderResult(std::vector<double>& ranges_) : min_i(ranges_.size()-1), max_i(0), ranges(ranges_) {}
 
         virtual void renderLine(const Vec2& p1, const Vec2& p2);
 
@@ -129,6 +130,21 @@ protected:
 
     // Number of beams in a half circle
     uint i_half_circle_;
+    
+    /**
+     * @brief Get the index of the first beam with a higher angle than \p angle. Results may lie outside of the sensor range.
+     * @param angle radial angle of the beam
+     * @return Index of the beam
+     */
+    int getAngleUpperIndexRaw(double angle) const;
+
+    /**
+     * @overload int getAngleUpperIndexRaw(double x, double y) const
+     * @param x x-coordinate
+     * @param y y-coordinate
+     * @return Index of the beam
+     */
+    int getAngleUpperIndexRaw(double x, double y) const;
 
     void calculateRays();
 

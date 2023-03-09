@@ -50,12 +50,12 @@ void LaserRangeFinder::RenderResult::renderLine(const Vec2& p1, const Vec2& p2)
     }
 
     // Get the angle / beam indices based on the slope
-    uint i_p1 = lrf_->getAngleUpperIndex(p1.x, p1.y);
-    uint i_p2 = lrf_->getAngleUpperIndex(p2.x, p2.y);
+    int i_p1 = lrf_->getAngleUpperIndexRaw(p1.x, p1.y);
+    int i_p2 = lrf_->getAngleUpperIndexRaw(p2.x, p2.y);
 
     // Get the minimum and maximum
-    uint i_min = std::min<uint>(i_p1, i_p2);
-    uint i_max = std::max<uint>(i_p1, i_p2);
+    int i_min = std::min<int>(i_p1, i_p2);
+    int i_max = std::max<int>(i_p1, i_p2);
 
     // We need to differentiate between two cases:
     // - from min to max is less than half a circle
@@ -64,26 +64,26 @@ void LaserRangeFinder::RenderResult::renderLine(const Vec2& p1, const Vec2& p2)
     // In the latter case, we may need to render two parts
 
     uint i_min1, i_max1, i_min2, i_max2;
-    if (i_max - i_min < lrf_->i_half_circle_)
+    if (i_max - i_min < static_cast<int>(lrf_->i_half_circle_))
     {
         // Back-face culling: if the normal is pointing outwards, ommit this line
         if (i_p1 > i_p2)
             return;
 
         // Both points in the blind spot (i's are both larger number of beams), so don't render a line
-        if (i_min >= lrf_->num_beams_)
+        if (i_min >= static_cast<int>(lrf_->num_beams_))
             return;
 
         // The line is fully in view, so only need to render one part
-        i_min1 = i_min;
-        i_max1 = std::min(lrf_->num_beams_, i_max);
+        i_min1 = static_cast<uint>(std::max<int>(0, i_min));
+        i_max1 = std::min<uint>(lrf_->num_beams_, static_cast<uint>(std::max<int>(0, i_max)));
 
         // No second part
         i_min2 = 0;
         i_max2 = 0;
 
-        min_i = std::min(min_i, i_min);
-        max_i = std::max(max_i, i_max);
+        min_i = std::min<uint>(min_i, i_min1);
+        max_i = std::max<uint>(max_i, i_max1);
     }
     else
     {
@@ -92,11 +92,11 @@ void LaserRangeFinder::RenderResult::renderLine(const Vec2& p1, const Vec2& p2)
             return;
 
         // We may need to draw two parts, because the line can be 'occluded' by the blind spot of the sensor
-        i_min1 = i_max;
+        i_min1 = static_cast<uint>(std::max<int>(0, i_max));
         i_max1 = lrf_->num_beams_;
 
         i_min2 = 0;
-        i_max2 = std::min(lrf_->num_beams_, i_min);
+        i_max2 = std::min<uint>(lrf_->num_beams_, static_cast<uint>(std::max<int>(0, i_min)));
 
         min_i = 0;
         max_i = lrf_->num_beams_;
@@ -321,13 +321,21 @@ double LaserRangeFinder::getAngleIncrement() const {
 }
 
 uint LaserRangeFinder::getAngleUpperIndex(double angle) const {
-    int i = (angle - a_min_) / angle_incr_ + 1;
-    return std::min<uint>(num_beams_, std::max<int>(0, i));
+    return std::min<uint>(num_beams_, std::max<int>(0, getAngleUpperIndexRaw(angle)));
 }
 
 uint LaserRangeFinder::getAngleUpperIndex(double x, double y) const {
     // Calculate the ray index corresponding to the cartesian point (x, y)
     return getAngleUpperIndex(atan2(y, x));
+}
+
+int LaserRangeFinder::getAngleUpperIndexRaw(double angle) const {
+    return (angle - a_min_) / angle_incr_ + 1;
+}
+
+int LaserRangeFinder::getAngleUpperIndexRaw(double x, double y) const {
+    // Calculate the ray index corresponding to the cartesian point (x, y)
+    return getAngleUpperIndexRaw(atan2(y, x));
 }
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
