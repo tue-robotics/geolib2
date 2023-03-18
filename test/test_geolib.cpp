@@ -2,7 +2,7 @@
 #include <geolib/Box.h>
 #include <geolib/HeightMap.h>
 
-#include <geolib/Importer.h>
+#include <geolib/io/import.h>
 #include <geolib/serialization.h>
 
 #include <geolib/sensors/DepthCamera.h>
@@ -105,7 +105,7 @@ int main(int argc, char **argv) {
 
         if (!mesh) {
             // If fails, try using assimp
-            mesh = geo::Importer::readMeshFile(filename, scale);
+            mesh = geo::io::readMeshFile(filename, scale);
 
             if (!mesh) {
                 std::cout << "Could not load " << filename << std::endl;
