@@ -1,4 +1,4 @@
-#include "geolib/Importer.h"
+#include "geolib/io/import.h"
 
 #ifdef ASSIMP_VERSION_3
     #include <assimp/Importer.hpp>
@@ -10,6 +10,8 @@
 
 #include <console_bridge/console.h>
 
+#include <geolib/Shape.h>
+
 #include <map>
 #include <set>
 #include <sstream>
@@ -17,17 +19,7 @@
 
 namespace geo {
 
-// ----------------------------------------------------------------------------------------------------
-
-Importer::Importer()
-{
-}
-
-// ----------------------------------------------------------------------------------------------------
-
-Importer::~Importer()
-{
-}
+namespace io {
 
 // ----------------------------------------------------------------------------------------------------
 
@@ -117,7 +109,7 @@ void constructMesh(const aiScene* scene, aiNode* node, const geo::Pose3D& parent
 
 // ----------------------------------------------------------------------------------------------------
 
-ShapePtr Importer::readMeshFile(const std::string& filename, geo::Vec3 scale)
+ShapePtr readMeshFile(const std::string& filename, const geo::Vec3& scale)
 {
     Assimp::Importer I;
     const aiScene* scene = I.ReadFile(filename, 0);
@@ -159,6 +151,8 @@ ShapePtr Importer::readMeshFile(const std::string& filename, geo::Vec3 scale)
     shape->setMesh(mesh);
 
     return shape;
+}
+
 }
 
 }

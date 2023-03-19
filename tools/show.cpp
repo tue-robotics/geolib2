@@ -1,6 +1,7 @@
-#include <geolib/Importer.h>
+#include <geolib/io/import.h>
 #include <geolib/serialization.h>
 #include <geolib/sensors/DepthCamera.h>
+#include <geolib/Shape.h>
 
 #include <opencv2/highgui/highgui.hpp>
 
@@ -23,7 +24,7 @@ int main(int argc, char **argv) {
 
     if (!shape) {
         // If fails, try using assimp
-        shape = geo::Importer::readMeshFile(filename);
+        shape = geo::io::readMeshFile(filename);
 
         if (!shape) {
             std::cout << "Could not load " << argv[1] << std::endl;

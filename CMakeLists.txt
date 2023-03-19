@@ -51,16 +51,16 @@ add_library(geolib
 
     src/Box.cpp
     src/CompositeShape.cpp
-    src/Exporter.cpp
     src/HeightMap.cpp
     src/HeightMapNode.cpp
-    src/Importer.cpp
     src/Mesh.cpp
     src/Octree.cpp
     src/OctreeNode.cpp
     src/Ray.cpp
     src/Shape.cpp
     src/Triangle.cpp
+    src/io/export.cpp
+    src/io/import.cpp
     src/ros/msg_conversions.cpp
     src/sensors/DepthCamera.cpp
     src/sensors/LaserRangeFinder.cpp
@@ -71,9 +71,6 @@ add_library(geolib
 
 target_link_libraries(geolib ${ASSIMP_LIBRARIES} ${catkin_LIBRARIES} ${console_bridge_LIBRARIES} ${OpenCV_LIBRARIES})
 
-add_executable(show src/show.cpp)
-target_link_libraries(show geolib)
-
 # ------------------------------------------------------------------------------------------------
 #                                                TOOLS
 # ------------------------------------------------------------------------------------------------
@@ -83,6 +80,9 @@ target_link_libraries(height-map-to-file geolib)
 
 add_executable(height-map-to-shape tools/height_image_to_shape.cpp)
 target_link_libraries(height-map-to-shape geolib)
+
+add_executable(show tools/show.cpp)
+target_link_libraries(show geolib)
 
 # ------------------------------------------------------------------------------------------------
 #                                                TESTS

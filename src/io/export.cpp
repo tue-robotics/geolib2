@@ -1,8 +1,4 @@
-#include "geolib/Exporter.h"
-
-#include <algorithm>
-#include <sstream>
-#include <string>
+#include "geolib/io/export.h"
 
 #ifdef ASSIMP_VERSION_3
     #include <assimp/Exporter.hpp>
@@ -16,24 +12,20 @@
 
 #include <console_bridge/console.h>
 
+#include <geolib/Shape.h>
+
+#include <algorithm>
+#include <sstream>
+#include <string>
+
 
 namespace geo {
 
-// ----------------------------------------------------------------------------------------------------
-
-Exporter::Exporter()
-{
-}
+namespace io {
 
 // ----------------------------------------------------------------------------------------------------
 
-Exporter::~Exporter()
-{
-}
-
-// ----------------------------------------------------------------------------------------------------
-
-bool Exporter::writeMeshFile(const std::string& filename, const Shape& shape, std::string format)
+bool writeMeshFile(const std::string& filename, const Shape& shape, std::string format)
 {
     aiScene aScene;
     aScene.mMeshes = new aiMesh*[1];
@@ -53,16 +45,16 @@ bool Exporter::writeMeshFile(const std::string& filename, const Shape& shape, st
     aNode->mNumMeshes = 1;
 
     // Get mesh and its element from shape
-    Mesh mesh = shape.getMesh();
-    const std::vector<Vector3>& points = mesh.getPoints();
-    const std::vector<TriangleI>& triangleIs = mesh.getTriangleIs();
+    geo::Mesh mesh = shape.getMesh();
+    const std::vector<geo::Vector3>& points = mesh.getPoints();
+    const std::vector<geo::TriangleI>& triangleIs = mesh.getTriangleIs();
 
     // Transfer points to Assimp mesh
     aMesh->mVertices = new aiVector3D[ points.size() ];
     aMesh->mNumVertices = points.size();
     for (std::vector<Vector3>::const_iterator it = points.cbegin(); it != points.cend(); ++it)
     {
-        const Vector3& v = *it;
+        const geo::Vector3& v = *it;
         aMesh->mVertices[it - points.begin()] = aiVector3D( v.x, v.y, v.z );
     }
 
@@ -79,7 +71,6 @@ bool Exporter::writeMeshFile(const std::string& filename, const Shape& shape, st
                 aFace.mIndices[1] = it->i2_;
                 aFace.mIndices[2] = it->i3_;
     }
-
 
     //Check format
     std::transform(format.begin(), format.end(), format.begin(), ::tolower);
@@ -116,6 +107,8 @@ bool Exporter::writeMeshFile(const std::string& filename, const Shape& shape, st
         return false;
     }
     return true;
+}
+
 }
 
 }

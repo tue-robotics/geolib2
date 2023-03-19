@@ -1,5 +1,5 @@
 #include <geolib/HeightMap.h>
-#include <geolib/Exporter.h>
+#include <geolib/io/export.h>
 
 #include <opencv2/highgui/highgui.hpp>
 
@@ -59,8 +59,7 @@ int main(int argc, char **argv) {
     geo::Shape shape;
     shape.setMesh(mesh_transformed);
 
-    geo::Exporter exp;
-    exp.writeMeshFile(output_file, shape);
+    geo::io::writeMeshFile(output_file, shape);
 
     std::cout << mesh_transformed.getTriangleIs().size() << " triangles and " << mesh_transformed.getPoints().size() <<
                  " points saved to '" << output_file << "'." << std::endl;
