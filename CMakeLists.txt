@@ -32,10 +32,11 @@ catkin_package(
 
 include_directories(
   include
+  SYSTEM
   ${ASSIMP_INCLUDE_DIRS}
-  ${catkin_INCLUDE_DIRS}
   ${console_bridge_INCLUDE_DIRS}
   ${OpenCV_INCLUDE_DIRS}
+  ${catkin_INCLUDE_DIRS}
 )
 
 # to show header files in Qt Creator
