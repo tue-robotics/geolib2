@@ -2,8 +2,7 @@
 #include "geolib/Box.h"
 
 #include <geolib/serialization.h>
-
-#include <console_bridge/console.h>
+#include <rcutils/logging_macros.h>
 
 #include <cmath>
 #include <stdexcept>
@@ -264,20 +263,19 @@ bool Shape::contains(const Vector3& p) const {
         bool counterclockwise = s1 <= 1e-16 && s2 <= 1e-16 && s3 <= 1e-16; // <=0
         ushort counterclockwise_nz = (s1 < -1e-16) + (s2 < -1e-16) + (s3 < -1e-16); // <0
 
-
         if (!clockwise && !counterclockwise) {
             // No intersection
-            CONSOLE_BRIDGE_logDebug("No intersection");
+            RCUTILS_LOG_DEBUG("No intersection");
             continue;
         }
         else if (clockwise && counterclockwise) { // s1=0; s2=0; s3=0
             // Coplanar
-            CONSOLE_BRIDGE_logDebug("Coplanar");
+            RCUTILS_LOG_DEBUG("Coplanar");
             if (compute_2D_intersection(Triangle(v1, v2, v3), line)) {
-                CONSOLE_BRIDGE_logDebug("Coplanar in the triangle");
+                RCUTILS_LOG_DEBUG("Coplanar in the triangle");
                 return true;
             }
-            CONSOLE_BRIDGE_logDebug("Coplanar outside the triangle");
+            RCUTILS_LOG_DEBUG("Coplanar outside the triangle");
             continue;
         }
         else if ((clockwise && clockwise_nz > 0) || (counterclockwise && counterclockwise_nz > 0)) {
@@ -295,7 +293,7 @@ bool Shape::contains(const Vector3& p) const {
             if (s4*s5>=-1e-16) { // s4*s5 >= 0
                 if (clockwise_nz == 2 || counterclockwise_nz == 2) {
                     // Edge intersection
-                    CONSOLE_BRIDGE_logDebug("Edge intersection");
+                    RCUTILS_LOG_DEBUG("Edge intersection");
                     uint i1, i2;
                     if (std::abs(s1) < 1e-16) {
                         i1 = it->i1_;
@@ -313,7 +311,7 @@ bool Shape::contains(const Vector3& p) const {
                     if (i_max < i_min)
                         std::swap(i_min, i_max);
                     if (std::abs((p-t_points[i_min]).length() + (t_points[i_max]-p).length() - (t_points[i_max]-t_points[i_min]).length()) <= 1e-12) { // For numerical issues
-                        CONSOLE_BRIDGE_logDebug("Point is on an edge of the mesh");
+                        RCUTILS_LOG_DEBUG("Point is on an edge of the mesh");
                         return true;
                     }
 
@@ -338,7 +336,7 @@ bool Shape::contains(const Vector3& p) const {
                 }
                 else if (clockwise_nz == 1 || counterclockwise_nz == 1) {
                     // vertex intersection
-                    CONSOLE_BRIDGE_logDebug("Vertex intersection");
+                    RCUTILS_LOG_DEBUG("Vertex intersection");
                     // vertex intersection
                     uint i;
                     if (std::abs(s2) > 1e-16)
@@ -349,7 +347,7 @@ bool Shape::contains(const Vector3& p) const {
                         i = it->i3_;
 
                     if (t_points[i] == p) {
-                        CONSOLE_BRIDGE_logDebug("Point is a vertex of the mesh");
+                        RCUTILS_LOG_DEBUG("Point is a vertex of the mesh");
                         return true;
                     }
 
@@ -370,18 +368,18 @@ bool Shape::contains(const Vector3& p) const {
                 }
                 else {
                     // Proper intersection
-                    CONSOLE_BRIDGE_logDebug("Proper intersection");
+                    RCUTILS_LOG_DEBUG("Proper intersection");
                     // https://www.geeksforgeeks.org/check-whether-a-given-point-lies-inside-a-triangle-or-not/
                     double s = geo::triangleArea(v1, v2, v3);
                     if (s < 1e-12)
-                        CONSOLE_BRIDGE_logError("Triangle has a zero area");
+                        RCUTILS_LOG_ERROR("Triangle has a zero area");
 
                     double s1 = geo::triangleArea(v2, p, v3);
                     double s2 = geo::triangleArea(p, v1, v3);
                     double s3 = geo::triangleArea(p, v1, v2);
 
                     if (std::abs(s1 + s2 + s3 - s) < 1e-12) {
-                        CONSOLE_BRIDGE_logDebug("Point is on a triangle");
+                        RCUTILS_LOG_DEBUG("Point is on a triangle");
                         return true;
                     }
                 }
@@ -392,7 +390,7 @@ bool Shape::contains(const Vector3& p) const {
     }
 
     if (intersect_count < 0 || intersect_count > 1) {
-        CONSOLE_BRIDGE_logError("intersect_count is %i, it should be 0 or 1! Is your shape constructed correctly?", intersect_count);
+        RCUTILS_LOG_ERROR("intersect_count is %i, it should be 0 or 1! Is your shape constructed correctly?", intersect_count);
         return false;
     }
 

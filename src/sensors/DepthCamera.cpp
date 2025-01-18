@@ -2,6 +2,7 @@
 #include "geolib/Shape.h"
 
 #include <image_geometry/pinhole_camera_model.h>
+#include <sensor_msgs/msg/camera_info.hpp>
 
 #include <array>
 #include <vector>
@@ -29,49 +30,49 @@ DepthCamera::DepthCamera()
 
 DepthCamera::DepthCamera(uint width, uint height, double fx, double fy, double cx, double cy, double tx, double ty)
 {
-    sensor_msgs::CameraInfo cam_info;
-    cam_info.D.resize(5, 0);
+    sensor_msgs::msg::CameraInfo cam_info;
+    cam_info.d.resize(5, 0);
     // Intrinsic camera matrix for the raw (distorted) images.
     //     [fx  0 cx]
     // K = [ 0 fy cy]
     //     [ 0  0  1]
-    cam_info.K[0] = fx;
-    cam_info.K[1] = 0;
-    cam_info.K[2] = cx;
-    cam_info.K[3] = 0;
-    cam_info.K[4] = fy;
-    cam_info.K[5] = cy;
-    cam_info.K[6] = 0;
-    cam_info.K[7] = 0;
-    cam_info.K[8] = 1;
+    cam_info.k[0] = fx;
+    cam_info.k[1] = 0;
+    cam_info.k[2] = cx;
+    cam_info.k[3] = 0;
+    cam_info.k[4] = fy;
+    cam_info.k[5] = cy;
+    cam_info.k[6] = 0;
+    cam_info.k[7] = 0;
+    cam_info.k[8] = 1;
 
     // Rectification matrix (stereo cameras only)
-    cam_info.R[0] = 1;
-    cam_info.R[1] = 0;
-    cam_info.R[2] = 0;
-    cam_info.R[3] = 0;
-    cam_info.R[4] = 1;
-    cam_info.R[5] = 0;
-    cam_info.R[6] = 0;
-    cam_info.R[7] = 0;
-    cam_info.R[8] = 1;
+    cam_info.r[0] = 1;
+    cam_info.r[1] = 0;
+    cam_info.r[2] = 0;
+    cam_info.r[3] = 0;
+    cam_info.r[4] = 1;
+    cam_info.r[5] = 0;
+    cam_info.r[6] = 0;
+    cam_info.r[7] = 0;
+    cam_info.r[8] = 1;
 
     // Projection/camera matrix
     //     [fx'  0  cx' Tx]
     // P = [ 0  fy' cy' Ty]
     //     [ 0   0   1   0]
-    cam_info.P[0] = fx;
-    cam_info.P[1] = 0;
-    cam_info.P[2] = cx;
-    cam_info.P[3] = tx;
-    cam_info.P[4] = 0;
-    cam_info.P[5] = fy;
-    cam_info.P[6] = cy;
-    cam_info.P[7] = ty;
-    cam_info.P[8] = 0;
-    cam_info.P[9] = 0;
-    cam_info.P[10] = 1;
-    cam_info.P[11] = 0;
+    cam_info.p[0] = fx;
+    cam_info.p[1] = 0;
+    cam_info.p[2] = cx;
+    cam_info.p[3] = tx;
+    cam_info.p[4] = 0;
+    cam_info.p[5] = fy;
+    cam_info.p[6] = cy;
+    cam_info.p[7] = ty;
+    cam_info.p[8] = 0;
+    cam_info.p[9] = 0;
+    cam_info.p[10] = 1;
+    cam_info.p[11] = 0;
 
     cam_info.width = width;
     cam_info.height = height;
@@ -83,7 +84,7 @@ DepthCamera::DepthCamera(const image_geometry::PinholeCameraModel& cam_model)
     initFromCamModel(cam_model);
 }
 
-DepthCamera::DepthCamera(const sensor_msgs::CameraInfo& cam_info)
+DepthCamera::DepthCamera(const sensor_msgs::msg::CameraInfo& cam_info)
 {
     image_geometry::PinholeCameraModel cam_model;
     cam_model.fromCameraInfo(cam_info);

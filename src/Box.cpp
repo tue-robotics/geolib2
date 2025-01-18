@@ -1,6 +1,6 @@
 #include "geolib/Box.h"
 
-#include <console_bridge/console.h>
+#include <rcutils/logging_macros.h>
 
 #include <cmath>
 #include <stdexcept>
@@ -126,7 +126,7 @@ const Vector3& Box::getMax() const {
 
 void Box::setMesh(const Mesh& /*mesh*/) {
     std::string msg = "Box::setMesh: can not set mesh for Box";
-    CONSOLE_BRIDGE_logError(msg.c_str());
+    RCUTILS_LOG_ERROR_NAMED("geolib", "%s", msg.c_str());
     throw std::runtime_error(msg);
 }
 

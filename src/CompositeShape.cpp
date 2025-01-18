@@ -1,6 +1,6 @@
 #include "geolib/CompositeShape.h"
 
-#include <console_bridge/console.h>
+#include <rcutils/logging_macros.h>
 
 #include <stdexcept>
 
@@ -122,7 +122,7 @@ const std::vector<std::pair<ShapePtr, Transform> >& CompositeShape::getShapes() 
 
 void CompositeShape::setMesh(const Mesh& /*mesh*/) {
     std::string msg = "CompositeShape::setMesh: can not set mesh for CompositeShape";
-    CONSOLE_BRIDGE_logError(msg.c_str());
+    RCUTILS_LOG_ERROR_NAMED("CompositeShape", "%s", msg.c_str());
     throw std::runtime_error(msg);
 }
 
