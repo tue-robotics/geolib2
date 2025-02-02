@@ -9,10 +9,7 @@ namespace io {
 
 ShapePtr readMeshFile(const std::string& filename, const geo::Vec3& scale);
 
-ShapePtr readMeshFile(const std::string& filename, double scale = 1.0)
-{
-    return readMeshFile(filename, geo::Vec3(scale));
-}
+ShapePtr readMeshFile(const std::string& filename, double scale = 1.0);
 
 }
 

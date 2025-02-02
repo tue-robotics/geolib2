@@ -1,0 +1,8 @@
+CMakeLists.txt.user*
+/build/
+/log/
+/install/
+.txt
+*.txt
+settings.json
+*.pyc

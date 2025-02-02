@@ -153,6 +153,11 @@ ShapePtr readMeshFile(const std::string& filename, const geo::Vec3& scale)
     return shape;
 }
 
+ShapePtr readMeshFile(const std::string& filename, double scale)
+{
+    return readMeshFile(filename, geo::Vec3(scale));
+}
+
 }
 
 }
