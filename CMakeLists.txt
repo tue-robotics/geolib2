@@ -108,29 +108,35 @@ target_link_libraries(geolib
 #                                               INSTALL
 # ------------------------------------------------------------------------------------------------
 
+ament_export_include_directories(include)
+ament_export_dependencies(rclcpp cv_bridge image_geometry sensor_msgs shape_msgs tf2 assimp rcutils OpenCV geometry_msgs)
+#ament_export_libraries(geolib)
+#ament_export_targets(geolib)
+
 install(
   DIRECTORY include/
-  DESTINATION include/
+  DESTINATION include
 )
 
 install(
-  TARGETS
-    geolib
+  TARGETS geolib
+  EXPORT geolib
   ARCHIVE DESTINATION lib
   LIBRARY DESTINATION lib
   RUNTIME DESTINATION bin
+  INCLUDES DESTINATION include
 )
 
-install(
-  TARGETS
+#install(
+#  TARGETS
     # height-map-to-file
     # height-map-to-shape
     # show
     # test_geolib
     # test_geolib_lrf
     # test_matrix
-  DESTINATION bin
-)
+#  DESTINATION bin
+#)
 
 # ------------------------------------------------------------------------------------------------
 #                                               UNIT TESTS
@@ -153,5 +159,4 @@ install(
 #   target_link_libraries(test_lrf geolib)
 # endif()
 
-ament_export_dependencies(rclcpp cv_bridge image_geometry sensor_msgs shape_msgs tf2 assimp rcutils OpenCV geometry_msgs)
 ament_package()
