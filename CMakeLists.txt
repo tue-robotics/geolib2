@@ -61,15 +61,9 @@ add_library(geolib
     src/visualization.cpp
 )
 
-target_include_directories(geolib PUBLIC
-  include
-  ${assimp_INCLUDE_DIRS}
-  ${rcutils_INCLUDE_DIRS}
-  ${OpenCV_INCLUDE_DIRS}
-  ${geometry_msgs_INCLUDE_DIRS}
-  ${sensor_msgs_INCLUDE_DIRS}
-  ${shape_msgs_INCLUDE_DIRS}
-  ${image_geometry_INCLUDE_DIRS}  
+target_include_directories(geolib INTERFACE
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+  $<INSTALL_INTERFACE:include>
 )
 
 target_link_libraries(geolib 
@@ -108,10 +102,7 @@ target_link_libraries(geolib
 #                                               INSTALL
 # ------------------------------------------------------------------------------------------------
 
-ament_export_include_directories(include)
-ament_export_dependencies(rclcpp cv_bridge image_geometry sensor_msgs shape_msgs tf2 assimp rcutils OpenCV geometry_msgs)
-#ament_export_libraries(geolib)
-#ament_export_targets(geolib)
+
 
 install(
   DIRECTORY include/
@@ -120,7 +111,7 @@ install(
 
 install(
   TARGETS geolib
-  EXPORT geolib
+  EXPORT export_geolib
   ARCHIVE DESTINATION lib
   LIBRARY DESTINATION lib
   RUNTIME DESTINATION bin
@@ -159,4 +150,7 @@ install(
 #   target_link_libraries(test_lrf geolib)
 # endif()
 
+ament_export_include_directories(include)
+ament_export_dependencies(rclcpp cv_bridge image_geometry sensor_msgs shape_msgs tf2 assimp rcutils OpenCV geometry_msgs)
+ament_export_targets(export_geolib)
 ament_package()
