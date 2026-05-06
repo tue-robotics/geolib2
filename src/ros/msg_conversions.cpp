@@ -2,26 +2,26 @@
 
 namespace geo {
 
-void convert(const geo::Mesh& m, shape_msgs::Mesh& msg) {
+void convert(const geo::Mesh& m, shape_msgs::msg::Mesh& msg) {
     const std::vector<Vector3>& points = m.getPoints();
     const std::vector<TriangleI>& triangles = m.getTriangleIs();
 
     for (std::vector<Vector3>::const_iterator it = points.begin(); it != points.end(); ++it)
     {
-        geometry_msgs::Point point;
+        geometry_msgs::msg::Point point;
         convert(*it, point);
         msg.vertices.push_back(point);
     }
 
     for (std::vector<TriangleI>::const_iterator it = triangles.begin(); it != triangles.end(); ++it)
     {
-        shape_msgs::MeshTriangle meshtriangle;
+        shape_msgs::msg::MeshTriangle meshtriangle;
         convert(*it, meshtriangle);
         msg.triangles.push_back(meshtriangle);
     }
 }
 
-void convert(const geo::DepthCamera& cam_model, sensor_msgs::CameraInfo& msg)
+void convert(const geo::DepthCamera& cam_model, sensor_msgs::msg::CameraInfo& msg)
 {
     // Distortion model and parameters
     msg.distortion_model = "plumb_bob";

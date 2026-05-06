@@ -29,7 +29,7 @@ DepthCamera::DepthCamera()
 
 DepthCamera::DepthCamera(uint width, uint height, double fx, double fy, double cx, double cy, double tx, double ty)
 {
-    sensor_msgs::CameraInfo cam_info;
+    sensor_msgs::msg::CameraInfo cam_info;
     cam_info.D.resize(5, 0);
     // Intrinsic camera matrix for the raw (distorted) images.
     //     [fx  0 cx]
@@ -83,7 +83,7 @@ DepthCamera::DepthCamera(const image_geometry::PinholeCameraModel& cam_model)
     initFromCamModel(cam_model);
 }
 
-DepthCamera::DepthCamera(const sensor_msgs::CameraInfo& cam_info)
+DepthCamera::DepthCamera(const sensor_msgs::msg::CameraInfo& cam_info)
 {
     image_geometry::PinholeCameraModel cam_model;
     cam_model.fromCameraInfo(cam_info);

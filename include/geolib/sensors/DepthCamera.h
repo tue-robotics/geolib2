@@ -7,7 +7,7 @@
 #include "geolib/math_types.h"
 
 #include <image_geometry/pinhole_camera_model.h>
-#include <sensor_msgs/CameraInfo.h>
+#include <sensor_msgs/msg/camera_info.hpp>
 
 #include <vector>
 
@@ -166,7 +166,7 @@ public:
 
     DepthCamera(const image_geometry::PinholeCameraModel& cam_model);
 
-    DepthCamera(const sensor_msgs::CameraInfo& cam_info);
+    DepthCamera(const sensor_msgs::msg::CameraInfo& cam_info);
 
     virtual ~DepthCamera();
 
