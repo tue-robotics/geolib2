@@ -4,23 +4,16 @@
 
 #include "box_test.h"
 
+class ShapeTest : public BoxTest {
+  protected:
+    ShapeTest() : shape(box) {}
 
-class ShapeTest : public BoxTest
-{
-protected:
-    ShapeTest() : shape(box)
-    {
-    }
-
-    virtual ~ShapeTest()
-    {
-    }
+    virtual ~ShapeTest() {}
 
     geo::Shape shape;
 };
 
-TEST_F(ShapeTest, Contains)
-{
+TEST_F(ShapeTest, Contains) {
     ASSERT_TRUE(shape.contains(origin));
 
     ASSERT_TRUE(shape.contains(min));
@@ -34,8 +27,7 @@ TEST_F(ShapeTest, Contains)
     ASSERT_FALSE(shape.contains(side_center_close));
 }
 
-TEST_F(ShapeTest, Intersect)
-{
+TEST_F(ShapeTest, Intersect) {
     ASSERT_TRUE(shape.intersect(origin, 0));
     ASSERT_TRUE(shape.intersect(origin, 0.1));
 
@@ -61,6 +53,6 @@ TEST_F(ShapeTest, Intersect)
 }
 
 int main(int argc, char **argv) {
-   testing::InitGoogleTest(&argc, argv);
-   return RUN_ALL_TESTS();
+    testing::InitGoogleTest(&argc, argv);
+    return RUN_ALL_TESTS();
 }
