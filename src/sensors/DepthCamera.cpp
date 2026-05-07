@@ -1,8 +1,6 @@
 #include "geolib/sensors/DepthCamera.h"
 #include "geolib/Shape.h"
 
-#include <image_geometry/pinhole_camera_model.hpp>
-
 #include <array>
 #include <vector>
 

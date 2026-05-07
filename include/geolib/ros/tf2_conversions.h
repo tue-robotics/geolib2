@@ -3,10 +3,17 @@
 
 #include "geolib/datatypes.h"
 
+#if __has_include(<tf2/LinearMath/Matrix3x3.hpp>)
+#include <tf2/LinearMath/Matrix3x3.hpp>
+#include <tf2/LinearMath/Quaternion.hpp>
+#include <tf2/LinearMath/Transform.hpp>
+#include <tf2/LinearMath/Vector3.hpp>
+#else
 #include <tf2/LinearMath/Matrix3x3.h>
 #include <tf2/LinearMath/Quaternion.h>
 #include <tf2/LinearMath/Transform.h>
 #include <tf2/LinearMath/Vector3.h>
+#endif
 
 namespace geo {
 
