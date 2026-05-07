@@ -6,7 +6,7 @@
 #include "geolib/Ray.h"
 #include "geolib/math_types.h"
 
-#include <image_geometry/pinhole_camera_model.h>
+#include <image_geometry/pinhole_camera_model.hpp>
 #include <sensor_msgs/msg/camera_info.hpp>
 
 #include <vector>

@@ -64,16 +64,13 @@ target_include_directories(geolib SYSTEM PRIVATE
   ${console_bridge_INCLUDE_DIRS}
 )
 
-ament_target_dependencies(geolib
-  geometry_msgs
-  image_geometry
-  sensor_msgs
-  shape_msgs
-  tf2
-)
-
 target_link_libraries(geolib
   assimp::assimp
+  geometry_msgs::geometry_msgs__rosidl_generator_cpp
+  image_geometry::image_geometry
+  sensor_msgs::sensor_msgs__rosidl_generator_cpp
+  shape_msgs::shape_msgs__rosidl_generator_cpp
+  tf2::tf2
   ${console_bridge_LIBRARIES}
   ${OpenCV_LIBRARIES}
 )
@@ -98,7 +95,7 @@ target_link_libraries(show geolib)
 find_package(code_profiler REQUIRED)
 
 add_executable(test_geolib test/test_geolib.cpp)
-target_link_libraries(test_geolib geolib code_profiler)
+target_link_libraries(test_geolib geolib code_profiler::code_profiler)
 
 add_executable(test_geolib_lrf test/test_geolib_lrf.cpp)
 target_link_libraries(test_geolib_lrf geolib)
