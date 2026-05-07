@@ -19,7 +19,7 @@ find_package(shape_msgs REQUIRED)
 find_package(tf2 REQUIRED)
 
 set(CMAKE_POLICY_DEFAULT_CMP0012 NEW)  # Fixed in Assimp 5.1.0, but is not released on Ubuntu Focal
-find_package(ASSIMP REQUIRED)
+find_package(assimp REQUIRED)
 find_package(console_bridge REQUIRED)
 find_package(OpenCV REQUIRED)
 
@@ -60,7 +60,6 @@ target_include_directories(geolib PUBLIC
 )
 target_include_directories(geolib SYSTEM PUBLIC ${OpenCV_INCLUDE_DIRS})
 target_include_directories(geolib SYSTEM PRIVATE
-  ${ASSIMP_INCLUDE_DIRS}
   ${console_bridge_INCLUDE_DIRS}
 )
 
@@ -73,7 +72,7 @@ ament_target_dependencies(geolib
 )
 
 target_link_libraries(geolib
-  ${ASSIMP_LIBRARIES}
+  assimp::assimp
   ${console_bridge_LIBRARIES}
   ${OpenCV_LIBRARIES}
 )
