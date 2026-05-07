@@ -12,6 +12,7 @@ if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
 endif()
 
 find_package(ament_cmake REQUIRED)
+find_package(ament_cmake_target_dependencies REQUIRED)
 find_package(geometry_msgs REQUIRED)
 find_package(image_geometry REQUIRED)
 find_package(sensor_msgs REQUIRED)
@@ -97,8 +98,7 @@ target_link_libraries(show geolib)
 find_package(code_profiler REQUIRED)
 
 add_executable(test_geolib test/test_geolib.cpp)
-target_link_libraries(test_geolib geolib)
-ament_target_dependencies(test_geolib code_profiler)
+target_link_libraries(test_geolib geolib code_profiler)
 
 add_executable(test_geolib_lrf test/test_geolib_lrf.cpp)
 target_link_libraries(test_geolib_lrf geolib)

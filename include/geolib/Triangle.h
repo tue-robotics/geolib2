@@ -3,6 +3,8 @@
 
 #include "datatypes.h"
 
+#include <array>
+
 namespace geo {
 
 double triangleArea(const Vector3& p1, const Vector3& p2, const Vector3& p3);
