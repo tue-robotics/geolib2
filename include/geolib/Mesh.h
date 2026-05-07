@@ -5,27 +5,30 @@
 
 #include <vector>
 
-namespace geo {
+namespace geo
+{
 
 /** Triangle mesh, as triplet of indices in the point vector. */
-struct TriangleI {
+struct TriangleI
+{
 
     TriangleI(unsigned int i1, unsigned int i2, unsigned int i3) : i1_(i1), i2_(i2), i3_(i3) {}
 
     unsigned int i1_, i2_, i3_; ///< Points in the Mesh::points_ vector.
 
     // serialize TriangleI to stream
-    friend std::ostream& operator<< (std::ostream& out, const TriangleI& tri) {
+    friend std::ostream& operator<<(std::ostream& out, const TriangleI& tri)
+    {
         out << "[ " << tri.i1_ << " " << tri.i2_ << " " << tri.i3_ << " ]";
         return out;
     }
 };
 
 /** Mesh storage. */
-class Mesh {
+class Mesh
+{
 
 public:
-
     Mesh();
 
     virtual ~Mesh();
@@ -73,7 +76,8 @@ public:
     inline std::size_t size() const { return triangles_i_.size(); }
 
     /** Empty the mesh. */
-    inline void clear() {
+    inline void clear()
+    {
         triangles_i_.clear();
         points_.clear();
 
@@ -129,7 +133,6 @@ public:
     const geo::Vector3 getTriangleNormal(unsigned int index) const;
 
 protected:
-
     mutable double max_radius_cache_; ///< Cached maximum radius.
     mutable double max_radius_squared_cache_; ///< Cached squared maximum radius.
 
@@ -140,14 +143,14 @@ protected:
     mutable std::vector<Triangle> triangles_cache_; ///< Cached output result.
 
     /** Clear cached computed results, as they have become invalid. */
-    void invalidateCache() {
+    void invalidateCache()
+    {
         triangles_cache_.clear();
         max_radius_squared_cache_ = 0;
         max_radius_cache_ = 0;
     }
 };
 
-}
-
+} // namespace geo
 
 #endif

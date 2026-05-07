@@ -6,19 +6,21 @@
 #include <climits>
 #include <vector>
 
-namespace geo {
+namespace geo
+{
 
 class Mesh;
 
-class LaserRangeFinder {
+class LaserRangeFinder
+{
 
 public:
-
-    class RenderOptions {
+    class RenderOptions
+    {
 
     public:
-
-        void setMesh(const geo::Mesh& mesh, const geo::Pose3D& pose) {
+        void setMesh(const geo::Mesh& mesh, const geo::Pose3D& pose)
+        {
             mesh_ = &mesh;
             pose_ = pose;
         }
@@ -30,14 +32,13 @@ public:
     protected:
         const geo::Mesh* mesh_;
         geo::Pose3D pose_;
-
     };
 
-    class RenderResult {
+    class RenderResult
+    {
 
     public:
-
-        RenderResult(std::vector<double>& ranges_) : min_i(ranges_.size()-1), max_i(0), ranges(ranges_) {}
+        RenderResult(std::vector<double>& ranges_) : min_i(ranges_.size() - 1), max_i(0), ranges(ranges_) {}
 
         virtual void renderLine(const Vec2& p1, const Vec2& p2);
 
@@ -49,7 +50,6 @@ public:
         std::vector<double>& ranges;
 
         const geo::LaserRangeFinder* lrf_;
-
     };
 
     LaserRangeFinder();
@@ -58,13 +58,20 @@ public:
 
     void render(const geo::LaserRangeFinder::RenderOptions& options, geo::LaserRangeFinder::RenderResult& res) const;
 
-    RenderResult render(const geo::Shape& shape, const geo::Pose3D& cam_pose, const geo::Pose3D& obj_pose, std::vector<double>& ranges) const;
+    RenderResult render(const geo::Shape& shape,
+                        const geo::Pose3D& cam_pose,
+                        const geo::Pose3D& obj_pose,
+                        std::vector<double>& ranges) const;
 
     void renderLine(const geo::Vec2& p1, const geo::Vec2& p2, std::vector<double>& ranges) const;
 
     void setAngleLimits(double min, double max);
 
-    inline void setRangeLimits(double min, double max) { range_min_ = min; range_max_ = max; }
+    inline void setRangeLimits(double min, double max)
+    {
+        range_min_ = min;
+        range_max_ = max;
+    }
 
     void setNumBeams(uint n);
 
@@ -115,7 +122,6 @@ public:
     inline const std::vector<geo::Vector3>& rayDirections() const { return ray_dirs_; }
 
 protected:
-
     double a_min_, a_max_;
 
     double range_min_, range_max_;
@@ -130,9 +136,10 @@ protected:
 
     // Number of beams in a half circle
     uint i_half_circle_;
-    
+
     /**
-     * @brief Get the index of the first beam with a higher angle than \p angle. Results may lie outside of the sensor range.
+     * @brief Get the index of the first beam with a higher angle than \p angle. Results may lie outside of the sensor
+     * range.
      * @param angle radial angle of the beam
      * @return Index of the beam
      */
@@ -147,9 +154,8 @@ protected:
     int getAngleUpperIndexRaw(double x, double y) const;
 
     void calculateRays();
-
 };
 
-}
+} // namespace geo
 
 #endif

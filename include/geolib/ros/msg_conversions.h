@@ -13,7 +13,8 @@
 #include <sensor_msgs/msg/camera_info.hpp>
 #include <shape_msgs/msg/mesh.hpp>
 
-namespace geo {
+namespace geo
+{
 
 // ------------------------------ TO ROS ------------------------------
 
@@ -22,8 +23,11 @@ namespace geo {
  * @param v geo::Vector3 as input
  * @param msg filled geometery_msgs::msg::Point message as output
  */
-inline void convert(const geo::Vector3& v, geometry_msgs::msg::Point& msg) {
-    msg.x = v.x; msg.y = v.y; msg.z = v.z;
+inline void convert(const geo::Vector3& v, geometry_msgs::msg::Point& msg)
+{
+    msg.x = v.x;
+    msg.y = v.y;
+    msg.z = v.z;
 }
 
 /**
@@ -31,8 +35,11 @@ inline void convert(const geo::Vector3& v, geometry_msgs::msg::Point& msg) {
  * @param v geo::Vector3 as input
  * @param msg filled geometery_msgs::msg::Point32 message as output
  */
-inline void convert(const geo::Vector3& v, geometry_msgs::msg::Point32& msg) {
-    msg.x = v.x; msg.y = v.y; msg.z = v.z;
+inline void convert(const geo::Vector3& v, geometry_msgs::msg::Point32& msg)
+{
+    msg.x = v.x;
+    msg.y = v.y;
+    msg.z = v.z;
 }
 
 /**
@@ -40,8 +47,11 @@ inline void convert(const geo::Vector3& v, geometry_msgs::msg::Point32& msg) {
  * @param v geo::Vector3 as input
  * @param msg filled geometery_msgs::msg::Vector3 message as output
  */
-inline void convert(const geo::Vector3& v, geometry_msgs::msg::Vector3& msg) {
-    msg.x = v.x; msg.y = v.y; msg.z = v.z;
+inline void convert(const geo::Vector3& v, geometry_msgs::msg::Vector3& msg)
+{
+    msg.x = v.x;
+    msg.y = v.y;
+    msg.z = v.z;
 }
 
 /**
@@ -49,8 +59,12 @@ inline void convert(const geo::Vector3& v, geometry_msgs::msg::Vector3& msg) {
  * @param q geo::Quaternion as input
  * @param msg filled geometery_msgs::msg::Quaternion message as output
  */
-inline void convert(const geo::Quaternion& q, geometry_msgs::msg::Quaternion& msg) {
-    msg.x = q.x; msg.y = q.y; msg.z = q.z; msg.w = q.w;
+inline void convert(const geo::Quaternion& q, geometry_msgs::msg::Quaternion& msg)
+{
+    msg.x = q.x;
+    msg.y = q.y;
+    msg.z = q.z;
+    msg.w = q.w;
 }
 
 /**
@@ -58,7 +72,8 @@ inline void convert(const geo::Quaternion& q, geometry_msgs::msg::Quaternion& ms
  * @param r geo::Matrix3 as input
  * @param msg filled geometry_msgs::msg::Quaternion message as output
  */
-inline void convert(const geo::Matrix3& r, geometry_msgs::msg::Quaternion& msg) {
+inline void convert(const geo::Matrix3& r, geometry_msgs::msg::Quaternion& msg)
+{
     Quaternion q;
     r.getRotation(q);
     convert(q, msg);
@@ -69,7 +84,8 @@ inline void convert(const geo::Matrix3& r, geometry_msgs::msg::Quaternion& msg) 
  * @param t geo::Transform as input
  * @param msg filled geometry_msgs::msg::Pose as output
  */
-inline void convert(const geo::Transform& t, geometry_msgs::msg::Pose& msg) {
+inline void convert(const geo::Transform& t, geometry_msgs::msg::Pose& msg)
+{
     convert(t.getOrigin(), msg.position);
     convert(t.getBasis(), msg.orientation);
 }
@@ -79,7 +95,8 @@ inline void convert(const geo::Transform& t, geometry_msgs::msg::Pose& msg) {
  * @param t geo::Transform as input
  * @param msg filled geometry_msgs::msg::Transform as output
  */
-inline void convert(const geo::Transform& t, geometry_msgs::msg::Transform& msg) {
+inline void convert(const geo::Transform& t, geometry_msgs::msg::Transform& msg)
+{
     convert(t.getOrigin(), msg.translation);
     convert(t.getBasis(), msg.rotation);
 }
@@ -89,7 +106,8 @@ inline void convert(const geo::Transform& t, geometry_msgs::msg::Transform& msg)
  * @param t geo::TriangleI as input
  * @param msg filled shape_msgs::msg::MeshTriangle message as output
  */
-inline void convert(const geo::TriangleI& t, shape_msgs::msg::MeshTriangle& msg) {
+inline void convert(const geo::TriangleI& t, shape_msgs::msg::MeshTriangle& msg)
+{
     msg.vertex_indices[0] = t.i1_;
     msg.vertex_indices[1] = t.i2_;
     msg.vertex_indices[2] = t.i3_;
@@ -117,8 +135,11 @@ void convert(const geo::DepthCamera& cam_model, sensor_msgs::msg::CameraInfo& ms
  * @param msg geometry_msgs::msg::Point as input
  * @param v geo::Vector3 as output
  */
-inline void convert(const geometry_msgs::msg::Point& msg, geo::Vector3& v) {
-   v.x = msg.x; v.y = msg.y; v.z = msg.z;
+inline void convert(const geometry_msgs::msg::Point& msg, geo::Vector3& v)
+{
+    v.x = msg.x;
+    v.y = msg.y;
+    v.z = msg.z;
 }
 
 /**
@@ -126,8 +147,11 @@ inline void convert(const geometry_msgs::msg::Point& msg, geo::Vector3& v) {
  * @param msg geometry_msgs::msg::Point as input
  * @param v geo::Vector3 as output
  */
-inline void convert(const geometry_msgs::msg::Point32& msg, geo::Vector3& v) {
-   v.x = msg.x; v.y = msg.y; v.z = msg.z;
+inline void convert(const geometry_msgs::msg::Point32& msg, geo::Vector3& v)
+{
+    v.x = msg.x;
+    v.y = msg.y;
+    v.z = msg.z;
 }
 
 /**
@@ -135,8 +159,11 @@ inline void convert(const geometry_msgs::msg::Point32& msg, geo::Vector3& v) {
  * @param msg geometry_msgs::msg::Vector3 as input
  * @param v geo::Vector3 as output
  */
-inline void convert(const geometry_msgs::msg::Vector3& msg, geo::Vector3& v) {
-   v.x = msg.x; v.y = msg.y; v.z = msg.z;
+inline void convert(const geometry_msgs::msg::Vector3& msg, geo::Vector3& v)
+{
+    v.x = msg.x;
+    v.y = msg.y;
+    v.z = msg.z;
 }
 
 /**
@@ -144,8 +171,12 @@ inline void convert(const geometry_msgs::msg::Vector3& msg, geo::Vector3& v) {
  * @param msg geometry_msgs::msg::Quaternion as input
  * @param q geo::Quaternion as output
  */
-inline void convert(const geometry_msgs::msg::Quaternion& msg, geo::Quaternion& q) {
-    q.x = msg.x; q.y = msg.y; q.z = msg.z; q.w = msg.w;
+inline void convert(const geometry_msgs::msg::Quaternion& msg, geo::Quaternion& q)
+{
+    q.x = msg.x;
+    q.y = msg.y;
+    q.z = msg.z;
+    q.w = msg.w;
 }
 
 /**
@@ -153,7 +184,8 @@ inline void convert(const geometry_msgs::msg::Quaternion& msg, geo::Quaternion& 
  * @param msg geometry_msgs::msg::Quaternion as input
  * @param r geo::Matrix3 as output
  */
-inline void convert(const geometry_msgs::msg::Quaternion& msg, geo::Matrix3& r) {
+inline void convert(const geometry_msgs::msg::Quaternion& msg, geo::Matrix3& r)
+{
     Quaternion q;
     convert(msg, q);
     r.setRotation(q);
@@ -164,7 +196,8 @@ inline void convert(const geometry_msgs::msg::Quaternion& msg, geo::Matrix3& r) 
  * @param msg geometry_msgs::msg::Pose as input
  * @param t geo::Transform as output
  */
-inline void convert(const geometry_msgs::msg::Pose& msg, geo::Transform& t) {
+inline void convert(const geometry_msgs::msg::Pose& msg, geo::Transform& t)
+{
     convert(msg.orientation, t.R);
     convert(msg.position, t.t);
 }
@@ -174,11 +207,12 @@ inline void convert(const geometry_msgs::msg::Pose& msg, geo::Transform& t) {
  * @param msg geometry_msgs::msg::Transform as input
  * @param t geo::Transform as output
  */
-inline void convert(const geometry_msgs::msg::Transform& msg, geo::Transform& t) {
+inline void convert(const geometry_msgs::msg::Transform& msg, geo::Transform& t)
+{
     convert(msg.rotation, t.R);
     convert(msg.translation, t.t);
 }
 
-}
+} // namespace geo
 
 #endif

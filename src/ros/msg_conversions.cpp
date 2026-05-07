@@ -1,8 +1,10 @@
 #include "geolib/ros/msg_conversions.h"
 
-namespace geo {
+namespace geo
+{
 
-void convert(const geo::Mesh& m, shape_msgs::msg::Mesh& msg) {
+void convert(const geo::Mesh& m, shape_msgs::msg::Mesh& msg)
+{
     const std::vector<Vector3>& points = m.getPoints();
     const std::vector<TriangleI>& triangles = m.getTriangleIs();
 
@@ -77,4 +79,4 @@ void convert(const geo::DepthCamera& cam_model, sensor_msgs::msg::CameraInfo& ms
     msg.binning_y = 1;
 }
 
-} // end geo namespace
+} // namespace geo

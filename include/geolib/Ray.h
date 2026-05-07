@@ -5,13 +5,14 @@
 
 #include <array>
 
-namespace geo {
+namespace geo
+{
 
-class Ray {
+class Ray
+{
 
 public:
-
-    Ray(const Vector3 &o, const Vector3 &d) ;
+    Ray(const Vector3& o, const Vector3& d);
 
     const Vector3& getOrigin() const { return origin_; }
 
@@ -26,7 +27,6 @@ public:
     void setLength(const double length) { length_ = length; }
 
 protected:
-
     Vector3 origin_;
 
     Vector3 direction_;
@@ -38,9 +38,8 @@ protected:
     std::array<int, 3> sign_;
 
     void calculateInvDirection();
-
 };
 
-}
+} // namespace geo
 
 #endif

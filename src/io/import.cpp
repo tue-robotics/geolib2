@@ -1,11 +1,11 @@
 #include "geolib/io/import.h"
 
 #ifdef ASSIMP_VERSION_3
-    #include <assimp/Importer.hpp>
-    #include <assimp/scene.h>
+#include <assimp/Importer.hpp>
+#include <assimp/scene.h>
 #else
-    #include <assimp/assimp.hpp>
-    #include <assimp/aiScene.h>
+#include <assimp/aiScene.h>
+#include <assimp/assimp.hpp>
 #endif
 
 #include <console_bridge/console.h>
@@ -17,13 +17,22 @@
 #include <sstream>
 #include <string>
 
-namespace geo {
+namespace geo
+{
 
-namespace io {
+namespace io
+{
 
 // ----------------------------------------------------------------------------------------------------
 
-void constructMesh(const aiScene* scene, aiNode* node, const geo::Pose3D& parent_pose, double scale_x, double scale_y, double scale_z, bool transform, geo::Mesh* mesh)
+void constructMesh(const aiScene* scene,
+                   aiNode* node,
+                   const geo::Pose3D& parent_pose,
+                   double scale_x,
+                   double scale_y,
+                   double scale_z,
+                   bool transform,
+                   geo::Mesh* mesh)
 {
     const aiMatrix4x4& t = node->mTransformation;
     geo::Pose3D p;
@@ -32,19 +41,20 @@ void constructMesh(const aiScene* scene, aiNode* node, const geo::Pose3D& parent
 
     geo::Pose3D pose = parent_pose * p;
 
-    for(unsigned int i = 0; i < node->mNumChildren; ++i)
+    for (unsigned int i = 0; i < node->mNumChildren; ++i)
     {
         constructMesh(scene, node->mChildren[i], pose, scale_x, scale_y, scale_z, transform, mesh);
     }
 
-    for(unsigned int i = 0; i < node->mNumMeshes; ++i)
+    for (unsigned int i = 0; i < node->mNumMeshes; ++i)
     {
         aiMesh* m = scene->mMeshes[node->mMeshes[i]];
 
-        std::map<int, std::map<int, std::map<int, int> > > xyz_map;
+        std::map<int, std::map<int, std::map<int, int>>> xyz_map;
         std::vector<int> i_map(m->mNumVertices);
 
-        for(unsigned int j = 0; j < m->mNumVertices; ++j) {
+        for (unsigned int j = 0; j < m->mNumVertices; ++j)
+        {
             const aiVector3D& v = m->mVertices[j];
 
             int ix = 1000 * scale_x * v.x;
@@ -52,19 +62,23 @@ void constructMesh(const aiScene* scene, aiNode* node, const geo::Pose3D& parent
             int iz = 1000 * scale_z * v.z;
 
             bool match = false;
-            std::map<int, std::map<int, std::map<int, int> > >::iterator it1 = xyz_map.find(ix);
-            if (it1 != xyz_map.end()) {
-                std::map<int, std::map<int, int> >::iterator it2 = it1->second.find(iy);
-                if (it2 != it1->second.end()) {
+            std::map<int, std::map<int, std::map<int, int>>>::iterator it1 = xyz_map.find(ix);
+            if (it1 != xyz_map.end())
+            {
+                std::map<int, std::map<int, int>>::iterator it2 = it1->second.find(iy);
+                if (it2 != it1->second.end())
+                {
                     std::map<int, int>::iterator it3 = it2->second.find(iz);
-                    if (it3 != it2->second.end()) {
+                    if (it3 != it2->second.end())
+                    {
                         i_map[j] = it3->second;
                         match = true;
                     }
                 }
             }
 
-            if (!match) {
+            if (!match)
+            {
                 geo::Vector3 p(v.x, v.y, v.z);
                 if (transform)
                     p = pose * p;
@@ -75,28 +89,34 @@ void constructMesh(const aiScene* scene, aiNode* node, const geo::Pose3D& parent
             }
         }
 
-        std::map<int, std::map<int, std::set<int> > > triangle_map;
+        std::map<int, std::map<int, std::set<int>>> triangle_map;
 
         int num_triangles = 0;
-        for(unsigned int j = 0; j < m->mNumFaces; ++j) {
+        for (unsigned int j = 0; j < m->mNumFaces; ++j)
+        {
             const aiFace& f = m->mFaces[j];
-            if (f.mNumIndices == 3) {
+            if (f.mNumIndices == 3)
+            {
                 int ix = i_map[f.mIndices[0]];
                 int iy = i_map[f.mIndices[1]];
                 int iz = i_map[f.mIndices[2]];
 
                 bool match = false;
-                std::map<int, std::map<int, std::set<int> > >::iterator it1 = triangle_map.find(ix);
-                if (it1 != triangle_map.end()) {
-                    std::map<int, std::set<int> >::iterator it2 = it1->second.find(iy);
-                    if (it2 != it1->second.end()) {
-                        if (it2->second.find(iz) != it2->second.end()) {
+                std::map<int, std::map<int, std::set<int>>>::iterator it1 = triangle_map.find(ix);
+                if (it1 != triangle_map.end())
+                {
+                    std::map<int, std::set<int>>::iterator it2 = it1->second.find(iy);
+                    if (it2 != it1->second.end())
+                    {
+                        if (it2->second.find(iz) != it2->second.end())
+                        {
                             match = true;
                         }
                     }
                 }
 
-                if (!match) {
+                if (!match)
+                {
                     mesh->addTriangle(ix, iy, iz);
                     triangle_map[ix][iy].insert(iz);
                     ++num_triangles;
@@ -104,7 +124,6 @@ void constructMesh(const aiScene* scene, aiNode* node, const geo::Pose3D& parent
             }
         }
     }
-
 }
 
 // ----------------------------------------------------------------------------------------------------
@@ -153,6 +172,6 @@ ShapePtr readMeshFile(const std::string& filename, const geo::Vec3& scale)
     return shape;
 }
 
-}
+} // namespace io
 
-}
+} // namespace geo
