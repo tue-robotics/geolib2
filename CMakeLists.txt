@@ -149,7 +149,19 @@ ament_export_dependencies(geometry_msgs image_geometry sensor_msgs shape_msgs tf
 # ------------------------------------------------------------------------------------------------
 
 if(BUILD_TESTING)
+  find_package(tue_lint_config REQUIRED)
+  find_package(ament_cmake_clang_format REQUIRED)
+  find_package(ament_cmake_clang_tidy REQUIRED)
   find_package(ament_cmake_gtest REQUIRED)
+
+  ament_clang_format(
+    CONFIG_FILE ${tue_lint_config_DIR}/../config/.clang-format
+    --clang-format-version=21
+  )
+  ament_clang_tidy(
+    CONFIG_FILE ${tue_lint_config_DIR}/../config/.clang-tidy
+    --clang-tidy-version=21
+    ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_BINARY_DIR}/compile_commands.json)
 
   ament_add_gtest(test_box test/test_box.cpp)
   target_link_libraries(test_box geolib)
