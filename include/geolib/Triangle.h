@@ -3,14 +3,17 @@
 
 #include "datatypes.h"
 
-namespace geo {
+#include <array>
+
+namespace geo
+{
 
 double triangleArea(const Vector3& p1, const Vector3& p2, const Vector3& p3);
 
-class Triangle {
+class Triangle
+{
 
 public:
-
     Triangle(const Vector3& p1_, const Vector3& p2_, const Vector3& p3_);
 
     virtual ~Triangle();
@@ -34,12 +37,11 @@ public:
     double area() const;
 
     // serialize Triangle to stream
-    friend std::ostream& operator<< (std::ostream& out, const Triangle& t);
+    friend std::ostream& operator<<(std::ostream& out, const Triangle& t);
 
     std::array<geo::Vector3, 3> m;
-
 };
 
-}
+} // namespace geo
 
 #endif

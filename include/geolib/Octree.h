@@ -7,14 +7,15 @@
 
 #include <vector>
 
-namespace geo {
+namespace geo
+{
 
-class Octree : public Shape {
+class Octree : public Shape
+{
 
     friend class OctreeNode;
 
 public:
-
     Octree(double size, double resolution = 0.1);
 
     Octree(const Octree& orig);
@@ -46,7 +47,6 @@ public:
     const Mesh& getMesh() const;
 
 protected:
-
     double resolution_;
 
     Vector3 offset_;
@@ -58,9 +58,8 @@ protected:
     OctreeNode* root_;
 
     mutable Mesh mesh_;
-
 };
 
-}
+} // namespace geo
 
 #endif

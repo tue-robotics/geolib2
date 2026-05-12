@@ -6,16 +6,17 @@
 #include <iostream>
 #include <map>
 
-namespace geo {
+namespace geo
+{
 
-class serialization {
+class serialization
+{
 
-    typedef ShapePtr (*deserialization_method)( std::istream& );
+    typedef ShapePtr (*deserialization_method)(std::istream&);
 
     typedef std::map<std::string, deserialization_method> deserializer_map;
 
 public:
-
     static bool serialize(ShapeConstPtr shape, std::ostream& output);
 
     static bool serialize(const Shape& shape, std::ostream& output);
@@ -28,14 +29,9 @@ public:
 
     static void toFile(const Shape& shape, const std::string& filename);
 
-
-    template<typename T>
-    static void registerDeserializer() {
-        registerDeserializer(T::TYPE, &T::read);
-    }
+    template <typename T> static void registerDeserializer() { registerDeserializer(T::TYPE, &T::read); }
 
 protected:
-
     serialization();
 
     virtual ~serialization();
@@ -43,9 +39,8 @@ protected:
     static deserializer_map deserializers_;
 
     static void registerDeserializer(const std::string& shape_type, deserialization_method method);
-
 };
 
-}
+} // namespace geo
 
 #endif

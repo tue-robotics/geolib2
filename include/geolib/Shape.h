@@ -6,7 +6,8 @@
 #include "Ray.h"
 #include "Triangle.h"
 
-namespace geo {
+namespace geo
+{
 
 class Box;
 
@@ -16,12 +17,12 @@ class Box;
  * Defines a shape using a triangle mesh. The origin of the shape is not
  * necesarily in the centre of the shape.
  */
-class Shape {
+class Shape
+{
 
     friend class Importer;
 
 public:
-
     Shape();
 
     virtual ~Shape();
@@ -104,21 +105,19 @@ public:
     inline virtual bool empty() const { return mesh_.empty(); }
 
 protected:
-
     /**
-     * @brief Should not be read or written to directly in general. Use #setMesh and #getMesh to write respectively read the mesh.
-     * In a few exceptions, the mesh can be written direcly. Make sure that mesh keeps consistent with other member variables.
+     * @brief Should not be read or written to directly in general. Use #setMesh and #getMesh to write respectively read
+     * the mesh. In a few exceptions, the mesh can be written direcly. Make sure that mesh keeps consistent with other
+     * member variables.
      */
     Mesh mesh_;
 
 private:
-
-    mutable bool  bounding_box_cache_valid_;    // keeps track if the cached values of the bounding box are valid
-    mutable Vector3 bounding_box_min_cache_;    // cached value of the min corner of a bounding box
-    mutable Vector3 bounding_box_max_cache_;    // cached value of the max corner of a bounding box
+    mutable bool bounding_box_cache_valid_; // keeps track if the cached values of the bounding box are valid
+    mutable Vector3 bounding_box_min_cache_; // cached value of the min corner of a bounding box
+    mutable Vector3 bounding_box_max_cache_; // cached value of the max corner of a bounding box
 };
 
-}
-
+} // namespace geo
 
 #endif

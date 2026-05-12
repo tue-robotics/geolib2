@@ -4,28 +4,33 @@
 
 #include <stdexcept>
 
-namespace geo {
+namespace geo
+{
 
-CompositeShape::CompositeShape() : Shape(), max_radius_(0), min_(1e10, 1e10, 1e10), max_(-1e10, -1e10, -1e10), bb_(-min_, -max_) {
+CompositeShape::CompositeShape() :
+    Shape(), max_radius_(0), min_(1e10, 1e10, 1e10), max_(-1e10, -1e10, -1e10), bb_(-min_, -max_)
+{
 }
 
-CompositeShape::~CompositeShape() {
-}
+CompositeShape::~CompositeShape() {}
 
-CompositeShape* CompositeShape::clone() const {
+CompositeShape* CompositeShape::clone() const
+{
     return new CompositeShape(*this);
 }
 
-bool CompositeShape::intersect(const Ray& r, float t0, float t1, double& distance) const {
-    if (!bb_.intersect(r, t0, t1, distance)) {
+bool CompositeShape::intersect(const Ray& r, float t0, float t1, double& distance) const
+{
+    if (!bb_.intersect(r, t0, t1, distance))
+    {
         return false;
     }
 
     bool hit = false;
     double min_distance = t1;
 
-
-    for(std::vector<std::pair<ShapePtr, Transform> >::const_iterator it = shapes_.begin(); it != shapes_.end(); ++it) {
+    for (std::vector<std::pair<ShapePtr, Transform>>::const_iterator it = shapes_.begin(); it != shapes_.end(); ++it)
+    {
         const Transform& pose_inv = it->second;
 
         const Shape& shape = *it->first;
@@ -33,13 +38,15 @@ bool CompositeShape::intersect(const Ray& r, float t0, float t1, double& distanc
         Ray r_t(pose_inv * r.getOrigin(), pose_inv.getBasis() * r.getDirection());
 
         double d;
-        if (shape.intersect(r_t, t0, min_distance, d)) {
+        if (shape.intersect(r_t, t0, min_distance, d))
+        {
             min_distance = d;
             hit = true;
         }
     }
 
-    if (hit) {
+    if (hit)
+    {
         distance = min_distance;
         return true;
     }
@@ -47,49 +54,60 @@ bool CompositeShape::intersect(const Ray& r, float t0, float t1, double& distanc
     return false;
 }
 
-bool CompositeShape::intersect(const Vector3& p, const double radius) const {
-    if (!bb_.intersect(p, radius)) {
+bool CompositeShape::intersect(const Vector3& p, const double radius) const
+{
+    if (!bb_.intersect(p, radius))
+    {
         return false;
     }
-    for(auto it = shapes_.begin(); it != shapes_.end(); ++it) {
+    for (auto it = shapes_.begin(); it != shapes_.end(); ++it)
+    {
         const Transform& pose_inv = it->second;
         Vector3 p_t = pose_inv * p;
-        if ((it->first)->intersect(p_t, radius)) {
+        if ((it->first)->intersect(p_t, radius))
+        {
             return true;
         }
     }
     return false;
 }
 
-bool CompositeShape::contains(const Vector3& p) const {
-    if (!bb_.contains(p)) {
+bool CompositeShape::contains(const Vector3& p) const
+{
+    if (!bb_.contains(p))
+    {
         return false;
     }
-    for(auto it = shapes_.begin(); it != shapes_.end(); ++it) {
+    for (auto it = shapes_.begin(); it != shapes_.end(); ++it)
+    {
         const Transform& pose_inv = it->second;
 
         const Shape& shape = *it->first;
 
         Vector3 p_t = pose_inv * p;
 
-        if (shape.contains(p_t)) {
+        if (shape.contains(p_t))
+        {
             return true;
         }
     }
     return false;
 }
 
-double CompositeShape::getMaxRadius() const {
+double CompositeShape::getMaxRadius() const
+{
     return max_radius_;
 }
 
-void CompositeShape::addShape(const Shape& shape, const Pose3D& pose) {
+void CompositeShape::addShape(const Shape& shape, const Pose3D& pose)
+{
     // add to shapes
     shapes_.push_back(std::pair<ShapePtr, Transform>(ShapePtr(shape.clone()), pose.inverse()));
 
     // add to mesh
     const std::vector<Triangle>& triangles = shape.getMesh().getTriangles();
-    for(std::vector<Triangle>::const_iterator it = triangles.begin(); it != triangles.end(); ++it) {
+    for (std::vector<Triangle>::const_iterator it = triangles.begin(); it != triangles.end(); ++it)
+    {
         Vector3 p1 = pose * it->p1();
         Vector3 p2 = pose * it->p2();
         Vector3 p3 = pose * it->p3();
@@ -112,18 +130,21 @@ void CompositeShape::addShape(const Shape& shape, const Pose3D& pose) {
     bb_ = Box(min_, max_);
 }
 
-Box CompositeShape::getBoundingBox() const {
+Box CompositeShape::getBoundingBox() const
+{
     return bb_;
 }
 
-const std::vector<std::pair<ShapePtr, Transform> >& CompositeShape::getShapes() const {
+const std::vector<std::pair<ShapePtr, Transform>>& CompositeShape::getShapes() const
+{
     return shapes_;
 }
 
-void CompositeShape::setMesh(const Mesh& /*mesh*/) {
+void CompositeShape::setMesh(const Mesh& /*mesh*/)
+{
     std::string msg = "CompositeShape::setMesh: can not set mesh for CompositeShape";
     CONSOLE_BRIDGE_logError(msg.c_str());
     throw std::runtime_error(msg);
 }
 
-}
+} // namespace geo

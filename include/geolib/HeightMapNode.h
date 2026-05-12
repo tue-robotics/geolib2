@@ -1,10 +1,11 @@
 #ifndef GEOLIB_HEIGHT_MAP_NODE_H_
 #define GEOLIB_HEIGHT_MAP_NODE_H_
 
-#include "Ray.h"
 #include "Box.h"
+#include "Ray.h"
 
-namespace geo {
+namespace geo
+{
 
 class HeightMap;
 
@@ -14,10 +15,10 @@ class HeightMap;
  * A leaf node describes a box of occupied space
  * A branch node describes geometry as the union of the geometry of its child nodes.
  */
-class HeightMapNode {
+class HeightMapNode
+{
 
 public:
-
     HeightMapNode(const Box& box);
 
     HeightMapNode(const HeightMapNode& orig);
@@ -38,9 +39,8 @@ public:
 
     // True iff the entire volume described by the bounding box is occupied
     bool occupied_;
-
 };
 
-}
+} // namespace geo
 
 #endif

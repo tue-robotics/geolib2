@@ -5,16 +5,16 @@
 
 #include <iostream>
 
-namespace geo {
+namespace geo
+{
 
-class visualization {
+class visualization
+{
 
 public:
-
     static void showKinect(ShapeConstPtr shape, double canvas_width, double canvas_height);
-
 };
 
-}
+} // namespace geo
 
 #endif

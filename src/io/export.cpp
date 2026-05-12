@@ -1,13 +1,13 @@
 #include "geolib/io/export.h"
 
 #ifdef ASSIMP_VERSION_3
-    #include <assimp/Exporter.hpp>
-    #include <assimp/scene.h>
-    #include <assimp/mesh.h>
+#include <assimp/Exporter.hpp>
+#include <assimp/mesh.h>
+#include <assimp/scene.h>
 #else
-    #include <assimp/assimp.hpp>
-    #include <assimp/aiScene.h>
-    #include <assimp/aiMesh.h>
+#include <assimp/aiMesh.h>
+#include <assimp/aiScene.h>
+#include <assimp/assimp.hpp>
 #endif
 
 #include <console_bridge/console.h>
@@ -18,10 +18,11 @@
 #include <sstream>
 #include <string>
 
+namespace geo
+{
 
-namespace geo {
-
-namespace io {
+namespace io
+{
 
 // ----------------------------------------------------------------------------------------------------
 
@@ -50,12 +51,12 @@ bool writeMeshFile(const std::string& filename, const Shape& shape, std::string 
     const std::vector<geo::TriangleI>& triangleIs = mesh.getTriangleIs();
 
     // Transfer points to Assimp mesh
-    aMesh->mVertices = new aiVector3D[ points.size() ];
+    aMesh->mVertices = new aiVector3D[points.size()];
     aMesh->mNumVertices = points.size();
     for (std::vector<Vector3>::const_iterator it = points.cbegin(); it != points.cend(); ++it)
     {
         const geo::Vector3& v = *it;
-        aMesh->mVertices[it - points.begin()] = aiVector3D( v.x, v.y, v.z );
+        aMesh->mVertices[it - points.begin()] = aiVector3D(v.x, v.y, v.z);
     }
 
     // Transfer faces to Assimp mesh
@@ -63,16 +64,16 @@ bool writeMeshFile(const std::string& filename, const Shape& shape, std::string 
     aMesh->mNumFaces = triangleIs.size();
     for (std::vector<TriangleI>::const_iterator it = triangleIs.cbegin(); it != triangleIs.cend(); ++it)
     {
-                aiFace& aFace = aMesh->mFaces[it - triangleIs.begin()];
-                aFace.mIndices = new uint[ 3 ];
-                aFace.mNumIndices = 3;
+        aiFace& aFace = aMesh->mFaces[it - triangleIs.begin()];
+        aFace.mIndices = new uint[3];
+        aFace.mNumIndices = 3;
 
-                aFace.mIndices[0] = it->i1_;
-                aFace.mIndices[1] = it->i2_;
-                aFace.mIndices[2] = it->i3_;
+        aFace.mIndices[0] = it->i1_;
+        aFace.mIndices[1] = it->i2_;
+        aFace.mIndices[2] = it->i3_;
     }
 
-    //Check format
+    // Check format
     std::transform(format.begin(), format.end(), format.begin(), ::tolower);
     if (format.empty())
     {
@@ -109,6 +110,6 @@ bool writeMeshFile(const std::string& filename, const Shape& shape, std::string 
     return true;
 }
 
-}
+} // namespace io
 
-}
+} // namespace geo
