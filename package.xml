@@ -7,11 +7,11 @@
   <version>0.1.0</version>
   <description>Shape and pose library used in many TUe applications/libraries</description>
 
-  <author email="S.v.d.Dries@tue.nl">Sjoerd van den Dries</author>
-
   <maintainer email="MatthijsBurgh@outlook.com">Matthijs van der Burgh</maintainer>
 
   <license>BSD</license>
+
+  <author email="S.v.d.Dries@tue.nl">Sjoerd van den Dries</author>
 
   <buildtool_depend>ament_cmake</buildtool_depend>
 
