@@ -152,6 +152,8 @@ if(BUILD_TESTING)
   find_package(tue_lint_config REQUIRED)
   find_package(ament_cmake_clang_format REQUIRED)
   find_package(ament_cmake_clang_tidy REQUIRED)
+  find_package(ament_cmake_lint_cmake REQUIRED)
+  find_package(ament_cmake_xmllint REQUIRED)
   find_package(ament_cmake_gtest REQUIRED)
 
   ament_clang_format(
@@ -164,6 +166,22 @@ if(BUILD_TESTING)
     CONFIG_FILE ${tue_lint_config_DIR}/../config/.clang-tidy
     --clang-tidy-version=21
     ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_BINARY_DIR}/compile_commands.json)
+  ament_lint_cmake(MAX_LINE_LENGTH 120 "--filter=
+    +convention/filename,
+    +linelength,
+    +package/consistency,
+    +package/stdargs,
+    +readability/logic,
+    +readability/mixedcase,
+    +readability/wonkycase,
+    +syntax,+whitespace/eol,
+    +whitespace/extra,
+    +whitespace/indent,
+    +whitespace/mismatch,
+    +whitespace/newline,
+    +whitespace/tabs"
+  )
+  ament_xmllint(MAX_LINE_LENGTH 120)
 
   ament_add_gtest(test_box test/test_box.cpp)
   target_link_libraries(test_box geolib)
