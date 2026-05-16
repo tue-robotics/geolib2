@@ -16,9 +16,10 @@
   <buildtool_depend>ament_cmake</buildtool_depend>
 
   <depend>assimp</depend>
+  <depend>console_bridge</depend>
   <depend>geometry_msgs</depend>
   <depend>image_geometry</depend>
-  <depend>libconsole-bridge-dev</depend>
+  <depend>libopencv-dev</depend>
   <depend>sensor_msgs</depend>
   <depend>shape_msgs</depend>
   <depend>tf2</depend>
