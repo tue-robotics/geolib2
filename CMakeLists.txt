@@ -142,7 +142,7 @@ install(
 # ------------------------------------------------------------------------------------------------
 
 ament_export_targets(export_geolib HAS_LIBRARY_TARGET)
-ament_export_dependencies(geometry_msgs image_geometry sensor_msgs shape_msgs tf2 OpenCV)
+ament_export_dependencies(assimp console_bridge geometry_msgs image_geometry sensor_msgs shape_msgs tf2 OpenCV)
 
 # ------------------------------------------------------------------------------------------------
 #                                               UNIT TESTS
