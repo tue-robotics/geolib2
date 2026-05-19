@@ -21,21 +21,28 @@ find_package(tf2 REQUIRED)
 set(CMAKE_POLICY_DEFAULT_CMP0012 NEW)  # Fixed in Assimp 5.1.0, but is not released on Ubuntu Focal
 find_package(assimp REQUIRED)
 
-# Workaround for Assimp 4.x on Ubuntu Focal (20.04): its CMake config sets
-# INTERFACE_INCLUDE_DIRECTORIES to '/usr/lib/include' which does not exist.
-# Strip any non-existent paths from the imported target so CMake does not error.
-if(TARGET assimp::assimp)
-  get_target_property(_assimp_incs assimp::assimp INTERFACE_INCLUDE_DIRECTORIES)
-  if(_assimp_incs)
-    set(_assimp_incs_filtered "")
-    foreach(_inc IN LISTS _assimp_incs)
-      if(EXISTS "${_inc}")
-        list(APPEND _assimp_incs_filtered "${_inc}")
-      endif()
-    endforeach()
-    set_target_properties(assimp::assimp PROPERTIES
-      INTERFACE_INCLUDE_DIRECTORIES "${_assimp_incs_filtered}")
-  endif()
+# Work around broken Assimp CMake packages on Ubuntu Focal (20.04), which may
+# export an unusable imported target with invalid include dirs and no library
+# location. Resolve the actual library and include directory directly instead.
+find_path(GEOLIB_ASSIMP_INCLUDE_DIR
+  NAMES
+    assimp/Exporter.hpp
+    assimp/Importer.hpp
+    assimp/aiScene.h
+    assimp/scene.h
+  HINTS
+    ${assimp_INCLUDE_DIRS}
+    ${ASSIMP_INCLUDE_DIRS}
+)
+find_library(GEOLIB_ASSIMP_LIBRARY
+  NAMES assimp
+)
+
+if(NOT GEOLIB_ASSIMP_INCLUDE_DIR)
+  message(FATAL_ERROR "Could not find the Assimp include directory")
+endif()
+if(NOT GEOLIB_ASSIMP_LIBRARY)
+  message(FATAL_ERROR "Could not find the Assimp library")
 endif()
 find_package(console_bridge REQUIRED)
 find_package(OpenCV REQUIRED)
@@ -80,28 +87,9 @@ target_include_directories(geolib SYSTEM PUBLIC
   ${OpenCV_INCLUDE_DIRS}
 )
 target_include_directories(geolib SYSTEM PRIVATE
+  ${GEOLIB_ASSIMP_INCLUDE_DIR}
   ${console_bridge_INCLUDE_DIRS}
 )
-
-set(GEOLIB_ASSIMP_LIBRARY "")
-if(TARGET assimp::assimp)
-  set(GEOLIB_ASSIMP_LIBRARY assimp::assimp)
-elseif(TARGET assimp)
-  set(GEOLIB_ASSIMP_LIBRARY assimp)
-elseif(DEFINED assimp_LIBRARIES)
-  set(GEOLIB_ASSIMP_LIBRARY ${assimp_LIBRARIES})
-elseif(DEFINED ASSIMP_LIBRARIES)
-  set(GEOLIB_ASSIMP_LIBRARY ${ASSIMP_LIBRARIES})
-else()
-  message(FATAL_ERROR "No supported Assimp target or library variable found")
-endif()
-
-if(NOT TARGET assimp::assimp AND NOT TARGET assimp)
-  target_include_directories(geolib SYSTEM PRIVATE
-    ${assimp_INCLUDE_DIRS}
-    ${ASSIMP_INCLUDE_DIRS}
-  )
-endif()
 
 target_link_libraries(geolib
   ${GEOLIB_ASSIMP_LIBRARY}
