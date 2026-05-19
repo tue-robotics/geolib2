@@ -68,7 +68,7 @@ TEST_F(TestLRF, renderLineFront)
     geo::Vec2d p2(1.0, 1.0);
 
     lrf.renderLine(p1, p2, ranges);
-    ASSERT_EQ(lrf.getAngleUpperIndex(0.0) -1, 4);
+    ASSERT_EQ(lrf.getAngleUpperIndex(0.0) -1, 4u);
     ASSERT_EQ(ranges[lrf.getAngleUpperIndex(0.0) -1], 1);
 }
 
@@ -146,8 +146,8 @@ TEST_F(TestLRF3, renderLineRight2)
 
 TEST_F(TestLRF2, getAngleUpperIndexAngle)
 {
-    ASSERT_EQ(lrf.getAngleUpperIndex(1.5*angle_min), 0);
-    ASSERT_EQ(lrf.getAngleUpperIndex(angle_min), 1);
+    ASSERT_EQ(lrf.getAngleUpperIndex(1.5*angle_min), 0u);
+    ASSERT_EQ(lrf.getAngleUpperIndex(angle_min), 1u);
     ASSERT_EQ(lrf.getAngleUpperIndex(0.5*angle_min + 0.5*angle_max), std::floor(0.5*n_beams-0.5)+1);
     ASSERT_EQ(lrf.getAngleUpperIndex(angle_max), n_beams);
     ASSERT_EQ(lrf.getAngleUpperIndex(1.5*angle_max), n_beams);
@@ -155,8 +155,8 @@ TEST_F(TestLRF2, getAngleUpperIndexAngle)
 
 TEST_F(TestLRF2, getAngleUpperIndexXY)
 {
-    ASSERT_EQ(lrf.getAngleUpperIndex(cos(1.5*angle_min), sin(1.5*angle_min)), 0);
-    ASSERT_EQ(lrf.getAngleUpperIndex(cos(angle_min), sin(angle_min)), 1);
+    ASSERT_EQ(lrf.getAngleUpperIndex(cos(1.5*angle_min), sin(1.5*angle_min)), 0u);
+    ASSERT_EQ(lrf.getAngleUpperIndex(cos(angle_min), sin(angle_min)), 1u);
     ASSERT_EQ(lrf.getAngleUpperIndex(cos(0.5*angle_min + 0.5*angle_max), sin(0.5*angle_min + 0.5*angle_max)), std::floor(0.5*n_beams - 0.5) + 1);
     ASSERT_EQ(lrf.getAngleUpperIndex(cos(angle_max), sin(angle_max)), n_beams);
     ASSERT_EQ(lrf.getAngleUpperIndex(cos(1.5*angle_max), sin(1.5*angle_max)), n_beams);
@@ -164,15 +164,15 @@ TEST_F(TestLRF2, getAngleUpperIndexXY)
 
 TEST_F(TestLRF, getAngleUpperIndexUnitCircle)
 {
-    ASSERT_EQ(lrf.getAngleUpperIndex(-1.0, 0.0)-1, 8);
-    ASSERT_EQ(lrf.getAngleUpperIndex(-1.0, -1.0)-1, 1);
-    ASSERT_EQ(lrf.getAngleUpperIndex(0.0, -1.0)-1, 2);
-    ASSERT_EQ(lrf.getAngleUpperIndex(1.0, -1.0)-1, 3);
-    ASSERT_EQ(lrf.getAngleUpperIndex(1.0, 0.0)-1, 4);
-    ASSERT_EQ(lrf.getAngleUpperIndex(1.0, 1.0)-1, 5);
-    ASSERT_EQ(lrf.getAngleUpperIndex(0.0, 1.0)-1, 6);
-    ASSERT_EQ(lrf.getAngleUpperIndex(-1.0, 1.0)-1, 7);
-    ASSERT_EQ(lrf.getAngleUpperIndex(0.0, 0.0), 5);
+    ASSERT_EQ(lrf.getAngleUpperIndex(-1.0, 0.0)-1, 8u);
+    ASSERT_EQ(lrf.getAngleUpperIndex(-1.0, -1.0)-1, 1u);
+    ASSERT_EQ(lrf.getAngleUpperIndex(0.0, -1.0)-1, 2u);
+    ASSERT_EQ(lrf.getAngleUpperIndex(1.0, -1.0)-1, 3u);
+    ASSERT_EQ(lrf.getAngleUpperIndex(1.0, 0.0)-1, 4u);
+    ASSERT_EQ(lrf.getAngleUpperIndex(1.0, 1.0)-1, 5u);
+    ASSERT_EQ(lrf.getAngleUpperIndex(0.0, 1.0)-1, 6u);
+    ASSERT_EQ(lrf.getAngleUpperIndex(-1.0, 1.0)-1, 7u);
+    ASSERT_EQ(lrf.getAngleUpperIndex(0.0, 0.0), 5u);
 }
 
 int main(int argc, char **argv)

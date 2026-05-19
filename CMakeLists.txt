@@ -20,15 +20,38 @@ find_package(tf2 REQUIRED)
 
 set(CMAKE_POLICY_DEFAULT_CMP0012 NEW)  # Fixed in Assimp 5.1.0, but is not released on Ubuntu Focal
 find_package(assimp REQUIRED)
+
+# Work around broken Assimp CMake packages on Ubuntu Focal (20.04), which may
+# export an unusable imported target with invalid include dirs and no library
+# location. Resolve the actual library and include directory directly instead.
+find_path(GEOLIB_ASSIMP_INCLUDE_DIR
+  NAMES
+    assimp/Exporter.hpp
+    assimp/Importer.hpp
+    assimp/aiScene.h
+    assimp/scene.h
+  HINTS
+    ${assimp_INCLUDE_DIRS}
+    ${ASSIMP_INCLUDE_DIRS}
+)
+find_library(GEOLIB_ASSIMP_LIBRARY
+  NAMES assimp
+  HINTS
+    ${assimp_LIBRARY_DIRS}
+    ${ASSIMP_LIBRARY_DIRS}
+)
+
+if(NOT GEOLIB_ASSIMP_INCLUDE_DIR)
+  message(FATAL_ERROR "Could not find the Assimp include directory")
+endif()
+if(NOT GEOLIB_ASSIMP_LIBRARY)
+  message(FATAL_ERROR "Could not find the Assimp library")
+endif()
 find_package(console_bridge REQUIRED)
 find_package(OpenCV REQUIRED)
 
 # to show header files in Qt Creator
 file(GLOB_RECURSE HEADER_FILES include/*.h)
-
-if(EXISTS "/usr/include/assimp/Importer.hpp" OR EXISTS "/usr/local/include/assimp/Importer.hpp")
-  add_definitions(-DASSIMP_VERSION_3)
-endif()
 
 ## Declare a cpp library
 add_library(geolib SHARED
@@ -67,11 +90,12 @@ target_include_directories(geolib SYSTEM PUBLIC
   ${OpenCV_INCLUDE_DIRS}
 )
 target_include_directories(geolib SYSTEM PRIVATE
+  ${GEOLIB_ASSIMP_INCLUDE_DIR}
   ${console_bridge_INCLUDE_DIRS}
 )
 
 target_link_libraries(geolib
-  assimp::assimp
+  ${GEOLIB_ASSIMP_LIBRARY}
   geometry_msgs::geometry_msgs__rosidl_generator_cpp
   image_geometry::image_geometry
   sensor_msgs::sensor_msgs__rosidl_generator_cpp
