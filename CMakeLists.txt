@@ -26,10 +26,6 @@ find_package(OpenCV REQUIRED)
 # to show header files in Qt Creator
 file(GLOB_RECURSE HEADER_FILES include/*.h)
 
-if(EXISTS "/usr/include/assimp/Importer.hpp" OR EXISTS "/usr/local/include/assimp/Importer.hpp")
-  add_definitions(-DASSIMP_VERSION_3)
-endif()
-
 ## Declare a cpp library
 add_library(geolib SHARED
   ${HEADER_FILES}
@@ -70,8 +66,28 @@ target_include_directories(geolib SYSTEM PRIVATE
   ${console_bridge_INCLUDE_DIRS}
 )
 
+set(GEOLIB_ASSIMP_LIBRARY "")
+if(TARGET assimp::assimp)
+  set(GEOLIB_ASSIMP_LIBRARY assimp::assimp)
+elseif(TARGET assimp)
+  set(GEOLIB_ASSIMP_LIBRARY assimp)
+elseif(DEFINED assimp_LIBRARIES)
+  set(GEOLIB_ASSIMP_LIBRARY ${assimp_LIBRARIES})
+elseif(DEFINED ASSIMP_LIBRARIES)
+  set(GEOLIB_ASSIMP_LIBRARY ${ASSIMP_LIBRARIES})
+else()
+  message(FATAL_ERROR "No supported Assimp target or library variable found")
+endif()
+
+if(NOT TARGET assimp::assimp AND NOT TARGET assimp)
+  target_include_directories(geolib SYSTEM PRIVATE
+    ${assimp_INCLUDE_DIRS}
+    ${ASSIMP_INCLUDE_DIRS}
+  )
+endif()
+
 target_link_libraries(geolib
-  assimp::assimp
+  ${GEOLIB_ASSIMP_LIBRARY}
   geometry_msgs::geometry_msgs__rosidl_generator_cpp
   image_geometry::image_geometry
   sensor_msgs::sensor_msgs__rosidl_generator_cpp

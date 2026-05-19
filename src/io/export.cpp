@@ -1,6 +1,6 @@
 #include "geolib/io/export.h"
 
-#ifdef ASSIMP_VERSION_3
+#if __has_include(<assimp/Exporter.hpp>)
 #include <assimp/Exporter.hpp>
 #include <assimp/mesh.h>
 #include <assimp/scene.h>

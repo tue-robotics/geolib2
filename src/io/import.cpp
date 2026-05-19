@@ -1,6 +1,6 @@
 #include "geolib/io/import.h"
 
-#ifdef ASSIMP_VERSION_3
+#if __has_include(<assimp/Importer.hpp>)
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
 #else
