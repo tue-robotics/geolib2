@@ -20,6 +20,23 @@ find_package(tf2 REQUIRED)
 
 set(CMAKE_POLICY_DEFAULT_CMP0012 NEW)  # Fixed in Assimp 5.1.0, but is not released on Ubuntu Focal
 find_package(assimp REQUIRED)
+
+# Workaround for Assimp 4.x on Ubuntu Focal (20.04): its CMake config sets
+# INTERFACE_INCLUDE_DIRECTORIES to '/usr/lib/include' which does not exist.
+# Strip any non-existent paths from the imported target so CMake does not error.
+if(TARGET assimp::assimp)
+  get_target_property(_assimp_incs assimp::assimp INTERFACE_INCLUDE_DIRECTORIES)
+  if(_assimp_incs)
+    set(_assimp_incs_filtered "")
+    foreach(_inc IN LISTS _assimp_incs)
+      if(EXISTS "${_inc}")
+        list(APPEND _assimp_incs_filtered "${_inc}")
+      endif()
+    endforeach()
+    set_target_properties(assimp::assimp PROPERTIES
+      INTERFACE_INCLUDE_DIRECTORIES "${_assimp_incs_filtered}")
+  endif()
+endif()
 find_package(console_bridge REQUIRED)
 find_package(OpenCV REQUIRED)
 
