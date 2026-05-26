@@ -7,13 +7,9 @@
 class ShapeTest : public BoxTest
 {
 protected:
-    ShapeTest() : shape(box)
-    {
-    }
+    ShapeTest() : shape(box) {}
 
-    virtual ~ShapeTest()
-    {
-    }
+    virtual ~ShapeTest() {}
 
     geo::Shape shape;
 };
