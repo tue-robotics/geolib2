@@ -13,7 +13,7 @@
 #endif
 
 #include <stdlib.h> /* srand, rand */
-#include <time.h>   /* time */
+#include <time.h> /* time */
 
 // ----------------------------------------------------------------------------------------------------
 
@@ -99,7 +99,6 @@ bool equals(const geo::Transform3& T, const tf2::Transform& T_tf, const std::str
 
 int main()
 {
-
     // initialize random seed
     srand(time(NULL));
 
@@ -116,7 +115,6 @@ int main()
         !equals(t1.inverseTimes(t2), t1_tf.inverseTimes(t2_tf), "Transform.inverseTimes(Transform)") ||
         !equals(geo::Transform3::identity() * t1, t1_tf, "Transform.identity() * Transform"))
     {
-
         std::cout << "ERROR" << std::endl;
         return -1;
     }

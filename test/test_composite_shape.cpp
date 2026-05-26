@@ -7,14 +7,9 @@
 class CompShapeTest : public BoxTest
 {
 protected:
-    CompShapeTest()
-    {
-        comp.addShape(box, geo::Pose3D::identity());
-    }
+    CompShapeTest() { comp.addShape(box, geo::Pose3D::identity()); }
 
-    virtual ~CompShapeTest()
-    {
-    }
+    virtual ~CompShapeTest() {}
 
     geo::CompositeShape comp;
 };
@@ -60,7 +55,8 @@ TEST_F(CompShapeTest, Intersect)
     ASSERT_TRUE(comp.intersect(side_center_close, 0.25));
 }
 
-int main(int argc, char **argv) {
-   testing::InitGoogleTest(&argc, argv);
-   return RUN_ALL_TESTS();
+int main(int argc, char** argv)
+{
+    testing::InitGoogleTest(&argc, argv);
+    return RUN_ALL_TESTS();
 }

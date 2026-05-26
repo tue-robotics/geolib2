@@ -6,7 +6,7 @@
 
 class ShapeTest : public BoxTest
 {
-  protected:
+protected:
     ShapeTest() : shape(box) {}
 
     virtual ~ShapeTest() {}

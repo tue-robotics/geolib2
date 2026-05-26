@@ -46,7 +46,8 @@ TEST_F(BoxTest, Intersect)
     ASSERT_TRUE(box.intersect(side_center_close, 0.25));
 }
 
-int main(int argc, char **argv) {
-   testing::InitGoogleTest(&argc, argv);
-   return RUN_ALL_TESTS();
+int main(int argc, char** argv)
+{
+    testing::InitGoogleTest(&argc, argv);
+    return RUN_ALL_TESTS();
 }

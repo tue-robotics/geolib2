@@ -14,9 +14,7 @@ protected:
         side_center_distance = geo::Vector3(0, 0, 1);
     }
 
-    virtual ~BoxTest()
-    {
-    }
+    virtual ~BoxTest() {}
 
     geo::Vector3 min, max, origin;
     geo::Box box;
