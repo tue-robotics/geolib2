@@ -4,55 +4,63 @@
 
 #include "box_test.h"
 
-class ShapeTest : public BoxTest {
+class ShapeTest : public BoxTest
+{
 protected:
-  ShapeTest() : shape(box) {}
+    ShapeTest() : shape(box)
+    {
+    }
 
-  virtual ~ShapeTest() {}
+    virtual ~ShapeTest()
+    {
+    }
 
-  geo::Shape shape;
+    geo::Shape shape;
 };
 
-TEST_F(ShapeTest, Contains) {
-  ASSERT_TRUE(shape.contains(origin));
+TEST_F(ShapeTest, Contains)
+{
+    ASSERT_TRUE(shape.contains(origin));
 
-  ASSERT_TRUE(shape.contains(min));
-  ASSERT_TRUE(shape.contains(max));
+    ASSERT_TRUE(shape.contains(min));
+    ASSERT_TRUE(shape.contains(max));
 
-  ASSERT_TRUE(shape.contains(side_center));
-  ASSERT_TRUE(shape.contains(side_center_triangle));
+    ASSERT_TRUE(shape.contains(side_center));
+    ASSERT_TRUE(shape.contains(side_center_triangle));
 
-  ASSERT_FALSE(shape.contains(side_center_distance));
+    ASSERT_FALSE(shape.contains(side_center_distance));
 
-  ASSERT_FALSE(shape.contains(side_center_close));
+    ASSERT_FALSE(shape.contains(side_center_close));
 }
 
-TEST_F(ShapeTest, Intersect) {
-  ASSERT_TRUE(shape.intersect(origin, 0));
-  ASSERT_TRUE(shape.intersect(origin, 0.1));
+TEST_F(ShapeTest, Intersect)
+{
+    ASSERT_TRUE(shape.intersect(origin, 0));
+    ASSERT_TRUE(shape.intersect(origin, 0.1));
 
-  ASSERT_TRUE(shape.intersect(min, 0));
-  ASSERT_TRUE(shape.intersect(min, 0.1));
-  ASSERT_TRUE(shape.intersect(max, 0));
-  ASSERT_TRUE(shape.intersect(max, 0.1));
+    ASSERT_TRUE(shape.intersect(min, 0));
+    ASSERT_TRUE(shape.intersect(min, 0.1));
+    ASSERT_TRUE(shape.intersect(max, 0));
+    ASSERT_TRUE(shape.intersect(max, 0.1));
 
-  ASSERT_TRUE(shape.intersect(side_center, 0));
-  ASSERT_TRUE(shape.intersect(side_center, 0.1));
-  ASSERT_TRUE(shape.intersect(side_center_triangle, 0));
-  ASSERT_TRUE(shape.intersect(side_center_triangle, 0.1));
+    ASSERT_TRUE(shape.intersect(side_center, 0));
+    ASSERT_TRUE(shape.intersect(side_center, 0.1));
+    ASSERT_TRUE(shape.intersect(side_center_triangle, 0));
+    ASSERT_TRUE(shape.intersect(side_center_triangle, 0.1));
 
-  ASSERT_FALSE(shape.intersect(side_center_distance, 0));
-  ASSERT_FALSE(shape.intersect(side_center_distance, 0.1));
-  ASSERT_TRUE(shape.intersect(side_center_distance, 0.5));
-  ASSERT_TRUE(shape.intersect(side_center_distance, 0.6));
+    ASSERT_FALSE(shape.intersect(side_center_distance, 0));
+    ASSERT_FALSE(shape.intersect(side_center_distance, 0.1));
+    ASSERT_TRUE(shape.intersect(side_center_distance, 0.5));
+    ASSERT_TRUE(shape.intersect(side_center_distance, 0.6));
 
-  ASSERT_FALSE(shape.intersect(side_center_close, 0));
-  ASSERT_FALSE(shape.intersect(side_center_close, 0.1));
-  ASSERT_TRUE(shape.intersect(side_center_close, 0.2));
-  ASSERT_TRUE(shape.intersect(side_center_close, 0.25));
+    ASSERT_FALSE(shape.intersect(side_center_close, 0));
+    ASSERT_FALSE(shape.intersect(side_center_close, 0.1));
+    ASSERT_TRUE(shape.intersect(side_center_close, 0.2));
+    ASSERT_TRUE(shape.intersect(side_center_close, 0.25));
 }
 
-int main(int argc, char **argv) {
-  testing::InitGoogleTest(&argc, argv);
-  return RUN_ALL_TESTS();
+int main(int argc, char** argv)
+{
+    testing::InitGoogleTest(&argc, argv);
+    return RUN_ALL_TESTS();
 }
