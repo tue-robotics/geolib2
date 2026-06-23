@@ -1,22 +1,23 @@
 #ifndef GEOLIB_COMPOSITE_SHAPE_H_
 #define GEOLIB_COMPOSITE_SHAPE_H_
 
-#include "Shape.h"
 #include "geolib/Box.h"
+#include "Shape.h"
 
 #include <vector>
 
-namespace geo {
+namespace geo
+{
 
 class Box;
 
 /**
  * @brief A geometric description of a shape as a union of other shapes
  */
-class CompositeShape : public Shape {
+class CompositeShape : public Shape
+{
 
 public:
-
     CompositeShape();
 
     virtual ~CompositeShape();
@@ -44,17 +45,16 @@ public:
      * @brief Get all the child shapes and their inverse pose relative to the "origin" of the CompositeShape.
      * @return reference to the vector of all ShapePtr and Transform
      */
-    const std::vector<std::pair<ShapePtr, Transform> >& getShapes() const;
+    const std::vector<std::pair<ShapePtr, Transform>>& getShapes() const;
 
-    void setMesh(const Mesh &mesh);
+    void setMesh(const Mesh& mesh);
 
 protected:
-
     /**
      * Pairs of child shapes and the transform from the origin of the child shape
      * to the origin of the composite shape
      */
-    std::vector<std::pair<ShapePtr, Transform> > shapes_;
+    std::vector<std::pair<ShapePtr, Transform>> shapes_;
 
     double max_radius_;
 
@@ -63,10 +63,8 @@ protected:
     Vector3 max_;
 
     Box bb_;
-
 };
 
-}
-
+} // namespace geo
 
 #endif

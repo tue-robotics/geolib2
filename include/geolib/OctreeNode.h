@@ -5,14 +5,15 @@
 
 #include <vector>
 
-namespace geo {
+namespace geo
+{
 
 class Octree;
 
-class OctreeNode {
+class OctreeNode
+{
 
 public:
-
     OctreeNode(double size, Octree* octree);
 
     OctreeNode(const OctreeNode& orig, Octree* tree);
@@ -34,7 +35,6 @@ public:
     bool intersect(const Box& b) const;
 
 protected:
-
     double size_;
 
     double split_;
@@ -44,9 +44,8 @@ protected:
     bool occupied_;
 
     Octree* tree_;
-
 };
 
-}
+} // namespace geo
 
 #endif

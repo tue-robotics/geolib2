@@ -3,7 +3,8 @@
 
 #include "Shape.h"
 
-namespace geo {
+namespace geo
+{
 
 /**
  * A class describing a box geometry
@@ -12,11 +13,11 @@ namespace geo {
  * of the box
  *
  */
-class Box : public Shape {
+class Box : public Shape
+{
 
 public:
-
-    Box(const Vector3 &min, const Vector3 &max);
+    Box(const Vector3& min, const Vector3& max);
 
     Box* clone() const;
 
@@ -73,7 +74,6 @@ public:
     void setMesh(const Mesh& mesh);
 
 protected:
-
     Vector3 bounds[2];
 
     double max_radius_;
@@ -82,9 +82,8 @@ protected:
      * @brief Should be called any time #bounds is changed
      */
     void generate_mesh_();
-
 };
 
-}
+} // namespace geo
 
 #endif

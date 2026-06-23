@@ -5,7 +5,8 @@
 
 #include <memory>
 
-namespace geo {
+namespace geo
+{
 
 typedef double Time;
 
@@ -33,6 +34,6 @@ typedef Vec3 Vector3;
 typedef Mat3 Matrix3;
 typedef QuaternionT<real> Quaternion;
 
-}
+} // namespace geo
 
 #endif

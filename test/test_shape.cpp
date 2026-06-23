@@ -4,17 +4,12 @@
 
 #include "box_test.h"
 
-
 class ShapeTest : public BoxTest
 {
 protected:
-    ShapeTest() : shape(box)
-    {
-    }
+    ShapeTest() : shape(box) {}
 
-    virtual ~ShapeTest()
-    {
-    }
+    virtual ~ShapeTest() {}
 
     geo::Shape shape;
 };
@@ -60,7 +55,8 @@ TEST_F(ShapeTest, Intersect)
     ASSERT_TRUE(shape.intersect(side_center_close, 0.25));
 }
 
-int main(int argc, char **argv) {
-   testing::InitGoogleTest(&argc, argv);
-   return RUN_ALL_TESTS();
+int main(int argc, char** argv)
+{
+    testing::InitGoogleTest(&argc, argv);
+    return RUN_ALL_TESTS();
 }

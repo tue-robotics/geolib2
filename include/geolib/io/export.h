@@ -5,13 +5,11 @@
 
 #include <string>
 
-namespace geo {
+namespace geo
+{
 
-namespace io {
+namespace io { bool writeMeshFile(const std::string& filename, const Shape& shape, std::string format = ""); }
 
-    bool writeMeshFile(const std::string& filename, const Shape& shape, std::string format = "");
-}
-
-}
+} // namespace geo
 
 #endif
