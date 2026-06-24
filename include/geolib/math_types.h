@@ -353,9 +353,35 @@ public:
 
     ~Mat2T() {}
 
-    T& operator[](const uint i) { return m[i]; }
+    T& operator[](const uint i)
+    {
+        switch (i)
+        {
+        case 0:
+            return xx;
+        case 1:
+            return xy;
+        case 2:
+            return yx;
+        default:
+            return yy;
+        }
+    }
 
-    const T& operator[](const uint i) const { return m[i]; }
+    const T& operator[](const uint i) const
+    {
+        switch (i)
+        {
+        case 0:
+            return xx;
+        case 1:
+            return xy;
+        case 2:
+            return yx;
+        default:
+            return yy;
+        }
+    }
 
     bool operator==(const Mat2T& m) const { return (xx == m.xx && xy == m.xy && yx == m.yx && yy == m.yy); }
 
@@ -377,9 +403,9 @@ public:
 
     Mat2T transpose() const { return Mat2T(xx, yx, xy, yy); }
 
-    T& operator()(int i, int j) { return m[i * 2 + j]; }
+    T& operator()(int i, int j) { return (*this)[i * 2 + j]; }
 
-    const T& operator()(int i, int j) const { return m[i * 2 + j]; }
+    const T& operator()(int i, int j) const { return (*this)[i * 2 + j]; }
 
     /// multiplies vector with a scalar
     Mat2T operator*(T s) const { return Mat2T(xx * s, xy * s, yx * s, yy * s); }
@@ -405,14 +431,7 @@ public:
         return out;
     }
 
-    union
-    {
-        struct
-        {
-            T xx, xy, yx, yy;
-        };
-        T m[4];
-    };
+    T xx, xy, yx, yy;
 };
 
 // --------------------------------------------------------------------------------
