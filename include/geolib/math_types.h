@@ -44,10 +44,8 @@ public:
     {
         switch (i)
         {
-        case 0:
-            return x;
-        default:
-            return y;
+        case 0: return x;
+        default: return y;
         }
     }
 
@@ -55,10 +53,8 @@ public:
     {
         switch (i)
         {
-        case 0:
-            return x;
-        default:
-            return y;
+        case 0: return x;
+        default: return y;
         }
     }
 
@@ -193,12 +189,9 @@ public:
     {
         switch (i)
         {
-        case 0:
-            return x;
-        case 1:
-            return y;
-        default:
-            return z;
+        case 0: return x;
+        case 1: return y;
+        default: return z;
         }
     }
 
@@ -206,12 +199,9 @@ public:
     {
         switch (i)
         {
-        case 0:
-            return x;
-        case 1:
-            return y;
-        default:
-            return z;
+        case 0: return x;
+        case 1: return y;
+        default: return z;
         }
     }
 
@@ -357,14 +347,10 @@ public:
     {
         switch (i)
         {
-        case 0:
-            return xx;
-        case 1:
-            return xy;
-        case 2:
-            return yx;
-        default:
-            return yy;
+        case 0: return xx;
+        case 1: return xy;
+        case 2: return yx;
+        default: return yy;
         }
     }
 
@@ -372,14 +358,10 @@ public:
     {
         switch (i)
         {
-        case 0:
-            return xx;
-        case 1:
-            return xy;
-        case 2:
-            return yx;
-        default:
-            return yy;
+        case 0: return xx;
+        case 1: return xy;
+        case 2: return yx;
+        default: return yy;
         }
     }
 
@@ -462,14 +444,10 @@ public:
     {
         switch (i)
         {
-        case 0:
-            return x;
-        case 1:
-            return y;
-        case 2:
-            return z;
-        default:
-            return w;
+        case 0: return x;
+        case 1: return y;
+        case 2: return z;
+        default: return w;
         }
     }
 
@@ -477,14 +455,10 @@ public:
     {
         switch (i)
         {
-        case 0:
-            return x;
-        case 1:
-            return y;
-        case 2:
-            return z;
-        default:
-            return w;
+        case 0: return x;
+        case 1: return y;
+        case 2: return z;
+        default: return w;
         }
     }
 
@@ -594,24 +568,15 @@ public:
     {
         switch (i)
         {
-        case 0:
-            return xx;
-        case 1:
-            return xy;
-        case 2:
-            return xz;
-        case 3:
-            return yx;
-        case 4:
-            return yy;
-        case 5:
-            return yz;
-        case 6:
-            return zx;
-        case 7:
-            return zy;
-        default:
-            return zz;
+        case 0: return xx;
+        case 1: return xy;
+        case 2: return xz;
+        case 3: return yx;
+        case 4: return yy;
+        case 5: return yz;
+        case 6: return zx;
+        case 7: return zy;
+        default: return zz;
         }
     }
 
@@ -619,24 +584,15 @@ public:
     {
         switch (i)
         {
-        case 0:
-            return xx;
-        case 1:
-            return xy;
-        case 2:
-            return xz;
-        case 3:
-            return yx;
-        case 4:
-            return yy;
-        case 5:
-            return yz;
-        case 6:
-            return zx;
-        case 7:
-            return zy;
-        default:
-            return zz;
+        case 0: return xx;
+        case 1: return xy;
+        case 2: return xz;
+        case 3: return yx;
+        case 4: return yy;
+        case 5: return yz;
+        case 6: return zx;
+        case 7: return zy;
+        default: return zz;
         }
     }
 
