@@ -26,7 +26,7 @@ public:
     Vec2T(const Vec2T& v) = default;
     Vec2T(T x_, T y_) : x(x_), y(y_) {}
     Vec2T(T value) : x(value), y(value) {}
-    Vec2T(const T* values) { memcpy(m, values, 2 * sizeof(T)); }
+    Vec2T(const T* values) : x(values[0]), y(values[1]) {}
 
     Vec2T& operator=(const Vec2T& v)
     {
@@ -40,9 +40,27 @@ public:
 
     ~Vec2T() {}
 
-    T& operator[](const uint i) { return m[i]; }
+    T& operator[](const uint i)
+    {
+        switch (i)
+        {
+        case 0:
+            return x;
+        default:
+            return y;
+        }
+    }
 
-    const T& operator[](const uint i) const { return m[i]; }
+    const T& operator[](const uint i) const
+    {
+        switch (i)
+        {
+        case 0:
+            return x;
+        default:
+            return y;
+        }
+    }
 
     bool operator==(const Vec2T& v) const { return (x == v.x && y == v.y); }
 
@@ -143,14 +161,7 @@ public:
         return out;
     }
 
-    union
-    {
-        struct
-        {
-            T x, y;
-        };
-        T m[2];
-    };
+    T x, y;
 };
 
 // --------------------------------------------------------------------------------
@@ -163,7 +174,7 @@ public:
     Vec3T(const Vec3T& v) = default;
     Vec3T(T x_, T y_, T z_) : x(x_), y(y_), z(z_) {}
     Vec3T(T value) : x(value), y(value), z(value) {}
-    Vec3T(const T* values) { memcpy(m, values, 3 * sizeof(T)); }
+    Vec3T(const T* values) : x(values[0]), y(values[1]), z(values[2]) {}
 
     Vec3T& operator=(const Vec3T& v)
     {
@@ -178,9 +189,31 @@ public:
 
     ~Vec3T() {}
 
-    T& operator[](const uint i) { return m[i]; }
+    T& operator[](const uint i)
+    {
+        switch (i)
+        {
+        case 0:
+            return x;
+        case 1:
+            return y;
+        default:
+            return z;
+        }
+    }
 
-    const T& operator[](const uint i) const { return m[i]; }
+    const T& operator[](const uint i) const
+    {
+        switch (i)
+        {
+        case 0:
+            return x;
+        case 1:
+            return y;
+        default:
+            return z;
+        }
+    }
 
     bool operator==(const Vec3T& v) const { return (x == v.x && y == v.y && z == v.z); }
 
@@ -292,14 +325,7 @@ public:
         return out;
     }
 
-    union
-    {
-        struct
-        {
-            T x, y, z;
-        };
-        T m[3];
-    };
+    T x, y, z;
 };
 
 // --------------------------------------------------------------------------------
