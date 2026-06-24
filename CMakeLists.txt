@@ -216,6 +216,9 @@ if(BUILD_TESTING)
 
   ament_add_gtest(test_lrf test/test_lrf.cpp)
   target_link_libraries(test_lrf geolib)
+
+  ament_add_gtest(test_math_types test/test_math_types.cpp)
+  target_link_libraries(test_math_types geolib)
 endif()
 
 ament_package()
