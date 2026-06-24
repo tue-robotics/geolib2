@@ -458,9 +458,35 @@ public:
 
     ~QuaternionT() {}
 
-    T& operator[](const uint i) { return m[i]; }
+    T& operator[](const uint i)
+    {
+        switch (i)
+        {
+        case 0:
+            return x;
+        case 1:
+            return y;
+        case 2:
+            return z;
+        default:
+            return w;
+        }
+    }
 
-    const T& operator[](const uint i) const { return m[i]; }
+    const T& operator[](const uint i) const
+    {
+        switch (i)
+        {
+        case 0:
+            return x;
+        case 1:
+            return y;
+        case 2:
+            return z;
+        default:
+            return w;
+        }
+    }
 
     bool operator==(const QuaternionT& q) const { return (x == q.x && y == q.y && z == q.z && w == q.w); }
 
@@ -513,14 +539,7 @@ public:
         return out;
     }
 
-    union
-    {
-        struct
-        {
-            T x, y, z, w;
-        };
-        T m[4];
-    };
+    T x, y, z, w;
 };
 
 // --------------------------------------------------------------------------------
