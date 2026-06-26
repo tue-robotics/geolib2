@@ -1,7 +1,13 @@
 #include "geolib/sensors/LaserRangeFinder.h"
+#include "geolib/datatypes.h"
+#include "geolib/math_types.h"
+#include "geolib/Mesh.h"
 #include "geolib/Shape.h"
 
+#include <algorithm>
 #include <cmath>
+#include <sys/types.h>
+#include <vector>
 
 namespace geo
 {
@@ -10,7 +16,7 @@ LaserRangeFinder::LaserRangeFinder() : a_min_(0), a_max_(0), range_min_(0), rang
 {
 }
 
-LaserRangeFinder::~LaserRangeFinder() {}
+LaserRangeFinder::~LaserRangeFinder() = default;
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 //
@@ -22,8 +28,8 @@ LaserRangeFinder::~LaserRangeFinder() {}
 
 void LaserRangeFinder::RenderResult::renderLine(const Vec2& p1, const Vec2& p2)
 {
-    Vec2 diff = p2 - p1;
-    double line_length_sq = diff.length2();
+    Vec2 const diff = p2 - p1;
+    double const line_length_sq = diff.length2();
 
     // Get rid of null cases
     if ((p1.x == 0 && p1.y == 0) || (p2.x == 0 && p2.y == 0) || line_length_sq == 0)
@@ -33,9 +39,9 @@ void LaserRangeFinder::RenderResult::renderLine(const Vec2& p1, const Vec2& p2)
     {
         // Calculate distance to the line
 
-        double t = p1.dot(diff) / -line_length_sq;
+        double const t = p1.dot(diff) / -line_length_sq;
 
-        double distance_sq;
+        double distance_sq = NAN;
 
         if (t < 0)
             distance_sq = p1.length2();
@@ -50,12 +56,12 @@ void LaserRangeFinder::RenderResult::renderLine(const Vec2& p1, const Vec2& p2)
     }
 
     // Get the angle / beam indices based on the slope
-    int i_p1 = lrf_->getAngleUpperIndexRaw(p1.x, p1.y);
-    int i_p2 = lrf_->getAngleUpperIndexRaw(p2.x, p2.y);
+    int const i_p1 = lrf_->getAngleUpperIndexRaw(p1.x, p1.y);
+    int const i_p2 = lrf_->getAngleUpperIndexRaw(p2.x, p2.y);
 
     // Get the minimum and maximum
-    int i_min = std::min<int>(i_p1, i_p2);
-    int i_max = std::max<int>(i_p1, i_p2);
+    int const i_min = std::min<int>(i_p1, i_p2);
+    int const i_max = std::max<int>(i_p1, i_p2);
 
     // We need to differentiate between two cases:
     // - from min to max is less than half a circle
@@ -63,7 +69,10 @@ void LaserRangeFinder::RenderResult::renderLine(const Vec2& p1, const Vec2& p2)
 
     // In the latter case, we may need to render two parts
 
-    uint i_min1, i_max1, i_min2, i_max2;
+    uint i_min1 = 0;
+    uint i_max1 = 0;
+    uint i_min2 = 0;
+    uint i_max2 = 0;
     if (i_max - i_min < static_cast<int>(lrf_->i_half_circle_))
     {
         // Back-face culling: if the normal is pointing outwards, ommit this line
@@ -104,7 +113,7 @@ void LaserRangeFinder::RenderResult::renderLine(const Vec2& p1, const Vec2& p2)
 
     // d = (q1 - ray_start) x s / (r x s)
     //   = (q1 x s) / (r x s)
-    Vec2& s = diff;
+    Vec2 const& s = diff;
 
     // For all beam regions found above (1 or 2 regions), calculate the intersection
     // of each beam with the line
@@ -113,18 +122,18 @@ void LaserRangeFinder::RenderResult::renderLine(const Vec2& p1, const Vec2& p2)
     for (uint i = i_min1; i < i_max1; ++i)
     {
         const geo::Vec2& r = lrf_->ray_dirs_[i].projectTo2d();
-        double d = p1.cross(s) / r.cross(s);
+        double const d = p1.cross(s) / r.cross(s);
         if (d > 0)
-            renderPoint(i, d);
+            renderPoint(i, static_cast<float>(d));
     }
 
     // Draw part 2
     for (uint i = i_min2; i < i_max2; ++i)
     {
         const geo::Vec2& r = lrf_->ray_dirs_[i].projectTo2d();
-        double d = p1.cross(s) / r.cross(s);
+        double const d = p1.cross(s) / r.cross(s);
         if (d > 0)
-            renderPoint(i, d);
+            renderPoint(i, static_cast<float>(d));
     }
 }
 
@@ -154,14 +163,14 @@ void LaserRangeFinder::render(const LaserRangeFinder::RenderOptions& opt, LaserR
 
     const geo::Pose3D& pose = opt.getPose();
 
-    double max_radius = opt.getMesh().getMaxRadius();
+    double const max_radius = opt.getMesh().getMaxRadius();
     if (max_radius > 0)
     {
         // If object is too far above or below the laser plane, do not render
         if (std::abs(pose.getOrigin().getZ()) > max_radius)
             return;
 
-        double dist_sq = pose.getOrigin().length2();
+        double const dist_sq = pose.getOrigin().length2();
 
         if (dist_sq > max_radius * max_radius)
         {
@@ -176,43 +185,44 @@ void LaserRangeFinder::render(const LaserRangeFinder::RenderOptions& opt, LaserR
 
     // transform Z-coordinates of all vertices
     std::vector<double> zs_t(points.size());
-    Vector3 Rz = pose.getBasis().getRow(2);
-    double z_offset = pose.getOrigin().getZ();
+    Vector3 const rz = pose.getBasis().getRow(2);
+    double const z_offset = pose.getOrigin().getZ();
     for (uint i = 0; i < points.size(); ++i)
-        zs_t[i] = Rz.dot(points[i]) + z_offset;
+        zs_t[i] = rz.dot(points[i]) + z_offset;
 
-    Vector3 Rx = pose.getBasis().getRow(0);
-    Vector3 Ry = pose.getBasis().getRow(1);
+    Vector3 const rx = pose.getBasis().getRow(0);
+    Vector3 const ry = pose.getBasis().getRow(1);
 
     // Iterate over all triangles
-    for (std::vector<TriangleI>::const_iterator it_tri = triangles.begin(); it_tri != triangles.end(); ++it_tri)
+    for (auto triangle : triangles)
     {
-        double z1 = zs_t[it_tri->i1_];
-        double z2 = zs_t[it_tri->i2_];
-        double z3 = zs_t[it_tri->i3_];
+        double const z1 = zs_t[triangle.i1_];
+        double const z2 = zs_t[triangle.i2_];
+        double const z3 = zs_t[triangle.i3_];
 
-        bool p1_under_plane = z1 < 0;
-        bool p2_under_plane = z2 < 0;
-        bool p3_under_plane = z3 < 0;
+        bool const p1_under_plane = z1 < 0;
+        bool const p2_under_plane = z2 < 0;
+        bool const p3_under_plane = z3 < 0;
 
         // Check if not all points of the triangle are on the same side of the plane
         if (p1_under_plane != p2_under_plane || p2_under_plane != p3_under_plane)
         {
             // Transform the vertices to the sensor frame
-            Vec2 p1_3d(Rx.dot(points[it_tri->i1_]) + pose.t.x, Ry.dot(points[it_tri->i1_]) + pose.t.y);
-            Vec2 p2_3d(Rx.dot(points[it_tri->i2_]) + pose.t.x, Ry.dot(points[it_tri->i2_]) + pose.t.y);
-            Vec2 p3_3d(Rx.dot(points[it_tri->i3_]) + pose.t.x, Ry.dot(points[it_tri->i3_]) + pose.t.y);
+            Vec2 const p1_3d(rx.dot(points[triangle.i1_]) + pose.t.x, ry.dot(points[triangle.i1_]) + pose.t.y);
+            Vec2 const p2_3d(rx.dot(points[triangle.i2_]) + pose.t.x, ry.dot(points[triangle.i2_]) + pose.t.y);
+            Vec2 const p3_3d(rx.dot(points[triangle.i3_]) + pose.t.x, ry.dot(points[triangle.i3_]) + pose.t.y);
 
             // Calculate the distances of the vertices to the plane
-            double z1_abs = std::abs(z1);
-            double z2_abs = std::abs(z2);
-            double z3_abs = std::abs(z3);
+            double const z1_abs = std::abs(z1);
+            double const z2_abs = std::abs(z2);
+            double const z3_abs = std::abs(z3);
 
             // Calculate the intersections of the triangle edges with the plane,
             // respecting the orientation of the triangle (normal is towards or away from sensor)
             // such that later on we can do back-face culling.
 
-            Vec2 q1, q2;
+            Vec2 q1;
+            Vec2 q2;
             if (p2_under_plane == p3_under_plane)
             {
                 if (p2_under_plane)
@@ -329,7 +339,7 @@ void LaserRangeFinder::calculateRays()
         a += angle_incr_;
     }
 
-    i_half_circle_ = M_PI / angle_incr_;
+    i_half_circle_ = static_cast<uint>(std::acos(-1.0) / angle_incr_);
 }
 
 double LaserRangeFinder::getAngleIncrement() const
@@ -350,7 +360,7 @@ uint LaserRangeFinder::getAngleUpperIndex(double x, double y) const
 
 int LaserRangeFinder::getAngleUpperIndexRaw(double angle) const
 {
-    return (angle - a_min_) / angle_incr_ + 1;
+    return static_cast<int>((angle - a_min_) / angle_incr_) + 1;
 }
 
 int LaserRangeFinder::getAngleUpperIndexRaw(double x, double y) const
@@ -370,7 +380,7 @@ geo::Vector3 LaserRangeFinder::rangeToPoint(double range, uint i) const
     return ray_dirs_[i] * range;
 }
 
-const geo::Vector3 LaserRangeFinder::getRayDirection(uint i) const
+geo::Vector3 LaserRangeFinder::getRayDirection(uint i) const
 {
     return ray_dirs_[i];
 }

@@ -1,5 +1,13 @@
-#include "geolib/Octree.h"
+#include <algorithm>
+
+#include <cmath>
+
 #include "geolib/Box.h"
+#include "geolib/Octree.h"
+#include "geolib/OctreeNode.h"
+#include "geolib/Ray.h"
+#include "geolib/Shape.h"
+#include <vector>
 
 namespace geo
 {
@@ -12,7 +20,7 @@ Octree::Octree(double size, double resolution) :
 }
 
 Octree::Octree(const Octree& orig) :
-    resolution_(orig.resolution_), offset_(orig.offset_), max_(orig.max_), size_(orig.size_),
+    Shape(orig), resolution_(orig.resolution_), offset_(orig.offset_), max_(orig.max_), size_(orig.size_),
     root_(new OctreeNode(*orig.root_, this))
 {
 }
@@ -62,20 +70,19 @@ double Octree::getResolution() const
 
 bool Octree::intersect(const Ray& r, float t0, float t1, double& distance) const
 {
-    double dist;
+    double dist = NAN;
     if (!Box(offset_, max_).intersect(r, t0, t1, dist))
     {
         return false;
     }
 
-    if (dist < 0)
-    {
-        // origin of the ray is within the root cube, so set dist to 0
-        dist = 0;
-    }
+    dist = std::max<double>(dist, 0);
 
-    return root_->intersect(
-        Ray(r.getOrigin() - offset_, r.getDirection()), t0 + dist + resolution_ * 0.1, t1, distance, offset_);
+    return root_->intersect(Ray(r.getOrigin() - offset_, r.getDirection()),
+                            static_cast<float>(t0 + dist + (resolution_ * 0.1)),
+                            t1,
+                            distance,
+                            offset_);
 }
 
 double Octree::getMaxRadius() const
@@ -85,19 +92,16 @@ double Octree::getMaxRadius() const
 
 void Octree::raytrace(const Ray& r, float t0, float t1)
 {
-    double dist;
+    double dist = NAN;
     if (!Box(offset_, max_).intersect(r, t0, t1, dist))
     {
         return;
     }
 
-    if (dist < 0)
-    {
-        // origin of the ray is within the root cube, so set dist to 0
-        dist = 0;
-    }
+    dist = std::max<double>(dist, 0);
 
-    root_->raytrace(r.getOrigin() - offset_, r.getDirection(), t0 + dist + resolution_ * 0.1, t1, offset_);
+    root_->raytrace(
+        r.getOrigin() - offset_, r.getDirection(), static_cast<float>(t0 + dist + (resolution_ * 0.1)), t1, offset_);
     this->add(r.getOrigin() + r.getDirection() * t1);
 
     mesh_.clear();
@@ -135,9 +139,8 @@ const Mesh& Octree::getMesh() const
         std::vector<Box> cubes;
         getCubes(cubes);
 
-        for (std::vector<Box>::iterator it = cubes.begin(); it != cubes.end(); ++it)
+        for (auto& b : cubes)
         {
-            Box& b = *it;
             mesh_.add(b.getMesh());
         }
 

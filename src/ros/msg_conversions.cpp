@@ -1,4 +1,12 @@
 #include "geolib/ros/msg_conversions.h"
+#include "geolib/datatypes.h"
+#include "geolib/Mesh.h"
+#include "geolib/sensors/DepthCamera.h"
+#include "geometry_msgs/msg/point.hpp"
+#include "sensor_msgs/msg/camera_info.hpp"
+#include "shape_msgs/msg/mesh.hpp"
+#include "shape_msgs/msg/mesh_triangle.hpp"
+#include <vector>
 
 namespace geo
 {
@@ -8,17 +16,17 @@ void convert(const geo::Mesh& m, shape_msgs::msg::Mesh& msg)
     const std::vector<Vector3>& points = m.getPoints();
     const std::vector<TriangleI>& triangles = m.getTriangleIs();
 
-    for (std::vector<Vector3>::const_iterator it = points.begin(); it != points.end(); ++it)
+    for (const auto& it : points)
     {
         geometry_msgs::msg::Point point;
-        convert(*it, point);
+        convert(it, point);
         msg.vertices.push_back(point);
     }
 
-    for (std::vector<TriangleI>::const_iterator it = triangles.begin(); it != triangles.end(); ++it)
+    for (auto triangle : triangles)
     {
         shape_msgs::msg::MeshTriangle meshtriangle;
-        convert(*it, meshtriangle);
+        convert(triangle, meshtriangle);
         msg.triangles.push_back(meshtriangle);
     }
 }

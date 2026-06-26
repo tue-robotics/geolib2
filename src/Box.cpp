@@ -1,10 +1,17 @@
 #include "geolib/Box.h"
+#include "geolib/datatypes.h"
+#include "geolib/math_types.h"
+#include "geolib/Ray.h"
 
+#include <algorithm>
+#include <array>
 #include <console_bridge/console.h>
 
 #include <cmath>
 #include <stdexcept>
 #include <string>
+#include <sys/types.h>
+#include <vector>
 
 namespace geo
 {
@@ -24,29 +31,30 @@ Box* Box::clone() const
 bool Box::intersect(const Ray& r, float t0, float t1, double& distance) const
 {
 
-    float tmin, tmax, tymin, tymax, tzmin, tzmax;
+    float tmin = NAN;
+    float tmax = NAN;
+    float tymin = NAN;
+    float tymax = NAN;
+    float tzmin = NAN;
+    float tzmax = NAN;
     const geo::Vec3& origin = r.getOrigin();
-    const geo::Vec3& invDirection = r.getInvDirection();
+    const geo::Vec3& inv_direction = r.getInvDirection();
     const std::array<int, 3>& sign = r.getSign();
-    tmin = (bounds[sign[0]].x - origin.x) * invDirection.x;
-    tmax = (bounds[1 - sign[0]].x - origin.x) * invDirection.x;
-    tymin = (bounds[sign[1]].y - origin.y) * invDirection.y;
-    tymax = (bounds[1 - sign[1]].y - origin.y) * invDirection.y;
+    tmin = static_cast<float>((bounds[sign[0]].x - origin.x) * inv_direction.x);
+    tmax = static_cast<float>((bounds[1 - sign[0]].x - origin.x) * inv_direction.x);
+    tymin = static_cast<float>((bounds[sign[1]].y - origin.y) * inv_direction.y);
+    tymax = static_cast<float>((bounds[1 - sign[1]].y - origin.y) * inv_direction.y);
 
     if ((tmin > tymax) || (tymin > tmax))
         return false;
-    if (tymin > tmin)
-        tmin = tymin;
-    if (tymax < tmax)
-        tmax = tymax;
-    tzmin = (bounds[sign[2]].z - origin.z) * invDirection.z;
-    tzmax = (bounds[1 - sign[2]].z - origin.z) * invDirection.z;
+    tmin = std::max(tymin, tmin);
+    tmax = std::min(tymax, tmax);
+    tzmin = static_cast<float>((bounds[sign[2]].z - origin.z) * inv_direction.z);
+    tzmax = static_cast<float>((bounds[1 - sign[2]].z - origin.z) * inv_direction.z);
     if ((tmin > tzmax) || (tzmin > tmax))
         return false;
-    if (tzmin > tmin)
-        tmin = tzmin;
-    if (tzmax < tmax)
-        tmax = tzmax;
+    tmin = std::max(tzmin, tmin);
+    tmax = std::min(tzmax, tmax);
 
     distance = tmin;
     return t0 < tmax && tmin < t1;
@@ -75,10 +83,10 @@ bool Box::intersect(const Box& other) const
     return true;
 }
 
-bool Box::intersect(const Vector3& p, const double radius) const
+bool Box::intersect(const Vector3& p, const double RADIUS) const
 {
     Vector3 c = getCenter();
-    if (radius <= 0)
+    if (RADIUS <= 0)
     {
         return contains(p);
     }
@@ -91,7 +99,7 @@ bool Box::intersect(const Vector3& p, const double radius) const
             c[i] = bounds[p[i] > c[i]][i]; // If p bigger than center take upper bound, otherwise lower bound
     }
 
-    return radius * radius >= (p - c).length2();
+    return RADIUS * RADIUS >= (p - c).length2();
 }
 
 bool Box::contains(const Vector3& p) const
@@ -109,15 +117,15 @@ void Box::enclose(const Box& box, const Pose3D& pose)
 {
     const std::vector<Vector3> points = box.getMesh().getTransformed(pose).getPoints();
 
-    for (auto it = points.cbegin(); it != points.cend(); ++it)
+    for (const auto& point : points)
     {
-        bounds[0].x = std::min<double>(bounds[0].x, it->x);
-        bounds[0].y = std::min<double>(bounds[0].y, it->y);
-        bounds[0].z = std::min<double>(bounds[0].z, it->z);
+        bounds[0].x = std::min<double>(bounds[0].x, point.x);
+        bounds[0].y = std::min<double>(bounds[0].y, point.y);
+        bounds[0].z = std::min<double>(bounds[0].z, point.z);
 
-        bounds[1].x = std::max<double>(bounds[1].x, it->x);
-        bounds[1].y = std::max<double>(bounds[1].y, it->y);
-        bounds[1].z = std::max<double>(bounds[1].z, it->z);
+        bounds[1].x = std::max<double>(bounds[1].x, point.x);
+        bounds[1].y = std::max<double>(bounds[1].y, point.y);
+        bounds[1].z = std::max<double>(bounds[1].z, point.z);
     }
     generate_mesh_();
 }
@@ -144,7 +152,7 @@ const Vector3& Box::getMax() const
 
 void Box::setMesh(const Mesh& /*mesh*/)
 {
-    std::string msg = "Box::setMesh: can not set mesh for Box";
+    std::string const msg = "Box::setMesh: can not set mesh for Box";
     CONSOLE_BRIDGE_logError(msg.c_str());
     throw std::runtime_error(msg);
 }
@@ -154,14 +162,14 @@ void Box::generate_mesh_()
     const Vector3& min = getMin();
     const Vector3& max = getMax();
 
-    unsigned int p0 = mesh_.addPoint(min.x, min.y, min.z); // 0
-    unsigned int p1 = mesh_.addPoint(max.x, min.y, min.z); // 1
-    unsigned int p2 = mesh_.addPoint(min.x, max.y, min.z); // 2
-    unsigned int p3 = mesh_.addPoint(max.x, max.y, min.z); // 3
-    unsigned int p4 = mesh_.addPoint(min.x, min.y, max.z); // 4
-    unsigned int p5 = mesh_.addPoint(max.x, min.y, max.z); // 5
-    unsigned int p6 = mesh_.addPoint(min.x, max.y, max.z); // 6
-    unsigned int p7 = mesh_.addPoint(max.x, max.y, max.z); // 7
+    unsigned int const p0 = mesh_.addPoint(min.x, min.y, min.z); // 0
+    unsigned int const p1 = mesh_.addPoint(max.x, min.y, min.z); // 1
+    unsigned int const p2 = mesh_.addPoint(min.x, max.y, min.z); // 2
+    unsigned int const p3 = mesh_.addPoint(max.x, max.y, min.z); // 3
+    unsigned int const p4 = mesh_.addPoint(min.x, min.y, max.z); // 4
+    unsigned int const p5 = mesh_.addPoint(max.x, min.y, max.z); // 5
+    unsigned int const p6 = mesh_.addPoint(min.x, max.y, max.z); // 6
+    unsigned int const p7 = mesh_.addPoint(max.x, max.y, max.z); // 7
 
     // back plane
     mesh_.addTriangle(p1, p0, p2);

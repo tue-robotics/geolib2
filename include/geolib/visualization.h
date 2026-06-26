@@ -12,7 +12,7 @@ class visualization
 {
 
 public:
-    static void showKinect(ShapeConstPtr shape, double canvas_width, double canvas_height);
+    static void showKinect(const ShapeConstPtr& shape, double canvas_width, double canvas_height);
 };
 
 } // namespace geo

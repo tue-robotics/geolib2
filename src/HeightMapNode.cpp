@@ -1,16 +1,21 @@
+#include <utility>
+
+#include "geolib/Box.h"
 #include "geolib/HeightMapNode.h"
+#include "geolib/Ray.h"
 
 namespace geo
 {
 
-HeightMapNode::HeightMapNode(const Box& box) : box_(box), occupied_(false)
+HeightMapNode::HeightMapNode(Box box) : box_(std::move(box)), occupied_(false)
 {
-    for (unsigned int i = 0; i < 4; ++i)
+    for (auto& i : children_)
     {
-        children_[i] = nullptr;
+        i = nullptr;
     }
 }
 
+// NOLINTNEXTLINE(misc-no-recursion)
 HeightMapNode::HeightMapNode(const HeightMapNode& orig) : box_(orig.box_), occupied_(orig.occupied_)
 {
     for (unsigned int i = 0; i < 4; ++i)
@@ -26,7 +31,7 @@ HeightMapNode::HeightMapNode(const HeightMapNode& orig) : box_(orig.box_), occup
     }
 }
 
-HeightMapNode::HeightMapNode(HeightMapNode&& orig) : box_(std::move(orig.box_)), occupied_(orig.occupied_)
+HeightMapNode::HeightMapNode(HeightMapNode&& orig) noexcept : box_(std::move(orig.box_)), occupied_(orig.occupied_)
 {
     for (unsigned int i = 0; i < 4; ++i)
     {
@@ -42,13 +47,15 @@ HeightMapNode::HeightMapNode(HeightMapNode&& orig) : box_(std::move(orig.box_)),
     }
 }
 
-HeightMapNode::~HeightMapNode() {}
+HeightMapNode::~HeightMapNode() = default;
 
+// NOLINTNEXTLINE(misc-no-recursion)
 HeightMapNode* HeightMapNode::clone() const
 {
     return new HeightMapNode(*this);
 }
 
+// NOLINTNEXTLINE(misc-no-recursion)
 bool HeightMapNode::intersect(const Ray& r, float t0, float t1, double& distance) const
 {
     /*if (box_.intersect(r.origin)) {

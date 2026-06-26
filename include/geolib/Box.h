@@ -76,7 +76,7 @@ public:
 protected:
     Vector3 bounds[2];
 
-    double max_radius_;
+    double max_radius_{};
 
     /**
      * @brief Should be called any time #bounds is changed

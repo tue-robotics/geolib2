@@ -1,18 +1,24 @@
-#include "geolib/OctreeNode.h"
+#include <cmath>
+
 #include "geolib/Box.h"
+#include "geolib/datatypes.h"
 #include "geolib/Octree.h"
+#include "geolib/OctreeNode.h"
+#include "geolib/Ray.h"
+#include <vector>
 
 namespace geo
 {
 
 OctreeNode::OctreeNode(double size, Octree* tree) : size_(size), split_(size_ / 2), occupied_(false), tree_(tree)
 {
-    for (unsigned int i = 0; i < 8; ++i)
+    for (auto& i : children_)
     {
-        children_[i] = 0;
+        i = nullptr;
     }
 }
 
+// NOLINTNEXTLINE(misc-no-recursion)
 OctreeNode::OctreeNode(const OctreeNode& orig, Octree* tree) :
     size_(orig.size_), split_(orig.split_), occupied_(orig.occupied_), tree_(tree)
 {
@@ -24,19 +30,20 @@ OctreeNode::OctreeNode(const OctreeNode& orig, Octree* tree) :
         }
         else
         {
-            children_[i] = 0;
+            children_[i] = nullptr;
         }
     }
 }
 
 OctreeNode::~OctreeNode()
 {
-    for (unsigned int i = 0; i < 8; ++i)
+    for (auto& i : children_)
     {
-        delete children_[i];
+        delete i;
     }
 }
 
+// NOLINTNEXTLINE(misc-no-recursion)
 void OctreeNode::add(const Vector3& p)
 {
     // std::cout << p << ", size = " << size_ << std::endl;
@@ -76,11 +83,12 @@ void OctreeNode::add(const Vector3& p)
     children_[index]->add(Vector3(x, y, z));
 }
 
+// NOLINTNEXTLINE(misc-no-recursion)
 void OctreeNode::getCubes(std::vector<Box>& cubes, const Vector3& offset) const
 {
     if (occupied_)
     {
-        cubes.push_back(Box(offset, offset + Vector3(size_, size_, size_)));
+        cubes.emplace_back(offset, offset + Vector3(size_, size_, size_));
     }
     else
     {
@@ -102,6 +110,7 @@ void OctreeNode::getCubes(std::vector<Box>& cubes, const Vector3& offset) const
     }
 }
 
+// NOLINTNEXTLINE(misc-no-recursion)
 bool OctreeNode::intersect(const Ray& r, float t0, float t1, double& distance, const Vector3& offset) const
 {
 
@@ -113,7 +122,7 @@ bool OctreeNode::intersect(const Ray& r, float t0, float t1, double& distance, c
         return true;
     }
 
-    Vector3 o = r.getOrigin() + t0 * r.getDirection();
+    Vector3 const o = r.getOrigin() + t0 * r.getDirection();
     if (o.x < 0 || o.y < 0 || o.z < 0 || o.x > size_ || o.y > size_ || o.z > size_)
     {
         return false;
@@ -157,13 +166,14 @@ bool OctreeNode::intersect(const Ray& r, float t0, float t1, double& distance, c
         // is distance already correctly set in this case? If so, no need to calculate it again below
     }
 
-    double dist;
-    Box b(Vector3(dx, dy, dz), Vector3(dx + size_ / 2, dy + size_ / 2, dz + size_ / 2));
+    double dist = NAN;
+    Box const b(Vector3(dx, dy, dz), Vector3(dx + (size_ / 2), dy + (size_ / 2), dz + (size_ / 2)));
     b.intersect(Ray(o, -r.getDirection()), 0, t1 - t0, dist);
     distance = t0 - dist;
-    return this->intersect(r, distance + tree_->resolution_ * 0.1, t1, distance, offset);
+    return this->intersect(r, static_cast<float>(distance + (tree_->resolution_ * 0.1)), t1, distance, offset);
 }
 
+// NOLINTNEXTLINE(misc-no-recursion)
 void OctreeNode::raytrace(const Vector3& o, const Vector3& dir, float t0, float t1, const Vector3& offset)
 {
     if (t1 < t0)
@@ -171,7 +181,7 @@ void OctreeNode::raytrace(const Vector3& o, const Vector3& dir, float t0, float 
         return;
     }
 
-    Vector3 newo = o + t0 * dir;
+    Vector3 const newo = o + t0 * dir;
     if (newo.x < 0 || newo.y < 0 || newo.z < 0 || newo.x > size_ || newo.y > size_ || newo.z > size_)
     {
         return;
@@ -206,13 +216,14 @@ void OctreeNode::raytrace(const Vector3& o, const Vector3& dir, float t0, float 
         children_[index]->raytrace(o - Vector3(dx, dy, dz), dir, t0, t1, offset + Vector3(dx, dy, dz));
     }
 
-    double dist;
-    Box b(Vector3(dx, dy, dz), Vector3(dx + size_ / 2, dy + size_ / 2, dz + size_ / 2));
+    double dist = NAN;
+    Box const b(Vector3(dx, dy, dz), Vector3(dx + (size_ / 2), dy + (size_ / 2), dz + (size_ / 2)));
     b.intersect(Ray(newo, -dir), 0, t1 - t0, dist);
-    double distance = t0 - dist;
-    this->raytrace(o, dir, distance + tree_->resolution_ * 0.1, t1, offset);
+    double const distance = t0 - dist;
+    this->raytrace(o, dir, static_cast<float>(distance + (tree_->resolution_ * 0.1)), t1, offset);
 }
 
+// NOLINTNEXTLINE(misc-no-recursion)
 bool OctreeNode::contains(const Vector3& p) const
 {
     if (occupied_)
@@ -222,36 +233,32 @@ bool OctreeNode::contains(const Vector3& p) const
 
     int index = 0;
 
-    double x = p.x;
-    double y = p.y;
-    double z = p.z;
+    const double x = p.x;
+    const double y = p.y;
+    const double z = p.z;
 
     if (x > split_)
     {
         index += 4;
-        x -= split_;
     }
     if (y > split_)
     {
         index += 2;
-        y -= split_;
     }
     if (z > split_)
     {
         index += 1;
-        z -= split_;
     }
 
     if (!children_[index])
     {
         return false;
     }
-    else
-    {
-        return children_[index]->contains(p);
-    }
+
+    return children_[index]->contains(p);
 }
 
+// NOLINTNEXTLINE(misc-no-recursion)
 bool OctreeNode::intersect(const Box& b) const
 {
     if (occupied_)
@@ -261,14 +268,14 @@ bool OctreeNode::intersect(const Box& b) const
     const Vector3& min = b.getMin();
     const Vector3& max = b.getMax();
 
-    int sx = min.x > split_;
-    int ex = max.x > split_;
+    int const sx = min.x > split_;
+    int const ex = max.x > split_;
 
-    int sy = min.y > split_;
-    int ey = max.y > split_;
+    int const sy = min.y > split_;
+    int const ey = max.y > split_;
 
-    int sz = min.z > split_;
-    int ez = max.z > split_;
+    int const sz = min.z > split_;
+    int const ez = max.z > split_;
 
     for (int x = sx; x <= ex; ++x)
     {
@@ -276,10 +283,10 @@ bool OctreeNode::intersect(const Box& b) const
         {
             for (int z = sz; z <= ez; ++z)
             {
-                int i = 4 * x + 2 * y + z;
+                int const i = (4 * x) + (2 * y) + z;
                 if (children_[i])
                 {
-                    Vector3 offset(split_ * x, split_ * y, split_ * z);
+                    Vector3 const offset(split_ * x, split_ * y, split_ * z);
                     if (children_[i]->intersect(Box(min - offset, max - offset)))
                     {
                         return true;

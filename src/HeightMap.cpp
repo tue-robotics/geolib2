@@ -1,13 +1,19 @@
 #include "geolib/HeightMap.h"
+#include "geolib/datatypes.h"
+#include "geolib/HeightMapNode.h"
+#include "geolib/Ray.h"
 
-#include <assert.h>
+#include <algorithm>
+#include <cassert>
+#include <cstdlib>
+#include <vector>
 
 namespace geo
 {
 
-HeightMap::HeightMap() : root_(0) {}
+HeightMap::HeightMap() : root_(nullptr) {}
 
-HeightMap::HeightMap(const HeightMap& orig)
+HeightMap::HeightMap(const HeightMap& orig) : Shape(orig)
 {
     if (orig.root_)
     {
@@ -15,7 +21,7 @@ HeightMap::HeightMap(const HeightMap& orig)
     }
     else
     {
-        root_ = 0;
+        root_ = nullptr;
     }
     mesh_ = orig.mesh_;
 }
@@ -41,10 +47,10 @@ bool HeightMap::intersect(const Ray& r, float t0, float t1, double& distance) co
 
 HeightMap HeightMap::fromGrid(const std::vector<std::vector<double>>& grid, double resolution)
 {
-    unsigned int mx_max = grid.size();
-    unsigned int my_max = grid[0].size();
+    unsigned int const mx_max = grid.size();
+    unsigned int const my_max = grid[0].size();
 
-    unsigned int size = std::max(mx_max, my_max);
+    unsigned int const size = std::max(mx_max, my_max);
 
     unsigned int pow_size = 1;
     while (pow_size < size)
@@ -84,7 +90,7 @@ HeightMap HeightMap::fromGrid(const std::vector<std::vector<double>>& grid, doub
     {
         for (unsigned int my = 0; my < my_max; ++my)
         {
-            double h = grid[mx][my];
+            double const h = grid[mx][my];
 
             if (!visited_grid[mx][my] && h > 0)
             {
@@ -111,10 +117,10 @@ HeightMap HeightMap::fromGrid(const std::vector<std::vector<double>>& grid, doub
                     }
                 }
 
-                int p0 = hmap.mesh_.addPoint(resolution * mx, resolution * my, h);
-                int p1 = hmap.mesh_.addPoint(resolution * max_x, resolution * my, h);
-                int p2 = hmap.mesh_.addPoint(resolution * mx, resolution * max_y, h);
-                int p3 = hmap.mesh_.addPoint(resolution * max_x, resolution * max_y, h);
+                int const p0 = static_cast<int>(hmap.mesh_.addPoint(resolution * mx, resolution * my, h));
+                int const p1 = static_cast<int>(hmap.mesh_.addPoint(resolution * max_x, resolution * my, h));
+                int const p2 = static_cast<int>(hmap.mesh_.addPoint(resolution * mx, resolution * max_y, h));
+                int const p3 = static_cast<int>(hmap.mesh_.addPoint(resolution * max_x, resolution * max_y, h));
 
                 hmap.mesh_.addTriangle(p0, p1, p2);
                 hmap.mesh_.addTriangle(p1, p3, p2);
@@ -148,17 +154,19 @@ HeightMap HeightMap::fromGrid(const std::vector<std::vector<double>>& grid, doub
                 if (std::abs(h - h_last) + std::abs(h2 - h2_last) > 1e-10)
                 {
                     // create triangles
-                    int p0 = hmap.mesh_.addPoint(resolution * mx, resolution * my_start, h_last);
-                    int p1 = hmap.mesh_.addPoint(resolution * mx, resolution * my, h_last);
-                    int p2 = hmap.mesh_.addPoint(resolution * mx, resolution * my_start, h2_last);
-                    int p3 = hmap.mesh_.addPoint(resolution * mx, resolution * my, h2_last);
+                    int const p0 =
+                        static_cast<int>(hmap.mesh_.addPoint(resolution * mx, resolution * my_start, h_last));
+                    int const p1 = static_cast<int>(hmap.mesh_.addPoint(resolution * mx, resolution * my, h_last));
+                    int const p2 =
+                        static_cast<int>(hmap.mesh_.addPoint(resolution * mx, resolution * my_start, h2_last));
+                    int const p3 = static_cast<int>(hmap.mesh_.addPoint(resolution * mx, resolution * my, h2_last));
 
                     hmap.mesh_.addTriangle(p1, p2, p0);
                     hmap.mesh_.addTriangle(p2, p1, p3);
 
                     if (std::abs(h - h2) > 1e-10)
                     {
-                        my_start = my;
+                        my_start = static_cast<int>(my);
                     }
                     else
                     {
@@ -168,7 +176,7 @@ HeightMap HeightMap::fromGrid(const std::vector<std::vector<double>>& grid, doub
             }
             else if (std::abs(h - h2) > 1e-10)
             {
-                my_start = my;
+                my_start = static_cast<int>(my);
             }
 
             h_last = h;
@@ -201,17 +209,19 @@ HeightMap HeightMap::fromGrid(const std::vector<std::vector<double>>& grid, doub
                 if (std::abs(h - h_last) + std::abs(h2 - h2_last) > 1e-10)
                 {
                     // create triangles
-                    int p0 = hmap.mesh_.addPoint(resolution * mx_start, resolution * my, h_last);
-                    int p1 = hmap.mesh_.addPoint(resolution * mx, resolution * my, h_last);
-                    int p2 = hmap.mesh_.addPoint(resolution * mx_start, resolution * my, h2_last);
-                    int p3 = hmap.mesh_.addPoint(resolution * mx, resolution * my, h2_last);
+                    int const p0 =
+                        static_cast<int>(hmap.mesh_.addPoint(resolution * mx_start, resolution * my, h_last));
+                    int const p1 = static_cast<int>(hmap.mesh_.addPoint(resolution * mx, resolution * my, h_last));
+                    int const p2 =
+                        static_cast<int>(hmap.mesh_.addPoint(resolution * mx_start, resolution * my, h2_last));
+                    int const p3 = static_cast<int>(hmap.mesh_.addPoint(resolution * mx, resolution * my, h2_last));
 
                     hmap.mesh_.addTriangle(p2, p1, p0);
                     hmap.mesh_.addTriangle(p1, p2, p3);
 
                     if (std::abs(h - h2) > 1e-10)
                     {
-                        mx_start = mx;
+                        mx_start = static_cast<int>(mx);
                     }
                     else
                     {
@@ -221,7 +231,7 @@ HeightMap HeightMap::fromGrid(const std::vector<std::vector<double>>& grid, doub
             }
             else if (std::abs(h - h2) > 1e-10)
             {
-                mx_start = mx;
+                mx_start = static_cast<int>(mx);
             }
 
             h_last = h;
@@ -234,6 +244,7 @@ HeightMap HeightMap::fromGrid(const std::vector<std::vector<double>>& grid, doub
     return hmap;
 }
 
+// NOLINTNEXTLINE(misc-no-recursion)
 HeightMapNode* HeightMap::createQuadTree(const std::vector<std::vector<double>>& map,
                                          unsigned int mx_min,
                                          unsigned int my_min,
@@ -253,13 +264,14 @@ HeightMapNode* HeightMap::createQuadTree(const std::vector<std::vector<double>>&
 
     if (max_height == 0)
     {
-        return 0;
+        return nullptr;
     }
 
-    Vector3 min_map((double)mx_min * resolution, (double)my_min * resolution, 0);
-    Vector3 max_map((double)mx_max * resolution, (double)my_max * resolution, max_height);
+    Vector3 const min_map(static_cast<double>(mx_min) * resolution, static_cast<double>(my_min) * resolution, 0);
+    Vector3 const max_map(
+        static_cast<double>(mx_max) * resolution, static_cast<double>(my_max) * resolution, max_height);
 
-    HeightMapNode* n = new HeightMapNode(Box(min_map, max_map));
+    auto* n = new HeightMapNode(Box(min_map, max_map));
 
     if (mx_max - mx_min == 1 || my_max - my_min == 1)
     {
@@ -267,18 +279,16 @@ HeightMapNode* HeightMap::createQuadTree(const std::vector<std::vector<double>>&
         n->occupied_ = true;
         return n;
     }
-    else
-    {
-        n->occupied_ = false;
 
-        unsigned int cx = (mx_max + mx_min) / 2;
-        unsigned int cy = (my_max + my_min) / 2;
+    n->occupied_ = false;
 
-        n->children_[0] = createQuadTree(map, mx_min, my_min, cx, cy, resolution);
-        n->children_[1] = createQuadTree(map, cx, my_min, mx_max, cy, resolution);
-        n->children_[2] = createQuadTree(map, mx_min, cy, cx, my_max, resolution);
-        n->children_[3] = createQuadTree(map, cx, cy, mx_max, my_max, resolution);
-    }
+    unsigned int const cx = (mx_max + mx_min) / 2;
+    unsigned int const cy = (my_max + my_min) / 2;
+
+    n->children_[0] = createQuadTree(map, mx_min, my_min, cx, cy, resolution);
+    n->children_[1] = createQuadTree(map, cx, my_min, mx_max, cy, resolution);
+    n->children_[2] = createQuadTree(map, mx_min, cy, cx, my_max, resolution);
+    n->children_[3] = createQuadTree(map, cx, cy, mx_max, my_max, resolution);
 
     return n;
 }

@@ -34,6 +34,8 @@ public:
 
     double getResolution() const;
 
+    using Shape::intersect;
+
     bool intersect(const Ray& r, float t0, float t1, double& distance) const;
 
     double getMaxRadius() const;
@@ -47,7 +49,7 @@ public:
     const Mesh& getMesh() const;
 
 protected:
-    double resolution_;
+    double resolution_{};
 
     Vector3 offset_;
 

@@ -89,7 +89,7 @@ public:
      * @param t Transformation to apply.
      * @return The transformed mesh.
      */
-    Mesh getTransformed(const geo::Transform t) const;
+    Mesh getTransformed(const geo::Transform& t) const;
 
     /**
      * Get the triangles of the mesh.
@@ -130,11 +130,11 @@ public:
      * @param index Indez of the traingle
      * @return the calculated normal of the triangle
      */
-    const geo::Vector3 getTriangleNormal(unsigned int index) const;
+    geo::Vector3 getTriangleNormal(unsigned int index) const;
 
 protected:
-    mutable double max_radius_cache_; ///< Cached maximum radius.
-    mutable double max_radius_squared_cache_; ///< Cached squared maximum radius.
+    mutable double max_radius_cache_{}; ///< Cached maximum radius.
+    mutable double max_radius_squared_cache_{}; ///< Cached squared maximum radius.
 
     std::vector<geo::Vector3> points_; ///< Points of the mesh.
 

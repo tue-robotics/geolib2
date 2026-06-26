@@ -50,7 +50,7 @@ class RenderOptions
     friend class DepthCamera;
 
 public:
-    RenderOptions() : back_face_culling_(true) {}
+    RenderOptions() : mesh_(nullptr), back_face_culling_(true) {}
 
     /**
      * @brief setMesh: set mesh to be rendered
@@ -277,22 +277,22 @@ protected:
                         RenderResult& res,
                         uint i_triangle) const;
 
-    void drawTrianglePart(int y_start,
-                          int y_end,
-                          float x_start,
-                          float x_start_delta,
-                          float x_end,
-                          float x_end_delta,
-                          float d_start,
-                          float d_start_delta,
-                          float d_end,
-                          float d_end_delta,
-                          const RenderOptions& opt,
-                          RenderResult& res,
-                          uint i_triangle) const;
+    static void drawTrianglePart(int y_start,
+                                 int y_end,
+                                 float x_start,
+                                 float x_start_delta,
+                                 float x_end,
+                                 float x_end_delta,
+                                 float d_start,
+                                 float d_start_delta,
+                                 float d_end,
+                                 float d_end_delta,
+                                 const RenderOptions& opt,
+                                 RenderResult& res,
+                                 uint i_triangle);
 
     template <typename T = double>
-    void sort(const geo::Vec3T<T>*& p_min, const geo::Vec3T<T>*& p_mid, const geo::Vec3T<T>*& p_max, uchar dim) const;
+    void sort(const geo::Vec3T<T>*& p_min, const geo::Vec3T<T>*& p_mid, const geo::Vec3T<T>*& p_max, uchar i) const;
 };
 
 } // namespace geo

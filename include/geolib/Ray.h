@@ -35,7 +35,7 @@ protected:
 
     double length_; // When the length is zero, the ray is infinite
 
-    std::array<int, 3> sign_;
+    std::array<int, 3> sign_{};
 
     void calculateInvDirection();
 };

@@ -1,4 +1,6 @@
 #include "geolib/Ray.h"
+#include "geolib/datatypes.h"
+#include <cstdlib>
 
 namespace geo
 {
@@ -15,9 +17,9 @@ Ray::Ray(const Vector3& o, const Vector3& d) : origin_(o), direction_(d.normaliz
 void Ray::calculateInvDirection()
 {
     // Hardcoded EPS
-    double inv_x = std::abs(direction_.x) < 1e-9 ? 0 : 1 / direction_.x;
-    double inv_y = std::abs(direction_.y) < 1e-9 ? 0 : 1 / direction_.y;
-    double inv_z = std::abs(direction_.z) < 1e-9 ? 0 : 1 / direction_.z;
+    double const inv_x = std::abs(direction_.x) < 1e-9 ? 0 : 1 / direction_.x;
+    double const inv_y = std::abs(direction_.y) < 1e-9 ? 0 : 1 / direction_.y;
+    double const inv_z = std::abs(direction_.z) < 1e-9 ? 0 : 1 / direction_.z;
 
     inv_direction_ = geo::Vector3(inv_x, inv_y, inv_z);
 }

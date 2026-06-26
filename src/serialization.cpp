@@ -1,19 +1,25 @@
 #include "geolib/serialization.h"
 
+#include "geolib/datatypes.h"
 #include "geolib/Shape.h"
 
+#include <algorithm>
 #include <fstream>
+#include <istream>
+#include <ostream>
+#include <string>
+#include <utility>
 
 namespace geo
 {
 
 serialization::deserializer_map serialization::deserializers_;
 
-serialization::serialization() {}
+serialization::serialization() = default;
 
-serialization::~serialization() {}
+serialization::~serialization() = default;
 
-bool serialization::serialize(ShapeConstPtr shape, std::ostream& output)
+bool serialization::serialize(const ShapeConstPtr& shape, std::ostream& output)
 {
     return shape->write(output);
 }
@@ -28,11 +34,11 @@ ShapePtr serialization::deserialize(std::istream& input)
     char shape_type[8];
     input.read(shape_type, 8);
 
-    deserializer_map::const_iterator s = deserializers_.find(shape_type);
+    auto const s = deserializers_.find(shape_type);
     if (s == deserializers_.end())
     {
         // input error: don't know how to deserialize the class
-        return ShapePtr();
+        return {};
     }
     return (s->second)(input); // call the deserializer method
 }
@@ -56,7 +62,7 @@ ShapePtr serialization::fromFile(const std::string& filename)
     return shape;
 }
 
-void serialization::toFile(ShapeConstPtr shape, const std::string& filename)
+void serialization::toFile(const ShapeConstPtr& shape, const std::string& filename)
 {
     std::ofstream out;
     out.open(filename.c_str(), std::ifstream::binary);
