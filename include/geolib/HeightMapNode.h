@@ -19,11 +19,11 @@ class HeightMapNode
 {
 
 public:
-    HeightMapNode(const Box& box);
+    HeightMapNode(Box box);
 
     HeightMapNode(const HeightMapNode& orig);
 
-    HeightMapNode(HeightMapNode&& orig);
+    HeightMapNode(HeightMapNode&& orig) noexcept;
 
     virtual ~HeightMapNode();
 
@@ -35,7 +35,7 @@ public:
     Box box_;
 
     // child nodes. In case the node is a leaf of the tree all four will be nullptr
-    HeightMapNode* children_[4];
+    HeightMapNode* children_[4]{};
 
     // True iff the entire volume described by the bounding box is occupied
     bool occupied_;

@@ -38,7 +38,9 @@ public:
     {
 
     public:
-        RenderResult(std::vector<double>& ranges_) : min_i(ranges_.size() - 1), max_i(0), ranges(ranges_) {}
+        RenderResult(std::vector<double>& ranges_) : min_i(ranges_.size() - 1), max_i(0), ranges(ranges_), lrf_(nullptr)
+        {
+        }
 
         virtual void renderLine(const Vec2& p1, const Vec2& p2);
 
@@ -96,7 +98,7 @@ public:
 
     geo::Vector3 rangeToPoint(double range, uint i) const;
 
-    const geo::Vector3 getRayDirection(uint i) const;
+    geo::Vector3 getRayDirection(uint i) const;
 
     bool rangesToPoints(const std::vector<double>& ranges, std::vector<geo::Vector3>& points) const;
 
@@ -135,7 +137,7 @@ protected:
     double angle_incr_;
 
     // Number of beams in a half circle
-    uint i_half_circle_;
+    uint i_half_circle_{};
 
     /**
      * @brief Get the index of the first beam with a higher angle than \p angle. Results may lie outside of the sensor

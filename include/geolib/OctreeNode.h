@@ -39,7 +39,7 @@ protected:
 
     double split_;
 
-    OctreeNode* children_[8];
+    OctreeNode* children_[8]{};
 
     bool occupied_;
 

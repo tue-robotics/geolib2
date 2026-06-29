@@ -1,4 +1,13 @@
 #include "geolib/io/export.h"
+#include "geolib/datatypes.h"
+#include "geolib/Mesh.h"
+#include <assimp/material.h>
+#include <assimp/types.h>
+#include <assimp/vector3.h>
+#include <cctype>
+#include <ostream>
+#include <sys/types.h>
+#include <vector>
 
 #if __has_include(<assimp/Exporter.hpp>)
 #include <assimp/Exporter.hpp>
@@ -18,59 +27,57 @@
 #include <sstream>
 #include <string>
 
-namespace geo
-{
-
-namespace io
+namespace geo::io
 {
 
 // ----------------------------------------------------------------------------------------------------
 
 bool writeMeshFile(const std::string& filename, const Shape& shape, std::string format)
 {
-    aiScene aScene;
-    aScene.mMeshes = new aiMesh*[1];
-    aScene.mMeshes[0] = new aiMesh();
-    auto aMesh = aScene.mMeshes[0];
-    aScene.mNumMeshes = 1;
+    aiScene a_scene;
+    a_scene.mMeshes = new aiMesh*[1];
+    a_scene.mMeshes[0] = new aiMesh();
+    auto* a_mesh = a_scene.mMeshes[0];
+    a_scene.mNumMeshes = 1;
 
-    aScene.mMaterials = new aiMaterial*[1];
-    aScene.mMaterials[0] = new aiMaterial;
-    aScene.mNumMaterials = 1;
-    aMesh->mMaterialIndex = 0;
+    a_scene.mMaterials = new aiMaterial*[1];
+    a_scene.mMaterials[0] = new aiMaterial;
+    a_scene.mNumMaterials = 1;
+    a_mesh->mMaterialIndex = 0;
 
-    aScene.mRootNode = new aiNode;
-    auto aNode = aScene.mRootNode;
-    aNode->mMeshes = new uint[1];
-    aNode->mMeshes[0] = uint(0);
-    aNode->mNumMeshes = 1;
+    a_scene.mRootNode = new aiNode;
+    auto* a_node = a_scene.mRootNode;
+    a_node->mMeshes = new uint[1];
+    a_node->mMeshes[0] = static_cast<uint>(0);
+    a_node->mNumMeshes = 1;
 
     // Get mesh and its element from shape
-    geo::Mesh mesh = shape.getMesh();
+    const geo::Mesh& mesh = shape.getMesh();
     const std::vector<geo::Vector3>& points = mesh.getPoints();
-    const std::vector<geo::TriangleI>& triangleIs = mesh.getTriangleIs();
+    const std::vector<geo::TriangleI>& triangle_is = mesh.getTriangleIs();
 
     // Transfer points to Assimp mesh
-    aMesh->mVertices = new aiVector3D[points.size()];
-    aMesh->mNumVertices = points.size();
-    for (std::vector<Vector3>::const_iterator it = points.cbegin(); it != points.cend(); ++it)
+    a_mesh->mVertices = new aiVector3D[points.size()];
+    a_mesh->mNumVertices = points.size();
+    for (auto it = points.cbegin(); it != points.cend(); ++it)
     {
         const geo::Vector3& v = *it;
-        aMesh->mVertices[it - points.begin()] = aiVector3D(v.x, v.y, v.z);
+        a_mesh->mVertices[it - points.begin()] =
+            aiVector3D(static_cast<float>(v.x), static_cast<float>(v.y), static_cast<float>(v.z));
     }
 
     // Transfer faces to Assimp mesh
-    aMesh->mFaces = new aiFace[triangleIs.size()];
-    aMesh->mNumFaces = triangleIs.size();
-    for (std::vector<TriangleI>::const_iterator it = triangleIs.cbegin(); it != triangleIs.cend(); ++it)
+    a_mesh->mFaces = new aiFace[triangle_is.size()];
+    a_mesh->mNumFaces = triangle_is.size();
+    for (auto it = triangle_is.cbegin(); it != triangle_is.cend(); ++it)
     {
-        aiFace& aFace = aMesh->mFaces[it - triangleIs.begin()];
-        aFace.mIndices = new uint[3];
-        aFace.mNumIndices = 3;
+        aiFace& a_face = a_mesh->mFaces[it - triangle_is.begin()];
+        a_face.mIndices = new uint[3];
+        a_face.mNumIndices = 3;
 
-        aFace.mIndices[0] = it->i1_;
-        aFace.mIndices[1] = it->i2_;
-        aFace.mIndices[2] = it->i3_;
+        a_face.mIndices[0] = it->i1_;
+        a_face.mIndices[1] = it->i2_;
+        a_face.mIndices[2] = it->i3_;
     }
 
     // Check format
@@ -97,12 +104,12 @@ bool writeMeshFile(const std::string& filename, const Shape& shape, std::string 
             format = "x3d";
     }
 
-    Assimp::Exporter aExp;
-    aiReturn result = aExp.Export(&aScene, format, filename);
+    Assimp::Exporter a_exp;
+    aiReturn const result = a_exp.Export(&a_scene, format, filename);
     if (result != AI_SUCCESS)
     {
         std::stringstream ss;
-        ss << "Error" << std::endl << aExp.GetErrorString() << std::endl;
+        ss << "Error" << '\n' << a_exp.GetErrorString() << '\n';
         const std::string& str = ss.str();
         CONSOLE_BRIDGE_logError(str.c_str());
         return false;
@@ -110,6 +117,4 @@ bool writeMeshFile(const std::string& filename, const Shape& shape, std::string 
     return true;
 }
 
-} // namespace io
-
-} // namespace geo
+} // namespace geo::io
