@@ -522,7 +522,7 @@ template <typename T> class Mat3T
 {
 
 public:
-    Mat3T() {}
+    Mat3T() : xx(), xy(), xz(), yx(), yy(), yz(), zx(), zy(), zz() {}
     Mat3T(const Mat3T& v) = default;
 
     Mat3T(T xx_, T xy_, T xz_, T yx_, T yy_, T yz_, T zx_, T zy_, T zz_) :
