@@ -480,13 +480,13 @@ void DepthCamera::sort(const geo::Vec3T<T>*& p_min,
                        const geo::Vec3T<T>*& p_max,
                        uchar i) const
 {
-    if (p_min->m[i] > p_max->m[i])
+    if ((*p_min)[i] > (*p_max)[i])
         std::swap(p_min, p_max);
 
-    if (p_min->m[i] > p_mid->m[i])
+    if ((*p_min)[i] > (*p_mid)[i])
         std::swap(p_min, p_mid);
 
-    if (p_mid->m[i] > p_max->m[i])
+    if ((*p_mid)[i] > (*p_max)[i])
         std::swap(p_mid, p_max);
 }
 
