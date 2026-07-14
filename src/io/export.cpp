@@ -6,6 +6,7 @@
 #include <assimp/vector3.h>
 #include <cctype>
 #include <ostream>
+#include <ranges>
 #include <sys/types.h>
 #include <vector>
 
@@ -81,7 +82,7 @@ bool writeMeshFile(const std::string& filename, const Shape& shape, std::string 
     }
 
     // Check format
-    std::transform(format.begin(), format.end(), format.begin(), ::tolower);
+    std::ranges::transform(format, format.begin(), ::tolower);
     if (format.empty())
     {
         if (filename.substr(filename.size() - 3) == "3ds")

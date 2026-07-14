@@ -3,7 +3,6 @@
 #include "geolib/math_types.h"
 #include "geolib/Mesh.h"
 #include "geolib/Shape.h"
-#include "sensor_msgs/msg/camera_info.hpp"
 
 #include <algorithm>
 #include <array>

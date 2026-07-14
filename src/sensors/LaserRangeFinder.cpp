@@ -6,6 +6,7 @@
 
 #include <algorithm>
 #include <cmath>
+#include <compare>
 #include <sys/types.h>
 #include <vector>
 
@@ -80,7 +81,7 @@ void LaserRangeFinder::RenderResult::renderLine(const Vec2& p1, const Vec2& p2)
             return;
 
         // Both points in the blind spot (i's are both larger number of beams), so don't render a line
-        if (i_min >= static_cast<int>(lrf_->num_beams_))
+        if (std::cmp_greater_equal(i_min, lrf_->num_beams_))
             return;
 
         // The line is fully in view, so only need to render one part
