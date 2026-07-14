@@ -9,13 +9,6 @@
 #include <sys/types.h>
 #include <vector>
 
-#if __has_include(<compare>)
-#include <compare>
-#define HAS_CMP_GREATER_EQUAL 1
-#else
-#define HAS_CMP_GREATER_EQUAL 0
-#endif
-
 namespace geo
 {
 
@@ -87,11 +80,8 @@ void LaserRangeFinder::RenderResult::renderLine(const Vec2& p1, const Vec2& p2)
             return;
 
         // Both points in the blind spot (i's are both larger number of beams), so don't render a line
-#if HAS_CMP_GREATER_EQUAL
-        if (std::cmp_greater_equal(i_min, lrf_->num_beams_))
-#else
+        // NOLINT(modernize-use-integer-sign-comparison): C++11 compatibility
         if (i_min >= static_cast<int>(lrf_->num_beams_))
-#endif
             return;
 
         // The line is fully in view, so only need to render one part

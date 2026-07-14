@@ -8,12 +8,6 @@
 #include <cmath>
 #include <console_bridge/console.h>
 
-#if __has_include(<ranges>)
-#include <ranges>
-#define HAS_RANGES 1
-#else
-#define HAS_RANGES 0
-#endif
 #include <stdexcept>
 #include <string>
 #include <utility>
@@ -74,15 +68,7 @@ bool CompositeShape::intersect(const Vector3& p, const double RADIUS) const
     {
         return false;
     }
-#if HAS_RANGES
-    return std::ranges::any_of(shapes_,
-                               [&p, RADIUS](const auto& shape)
-                               {
-                                   const Transform& pose_inv = shape.second;
-                                   Vector3 const p_t = pose_inv * p;
-                                   return (shape.first)->intersect(p_t, RADIUS);
-                               });
-#else
+    // NOLINT(modernize-use-ranges): C++11 compatibility
     return std::any_of(shapes_.begin(),
                        shapes_.end(),
                        [&p, RADIUS](const auto& shape)
@@ -91,7 +77,6 @@ bool CompositeShape::intersect(const Vector3& p, const double RADIUS) const
                            Vector3 const p_t = pose_inv * p;
                            return (shape.first)->intersect(p_t, RADIUS);
                        });
-#endif
 }
 
 bool CompositeShape::contains(const Vector3& p) const
@@ -100,16 +85,7 @@ bool CompositeShape::contains(const Vector3& p) const
     {
         return false;
     }
-#if HAS_RANGES
-    return std::ranges::any_of(shapes_,
-                               [&p](const auto& it)
-                               {
-                                   const Transform& pose_inv = it.second;
-                                   const Shape& shape = *it.first;
-                                   Vector3 const p_t = pose_inv * p;
-                                   return shape.contains(p_t);
-                               });
-#else
+    // NOLINT(modernize-use-ranges): C++11 compatibility
     return std::any_of(shapes_.begin(),
                        shapes_.end(),
                        [&p](const auto& it)
@@ -119,7 +95,6 @@ bool CompositeShape::contains(const Vector3& p) const
                            Vector3 const p_t = pose_inv * p;
                            return shape.contains(p_t);
                        });
-#endif
 }
 
 double CompositeShape::getMaxRadius() const
