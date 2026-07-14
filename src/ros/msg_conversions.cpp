@@ -2,36 +2,37 @@
 #include "geolib/datatypes.h"
 #include "geolib/Mesh.h"
 #include "geolib/sensors/DepthCamera.h"
-#include "geometry_msgs/msg/point.hpp"
-#include "sensor_msgs/msg/camera_info.hpp"
-#include "shape_msgs/msg/mesh.hpp"
-#include "shape_msgs/msg/mesh_triangle.hpp"
+#include <geometry_msgs/msg/point.hpp> // NOLINT(misc-include-cleaner)
+#include <sensor_msgs/msg/camera_info.hpp> // NOLINT(misc-include-cleaner)
+#include <shape_msgs/msg/mesh.hpp> // NOLINT(misc-include-cleaner)
+#include <shape_msgs/msg/mesh_triangle.hpp> // NOLINT(misc-include-cleaner)
+
 #include <vector>
 
 namespace geo
 {
 
-void convert(const geo::Mesh& m, shape_msgs::msg::Mesh& msg)
+void convert(const geo::Mesh& m, shape_msgs::msg::Mesh& msg) // NOLINT(misc-include-cleaner)
 {
     const std::vector<Vector3>& points = m.getPoints();
     const std::vector<TriangleI>& triangles = m.getTriangleIs();
 
     for (const auto& it : points)
     {
-        geometry_msgs::msg::Point point;
+        geometry_msgs::msg::Point point; // NOLINT(misc-include-cleaner)
         convert(it, point);
         msg.vertices.push_back(point);
     }
 
     for (auto triangle : triangles)
     {
-        shape_msgs::msg::MeshTriangle meshtriangle;
+        shape_msgs::msg::MeshTriangle meshtriangle; // NOLINT(misc-include-cleaner)
         convert(triangle, meshtriangle);
         msg.triangles.push_back(meshtriangle);
     }
 }
 
-void convert(const geo::DepthCamera& cam_model, sensor_msgs::msg::CameraInfo& msg)
+void convert(const geo::DepthCamera& cam_model, sensor_msgs::msg::CameraInfo& msg) // NOLINT(misc-include-cleaner)
 {
     // Distortion model and parameters
     msg.distortion_model = "plumb_bob";
