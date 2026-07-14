@@ -8,8 +8,11 @@
 #include <cmath>
 #include <console_bridge/console.h>
 
-#if __cplusplus >= 202002L
+#if __has_include(<ranges>)
 #include <ranges>
+#define HAS_RANGES 1
+#else
+#define HAS_RANGES 0
 #endif
 #include <stdexcept>
 #include <string>
@@ -71,7 +74,7 @@ bool CompositeShape::intersect(const Vector3& p, const double RADIUS) const
     {
         return false;
     }
-#if __cplusplus >= 202002L
+#if HAS_RANGES
     return std::ranges::any_of(shapes_,
                                [&p, RADIUS](const auto& shape)
                                {
@@ -97,7 +100,7 @@ bool CompositeShape::contains(const Vector3& p) const
     {
         return false;
     }
-#if __cplusplus >= 202002L
+#if HAS_RANGES
     return std::ranges::any_of(shapes_,
                                [&p](const auto& it)
                                {

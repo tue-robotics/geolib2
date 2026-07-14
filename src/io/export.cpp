@@ -6,8 +6,11 @@
 #include <assimp/vector3.h>
 #include <cctype>
 #include <ostream>
-#if __cplusplus >= 202002L
+#if __has_include(<ranges>)
 #include <ranges>
+#define HAS_RANGES_TRANSFORM 1
+#else
+#define HAS_RANGES_TRANSFORM 0
 #endif
 #include <sys/types.h>
 #include <vector>
@@ -84,7 +87,7 @@ bool writeMeshFile(const std::string& filename, const Shape& shape, std::string 
     }
 
     // Check format
-#if __cplusplus >= 202002L
+#if HAS_RANGES_TRANSFORM
     std::ranges::transform(format, format.begin(), ::tolower);
 #else
     std::transform(format.begin(), format.end(), format.begin(), ::tolower);
