@@ -68,9 +68,8 @@ bool CompositeShape::intersect(const Vector3& p, const double RADIUS) const
     {
         return false;
     }
-    // NOLINT(modernize-use-ranges): C++11 compatibility
-    return std::any_of(shapes_.begin(),
-                       shapes_.end(),
+    // NOLINT(modernize-use-ranges) - C++11 compatibility required for older distros
+    return std::any_of(shapes_.begin(), shapes_.end(),  // NOLINT(modernize-use-ranges)
                        [&p, RADIUS](const auto& shape)
                        {
                            const Transform& pose_inv = shape.second;
@@ -85,9 +84,8 @@ bool CompositeShape::contains(const Vector3& p) const
     {
         return false;
     }
-    // NOLINT(modernize-use-ranges): C++11 compatibility
-    return std::any_of(shapes_.begin(),
-                       shapes_.end(),
+    // NOLINT(modernize-use-ranges) - C++11 compatibility required for older distros
+    return std::any_of(shapes_.begin(), shapes_.end(),  // NOLINT(modernize-use-ranges)
                        [&p](const auto& it)
                        {
                            const Transform& pose_inv = it.second;
