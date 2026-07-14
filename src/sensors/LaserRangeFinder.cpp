@@ -9,6 +9,10 @@
 #include <sys/types.h>
 #include <vector>
 
+#if __cplusplus >= 202002L
+#include <compare>
+#endif
+
 namespace geo
 {
 
@@ -80,7 +84,11 @@ void LaserRangeFinder::RenderResult::renderLine(const Vec2& p1, const Vec2& p2)
             return;
 
         // Both points in the blind spot (i's are both larger number of beams), so don't render a line
+#if __cplusplus >= 202002L
+        if (std::cmp_greater_equal(i_min, lrf_->num_beams_))
+#else
         if (i_min >= static_cast<int>(lrf_->num_beams_))
+#endif
             return;
 
         // The line is fully in view, so only need to render one part
