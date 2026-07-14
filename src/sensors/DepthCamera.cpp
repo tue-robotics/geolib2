@@ -8,6 +8,7 @@
 #include <array>
 #include <opencv2/core/hal/interface.h>
 #include <opencv2/core/types.hpp>
+#include <sensor_msgs/msg/camera_info.hpp>
 #include <vector>
 
 namespace geo

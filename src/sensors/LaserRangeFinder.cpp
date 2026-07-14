@@ -81,7 +81,7 @@ void LaserRangeFinder::RenderResult::renderLine(const Vec2& p1, const Vec2& p2)
 
         // Both points in the blind spot (i's are both larger number of beams), so don't render a line
         // NOLINT(modernize-use-integer-sign-comparison) - C++11 compatibility required for older distros
-        if (i_min >= static_cast<int>(lrf_->num_beams_))  // NOLINT(modernize-use-integer-sign-comparison)
+        if (i_min >= static_cast<int>(lrf_->num_beams_)) // NOLINT(modernize-use-integer-sign-comparison)
             return;
 
         // The line is fully in view, so only need to render one part

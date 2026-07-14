@@ -82,7 +82,7 @@ bool writeMeshFile(const std::string& filename, const Shape& shape, std::string 
 
     // Check format
     // NOLINT(modernize-use-ranges) - C++11 compatibility required for older distros
-    std::transform(format.begin(), format.end(), format.begin(), ::tolower);  // NOLINT(modernize-use-ranges)
+    std::transform(format.begin(), format.end(), format.begin(), ::tolower); // NOLINT(modernize-use-ranges)
     if (format.empty())
     {
         if (filename.substr(filename.size() - 3) == "3ds")
