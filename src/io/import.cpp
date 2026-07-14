@@ -113,7 +113,7 @@ void constructMesh(const aiScene* scene,
                     auto const it2 = it1->second.find(iy);
                     if (it2 != it1->second.end())
                     {
-                        if (it2->second.find(iz) != it2->second.end())
+                        if (it2->second.find(iz) != it2->second.end()) // NOLINT(readability-container-contains)
                         {
                             match = true;
                         }

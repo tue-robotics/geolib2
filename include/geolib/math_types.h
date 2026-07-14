@@ -26,7 +26,7 @@ public:
     Vec2T(const Vec2T& v) = default;
     Vec2T(T x_, T y_) : x(x_), y(y_) {}
     Vec2T(T value) : x(value), y(value) {}
-    Vec2T(const T* values) { memcpy(m, values, 2 * sizeof(T)); }
+    Vec2T(const T* values) : x(values[0]), y(values[1]) {}
 
     Vec2T& operator=(const Vec2T& v)
     {
@@ -40,9 +40,23 @@ public:
 
     ~Vec2T() {}
 
-    T& operator[](const uint i) { return m[i]; }
+    T& operator[](const uint i)
+    {
+        switch (i)
+        {
+        case 0: return x;
+        default: return y;
+        }
+    }
 
-    const T& operator[](const uint i) const { return m[i]; }
+    const T& operator[](const uint i) const
+    {
+        switch (i)
+        {
+        case 0: return x;
+        default: return y;
+        }
+    }
 
     bool operator==(const Vec2T& v) const { return (x == v.x && y == v.y); }
 
@@ -143,14 +157,7 @@ public:
         return out;
     }
 
-    union
-    {
-        struct
-        {
-            T x, y;
-        };
-        T m[2];
-    };
+    T x, y;
 };
 
 // --------------------------------------------------------------------------------
@@ -163,7 +170,7 @@ public:
     Vec3T(const Vec3T& v) = default;
     Vec3T(T x_, T y_, T z_) : x(x_), y(y_), z(z_) {}
     Vec3T(T value) : x(value), y(value), z(value) {}
-    Vec3T(const T* values) { memcpy(m, values, 3 * sizeof(T)); }
+    Vec3T(const T* values) : x(values[0]), y(values[1]), z(values[2]) {}
 
     Vec3T& operator=(const Vec3T& v)
     {
@@ -178,9 +185,25 @@ public:
 
     ~Vec3T() {}
 
-    T& operator[](const uint i) { return m[i]; }
+    T& operator[](const uint i)
+    {
+        switch (i)
+        {
+        case 0: return x;
+        case 1: return y;
+        default: return z;
+        }
+    }
 
-    const T& operator[](const uint i) const { return m[i]; }
+    const T& operator[](const uint i) const
+    {
+        switch (i)
+        {
+        case 0: return x;
+        case 1: return y;
+        default: return z;
+        }
+    }
 
     bool operator==(const Vec3T& v) const { return (x == v.x && y == v.y && z == v.z); }
 
@@ -292,14 +315,7 @@ public:
         return out;
     }
 
-    union
-    {
-        struct
-        {
-            T x, y, z;
-        };
-        T m[3];
-    };
+    T x, y, z;
 };
 
 // --------------------------------------------------------------------------------
@@ -327,9 +343,27 @@ public:
 
     ~Mat2T() {}
 
-    T& operator[](const uint i) { return m[i]; }
+    T& operator[](const uint i)
+    {
+        switch (i)
+        {
+        case 0: return xx;
+        case 1: return xy;
+        case 2: return yx;
+        default: return yy;
+        }
+    }
 
-    const T& operator[](const uint i) const { return m[i]; }
+    const T& operator[](const uint i) const
+    {
+        switch (i)
+        {
+        case 0: return xx;
+        case 1: return xy;
+        case 2: return yx;
+        default: return yy;
+        }
+    }
 
     bool operator==(const Mat2T& m) const { return (xx == m.xx && xy == m.xy && yx == m.yx && yy == m.yy); }
 
@@ -351,9 +385,9 @@ public:
 
     Mat2T transpose() const { return Mat2T(xx, yx, xy, yy); }
 
-    T& operator()(int i, int j) { return m[i * 2 + j]; }
+    T& operator()(int i, int j) { return (*this)[i * 2 + j]; }
 
-    const T& operator()(int i, int j) const { return m[i * 2 + j]; }
+    const T& operator()(int i, int j) const { return (*this)[i * 2 + j]; }
 
     /// multiplies vector with a scalar
     Mat2T operator*(T s) const { return Mat2T(xx * s, xy * s, yx * s, yy * s); }
@@ -379,14 +413,7 @@ public:
         return out;
     }
 
-    union
-    {
-        struct
-        {
-            T xx, xy, yx, yy;
-        };
-        T m[4];
-    };
+    T xx, xy, yx, yy;
 };
 
 // --------------------------------------------------------------------------------
@@ -413,9 +440,27 @@ public:
 
     ~QuaternionT() {}
 
-    T& operator[](const uint i) { return m[i]; }
+    T& operator[](const uint i)
+    {
+        switch (i)
+        {
+        case 0: return x;
+        case 1: return y;
+        case 2: return z;
+        default: return w;
+        }
+    }
 
-    const T& operator[](const uint i) const { return m[i]; }
+    const T& operator[](const uint i) const
+    {
+        switch (i)
+        {
+        case 0: return x;
+        case 1: return y;
+        case 2: return z;
+        default: return w;
+        }
+    }
 
     bool operator==(const QuaternionT& q) const { return (x == q.x && y == q.y && z == q.z && w == q.w); }
 
@@ -468,14 +513,7 @@ public:
         return out;
     }
 
-    union
-    {
-        struct
-        {
-            T x, y, z, w;
-        };
-        T m[4];
-    };
+    T x, y, z, w;
 };
 
 // --------------------------------------------------------------------------------
@@ -484,7 +522,7 @@ template <typename T> class Mat3T
 {
 
 public:
-    Mat3T() {}
+    Mat3T() : xx(), xy(), xz(), yx(), yy(), yz(), zx(), zy(), zz() {}
     Mat3T(const Mat3T& v) = default;
 
     Mat3T(T xx_, T xy_, T xz_, T yx_, T yy_, T yz_, T zx_, T zy_, T zz_) :
@@ -496,7 +534,11 @@ public:
     {
     }
 
-    Mat3T(const T* values) { memcpy(m, values, 9 * sizeof(T)); }
+    Mat3T(const T* values) :
+        xx(values[0]), xy(values[1]), xz(values[2]), yx(values[3]), yy(values[4]), yz(values[5]), zx(values[6]),
+        zy(values[7]), zz(values[8])
+    {
+    }
 
     Mat3T(Vec3T<T> x, Vec3T<T> y, Vec3T<T> z) :
         xx(x.x), xy(y.x), xz(z.x), yx(x.y), yy(y.y), yz(z.y), zx(x.z), zy(y.z), zz(z.z)
@@ -522,9 +564,37 @@ public:
 
     ~Mat3T() {}
 
-    T& operator[](const uint i) { return m[i]; }
+    T& operator[](const uint i)
+    {
+        switch (i)
+        {
+        case 0: return xx;
+        case 1: return xy;
+        case 2: return xz;
+        case 3: return yx;
+        case 4: return yy;
+        case 5: return yz;
+        case 6: return zx;
+        case 7: return zy;
+        default: return zz;
+        }
+    }
 
-    const T& operator[](const uint i) const { return m[i]; }
+    const T& operator[](const uint i) const
+    {
+        switch (i)
+        {
+        case 0: return xx;
+        case 1: return xy;
+        case 2: return xz;
+        case 3: return yx;
+        case 4: return yy;
+        case 5: return yz;
+        case 6: return zx;
+        case 7: return zy;
+        default: return zz;
+        }
+    }
 
     bool operator==(const Mat3T& m) const
     {
@@ -570,9 +640,9 @@ public:
     /// divides matrix by scalar
     Mat3T operator/(T s) const { return Mat3T(xx / s, xy / s, xz / s, yx / s, yy / s, yz / s, zx / s, zy / s, zz / s); }
 
-    T& operator()(int i, int j) { return m[i * 3 + j]; }
+    T& operator()(int i, int j) { return (*this)[i * 3 + j]; }
 
-    const T& operator()(int i, int j) const { return m[i * 3 + j]; }
+    const T& operator()(int i, int j) const { return (*this)[i * 3 + j]; }
 
     /// multiplies vector with a scalar
     friend Mat3T operator*(T s, const Mat3T& m)
@@ -582,9 +652,9 @@ public:
 
     Mat3T transpose() const { return Mat3T(xx, yx, zx, xy, yy, zy, xz, yz, zz); }
 
-    Vec3T<T> getRow(int i) const { return Vec3T<T>(m[i * 3], m[i * 3 + 1], m[i * 3 + 2]); }
+    Vec3T<T> getRow(int i) const { return Vec3T<T>((*this)[i * 3], (*this)[i * 3 + 1], (*this)[i * 3 + 2]); }
 
-    Vec3T<T> getColumn(int i) const { return Vec3T<T>(m[i], m[3 + i], m[6 + i]); }
+    Vec3T<T> getColumn(int i) const { return Vec3T<T>((*this)[i], (*this)[3 + i], (*this)[6 + i]); }
 
     void setRPY(T roll, T pitch, T yaw)
     {
@@ -599,14 +669,15 @@ public:
         T sc = si * ch;
         T ss = si * sh;
 
-        m[0] = cj * ch;
-        m[1] = sj * sc - cs;
-        m[2] = sj * cc + ss;
-        m[3] = cj * sh;
-        m[4] = sj * ss + cc, m[5] = sj * cs - sc;
-        m[6] = -sj;
-        m[7] = cj * si;
-        m[8] = cj * ci;
+        (*this)[0] = cj * ch;
+        (*this)[1] = sj * sc - cs;
+        (*this)[2] = sj * cc + ss;
+        (*this)[3] = cj * sh;
+        (*this)[4] = sj * ss + cc;
+        (*this)[5] = sj * cs - sc;
+        (*this)[6] = -sj;
+        (*this)[7] = cj * si;
+        (*this)[8] = cj * ci;
     }
 
     static Mat3T identity() { return Mat3T(1, 0, 0, 0, 1, 0, 0, 0, 1); }
@@ -618,12 +689,12 @@ public:
         if (trace > 0)
         {
             T s = sqrt(trace + 1);
-            q.m[3] = (s / 2);
+            q[3] = (s / 2);
             s = 0.5 / s;
 
-            q.m[0] = ((zy - yz) * s);
-            q.m[1] = ((xz - zx) * s);
-            q.m[2] = ((yx - xy) * s);
+            q[0] = ((zy - yz) * s);
+            q[1] = ((xz - zx) * s);
+            q[2] = ((yx - xy) * s);
         }
         else
         {
@@ -631,13 +702,13 @@ public:
             int j = (i + 1) % 3;
             int k = (i + 2) % 3;
 
-            T s = sqrt(m[i * 4] - m[j * 4] - m[k * 4] + 1);
-            q.m[i] = s / 2;
+            T s = sqrt((*this)[i * 4] - (*this)[j * 4] - (*this)[k * 4] + 1);
+            q[i] = s / 2;
             s = 0.5 / s;
 
-            q.m[3] = (m[k * 3 + j] - m[j * 3 + k]) * s;
-            q.m[j] = (m[j * 3 + i] + m[i * 3 + j]) * s;
-            q.m[k] = (m[k * 3 + i] + m[i * 3 + k]) * s;
+            q[3] = ((*this)[k * 3 + j] - (*this)[j * 3 + k]) * s;
+            q[j] = ((*this)[j * 3 + i] + (*this)[i * 3 + j]) * s;
+            q[k] = ((*this)[k * 3 + i] + (*this)[i * 3 + k]) * s;
         }
     }
 
@@ -650,15 +721,15 @@ public:
         T xx = q.x * xs, xy = q.x * ys, xz = q.x * zs;
         T yy = q.y * ys, yz = q.y * zs, zz = q.z * zs;
 
-        m[0] = 1 - (yy + zz);
-        m[1] = xy - wz;
-        m[2] = xz + wy;
-        m[3] = xy + wz;
-        m[4] = 1 - (xx + zz);
-        m[5] = yz - wx;
-        m[6] = xz - wy;
-        m[7] = yz + wx;
-        m[8] = 1 - (xx + yy);
+        (*this)[0] = 1 - (yy + zz);
+        (*this)[1] = xy - wz;
+        (*this)[2] = xz + wy;
+        (*this)[3] = xy + wz;
+        (*this)[4] = 1 - (xx + zz);
+        (*this)[5] = yz - wx;
+        (*this)[6] = xz - wy;
+        (*this)[7] = yz + wx;
+        (*this)[8] = 1 - (xx + yy);
     }
 
     /**
@@ -675,14 +746,7 @@ public:
         return out;
     }
 
-    union
-    {
-        struct
-        {
-            T xx, xy, xz, yx, yy, yz, zx, zy, zz;
-        };
-        T m[9];
-    };
+    T xx, xy, xz, yx, yy, yz, zx, zy, zz;
 
     void normalize()
     {

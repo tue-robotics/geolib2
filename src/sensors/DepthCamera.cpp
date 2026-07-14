@@ -3,12 +3,12 @@
 #include "geolib/math_types.h"
 #include "geolib/Mesh.h"
 #include "geolib/Shape.h"
-#include "sensor_msgs/msg/camera_info.hpp"
 
 #include <algorithm>
 #include <array>
 #include <opencv2/core/hal/interface.h>
 #include <opencv2/core/types.hpp>
+#include <sensor_msgs/msg/camera_info.hpp> // NOLINT(misc-include-cleaner)
 #include <vector>
 
 namespace geo
@@ -37,7 +37,7 @@ DepthCamera::DepthCamera() = default;
 
 DepthCamera::DepthCamera(uint width, uint height, double fx, double fy, double cx, double cy, double tx, double ty)
 {
-    sensor_msgs::msg::CameraInfo cam_info;
+    sensor_msgs::msg::CameraInfo cam_info; // NOLINT(misc-include-cleaner)
     cam_info.d.resize(5, 0);
     // Intrinsic camera matrix for the raw (distorted) images.
     //     [fx  0 cx]
@@ -480,13 +480,13 @@ void DepthCamera::sort(const geo::Vec3T<T>*& p_min,
                        const geo::Vec3T<T>*& p_max,
                        uchar i) const
 {
-    if (p_min->m[i] > p_max->m[i])
+    if ((*p_min)[i] > (*p_max)[i])
         std::swap(p_min, p_max);
 
-    if (p_min->m[i] > p_mid->m[i])
+    if ((*p_min)[i] > (*p_mid)[i])
         std::swap(p_min, p_mid);
 
-    if (p_mid->m[i] > p_max->m[i])
+    if ((*p_mid)[i] > (*p_max)[i])
         std::swap(p_mid, p_max);
 }
 
