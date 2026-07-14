@@ -12,7 +12,7 @@
 namespace geo
 {
 
-void convert(const geo::Mesh& m, shape_msgs::msg::Mesh& msg)
+void convert(const geo::Mesh& m, shape_msgs::msg::Mesh& msg) // NOLINT(misc-include-cleaner)
 {
     const std::vector<Vector3>& points = m.getPoints();
     const std::vector<TriangleI>& triangles = m.getTriangleIs();
