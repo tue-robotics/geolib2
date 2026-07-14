@@ -2,10 +2,10 @@
 #include "geolib/datatypes.h"
 #include "geolib/Mesh.h"
 #include "geolib/sensors/DepthCamera.h"
-#include <geometry_msgs/msg/point.hpp>
-#include <sensor_msgs/msg/camera_info.hpp>
-#include <shape_msgs/msg/mesh.hpp>
-#include <shape_msgs/msg/mesh_triangle.hpp>
+#include <geometry_msgs/msg/point.hpp> // NOLINT(misc-include-cleaner)
+#include <sensor_msgs/msg/camera_info.hpp> // NOLINT(misc-include-cleaner)
+#include <shape_msgs/msg/mesh.hpp> // NOLINT(misc-include-cleaner)
+#include <shape_msgs/msg/mesh_triangle.hpp> // NOLINT(misc-include-cleaner)
 
 #include <vector>
 
