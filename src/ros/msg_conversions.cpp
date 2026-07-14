@@ -3,9 +3,10 @@
 #include "geolib/Mesh.h"
 #include "geolib/sensors/DepthCamera.h"
 #include <geometry_msgs/msg/point.hpp>
+#include <sensor_msgs/msg/camera_info.hpp>
 #include <shape_msgs/msg/mesh.hpp>
 #include <shape_msgs/msg/mesh_triangle.hpp>
-#include <sensor_msgs/msg/camera_info.hpp>
+
 #include <vector>
 
 namespace geo
