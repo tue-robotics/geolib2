@@ -19,20 +19,20 @@ void convert(const geo::Mesh& m, shape_msgs::msg::Mesh& msg)
 
     for (const auto& it : points)
     {
-        geometry_msgs::msg::Point point;
+        geometry_msgs::msg::Point point; // NOLINT(misc-include-cleaner)
         convert(it, point);
         msg.vertices.push_back(point);
     }
 
     for (auto triangle : triangles)
     {
-        shape_msgs::msg::MeshTriangle meshtriangle;
+        shape_msgs::msg::MeshTriangle meshtriangle; // NOLINT(misc-include-cleaner)
         convert(triangle, meshtriangle);
         msg.triangles.push_back(meshtriangle);
     }
 }
 
-void convert(const geo::DepthCamera& cam_model, sensor_msgs::msg::CameraInfo& msg)
+void convert(const geo::DepthCamera& cam_model, sensor_msgs::msg::CameraInfo& msg) // NOLINT(misc-include-cleaner)
 {
     // Distortion model and parameters
     msg.distortion_model = "plumb_bob";

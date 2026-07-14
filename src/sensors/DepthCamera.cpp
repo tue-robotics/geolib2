@@ -8,7 +8,7 @@
 #include <array>
 #include <opencv2/core/hal/interface.h>
 #include <opencv2/core/types.hpp>
-#include <sensor_msgs/msg/camera_info.hpp>
+#include <sensor_msgs/msg/camera_info.hpp> // NOLINT(misc-include-cleaner)
 #include <vector>
 
 namespace geo
@@ -37,7 +37,7 @@ DepthCamera::DepthCamera() = default;
 
 DepthCamera::DepthCamera(uint width, uint height, double fx, double fy, double cx, double cy, double tx, double ty)
 {
-    sensor_msgs::msg::CameraInfo cam_info;
+    sensor_msgs::msg::CameraInfo cam_info; // NOLINT(misc-include-cleaner)
     cam_info.d.resize(5, 0);
     // Intrinsic camera matrix for the raw (distorted) images.
     //     [fx  0 cx]
