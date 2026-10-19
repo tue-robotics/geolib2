@@ -83,6 +83,16 @@ TEST(BoxRay, AxisAlignedRayMisses)
     EXPECT_FALSE(box.intersect(geo::Ray(geo::Vector3(-5, 0, 0), geo::Vector3(1, 0, 0)), 0, 4, distance));
 }
 
+TEST(BoxRay, NearlyParallelRay)
+{
+    // The ray is not parallel to the y-slab, so it leaves the (very thin) slab at distance 0.2, before reaching the box
+    geo::Box const box(geo::Vector3(1, -1e-10, -1), geo::Vector3(2, 1e-10, 1));
+    double distance = 0;
+    EXPECT_FALSE(box.intersect(geo::Ray(geo::Vector3(0, 0, 0), geo::Vector3(1, 5e-10, 0)), 0, 100, distance));
+    EXPECT_TRUE(box.intersect(geo::Ray(geo::Vector3(0, 0, 0), geo::Vector3(1, 5e-11, 0)), 0, 100, distance));
+    EXPECT_NEAR(distance, 1.0, 1e-9);
+}
+
 TEST(BoxRay, ObliqueRay)
 {
     geo::Box const box(geo::Vector3(-0.5, -0.5, -0.5), geo::Vector3(0.5, 0.5, 0.5));
