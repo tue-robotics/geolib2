@@ -209,17 +209,27 @@ MeshBVH::MeshBVH(const Mesh& mesh) : closed_(false)
     // * * * * * * * * Closedness * * * * * * * *
 
     // Identify vertices by position instead of index, as many meshes have duplicated vertices. Positions are snapped to
-    // a grid relative to the size of the mesh, as duplicated vertices are not always exactly equal. Merging vertices
-    // which are not exactly equal is safe, as the resulting gaps in the mesh are much too small to matter for the ray
-    // crossings. If nearly equal vertices end up in different grid cells, the mesh is considered open, which only
-    // results in the slower winding number calculation.
-    double const extent = std::max(
-        {nodes_[0].max.x - nodes_[0].min.x, nodes_[0].max.y - nodes_[0].min.y, nodes_[0].max.z - nodes_[0].min.z});
+    // a grid relative to the size of the mesh, as duplicated vertices are not always exactly equal. Gaps closed by
+    // snapping are far too small to matter for the ray crossings, except for triangles which collapse by snapping;
+    // those are marked, so crossings of them are handled as degenerate. If nearly equal vertices end up in different
+    // grid cells, the mesh is considered open, which only results in the slower winding number calculation.
+    const Vector3& bb_min = nodes_[0].min;
+    const Vector3& bb_max = nodes_[0].max;
+    double const extent = std::max({bb_max.x - bb_min.x, bb_max.y - bb_min.y, bb_max.z - bb_min.z});
+    if (!std::isfinite(extent))
+        return;
     double const cell = extent > 0 ? 1e-9 * extent : 1.0;
-    std::vector<std::array<std::int64_t, 3>> keys(points.size());
+
+    // Keys relative to the bounding box of the triangles, so they lie in [0, 1e9] for all vertices used by triangles.
+    // Unused vertices are never part of an edge, so their key does not matter.
+    std::vector<char> used(points.size(), 0);
+    for (const auto& t : triangles_i)
+        used[t.i1_] = used[t.i2_] = used[t.i3_] = 1;
+    std::vector<std::array<std::int64_t, 3>> keys(points.size(), {-1, -1, -1});
     for (std::size_t i = 0; i < points.size(); ++i)
-        for (unsigned int k = 0; k < 3; ++k)
-            keys[i][k] = static_cast<std::int64_t>(std::llround(points[i][k] / cell));
+        if (used[i])
+            for (unsigned int k = 0; k < 3; ++k)
+                keys[i][k] = static_cast<std::int64_t>(std::llround((points[i][k] - bb_min[k]) / cell));
 
     std::vector<unsigned int> sorted_points(points.size());
     for (unsigned int i = 0; i < sorted_points.size(); ++i)
@@ -244,9 +254,18 @@ MeshBVH::MeshBVH(const Mesh& mesh) : closed_(false)
     };
     std::vector<Edge> edges;
     edges.reserve(3 * triangles_i.size());
-    for (const auto& t : triangles_i)
+    std::vector<char> collapsed(triangles_i.size(), 0);
+    for (std::size_t i = 0; i < triangles_i.size(); ++i)
     {
+        const TriangleI& t = triangles_i[i];
+        std::array<unsigned int, 3> const vertices = {t.i1_, t.i2_, t.i3_};
         std::array<unsigned int, 3> const ids = {position_id[t.i1_], position_id[t.i2_], position_id[t.i3_]};
+        for (unsigned int j = 0; j < 3; ++j)
+        {
+            // Two different positions merged by snapping
+            if (ids[j] == ids[(j + 1) % 3] && !(points[vertices[j]] == points[vertices[(j + 1) % 3]]))
+                collapsed[i] = 1;
+        }
         for (unsigned int j = 0; j < 3; ++j)
         {
             unsigned int const from = ids[j];
@@ -269,6 +288,11 @@ MeshBVH::MeshBVH(const Mesh& mesh) : closed_(false)
         closed_ = (sum == 0);
         i = j;
     }
+
+    // In the order of the leaves, like the triangles
+    collapsed_.resize(order.size());
+    for (unsigned int i = 0; i < order.size(); ++i)
+        collapsed_[i] = collapsed[order[i]];
 }
 
 // ----------------------------------------------------------------------------------------------------
@@ -345,7 +369,7 @@ bool MeshBVH::intersect(const Ray& r, double t0, double t1, double& distance) co
 
     const Vector3& o = r.getOrigin();
     const Vector3& dir = r.getDirection();
-    const Vector3& inv_dir = r.getInvDirection();
+    Vector3 const inv_dir = inverseDirection(dir);
 
     bool hit = false;
     double t_nearest = t1;
@@ -456,8 +480,8 @@ bool MeshBVH::contains(const Vector3& p) const
     if (nodes_.empty())
         return false;
 
-    // Outside of the bounding box of the mesh
-    if (squaredDistanceToBox(p, nodes_[0].min, nodes_[0].max) > SURFACE_EPS * SURFACE_EPS)
+    // Outside of the bounding box of a closed mesh, the winding number is zero. For an open mesh, it might not be.
+    if (closed_ && squaredDistanceToBox(p, nodes_[0].min, nodes_[0].max) > SURFACE_EPS * SURFACE_EPS)
         return false;
 
     // Points on the surface are considered to be inside
@@ -535,6 +559,10 @@ bool MeshBVH::countCrossings(const Vector3& p, const Vector3& dir, int& count) c
 
             if (u < DEGENERATE_EPS || v < DEGENERATE_EPS || u + v > 1 - DEGENERATE_EPS)
                 // Crossing (almost) on an edge or vertex, which might be counted zero or multiple times
+                return false;
+
+            if (collapsed_[i])
+                // Triangle ignored in the closedness check, so the crossing count might not be the winding number
                 return false;
 
             count += det > 0 ? 1 : -1;

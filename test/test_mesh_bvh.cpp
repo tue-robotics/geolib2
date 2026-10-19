@@ -261,6 +261,71 @@ TEST(MeshBVH, OverlappingClosedMeshes)
     EXPECT_FALSE(shape.contains(geo::Vector3(1.25, 0.25, 0.25)));
 }
 
+TEST(MeshBVH, DistantMesh)
+{
+    // Quantizing absolute coordinates of a mesh far from the origin would overflow
+    geo::Box const box(geo::Vector3(-0.5, -0.5, -0.5), geo::Vector3(0.5, 0.5, 0.5));
+    geo::Mesh const mesh = box.getMesh().getTransformed(geo::Pose3D(1e10, 1e10, 1e10));
+    EXPECT_TRUE(mesh.getBVH()->isClosed());
+    EXPECT_TRUE(mesh.getBVH()->contains(geo::Vector3(1e10, 1e10, 1e10)));
+
+    // Without its last triangle, the mesh is open. An overflow could map all vertices to the same key, which would
+    // hide all edges.
+    geo::Mesh open;
+    for (const geo::Vector3& p : mesh.getPoints())
+        open.addPoint(p);
+    const auto& triangles = mesh.getTriangleIs();
+    for (std::size_t i = 0; i + 1 < triangles.size(); ++i)
+        open.addTriangle(triangles[i].i1_, triangles[i].i2_, triangles[i].i3_);
+    EXPECT_FALSE(open.getBVH()->isClosed());
+}
+
+TEST(MeshBVH, MixedScaleOpenComponent)
+{
+    // A tiny open triangle collapses to a single vertex when snapping to the grid of the large closed box. Points near
+    // it should still be classified by the winding number, which is about 0.35 here.
+    geo::Mesh mesh = geo::Box(geo::Vector3(1000, -1, -1), geo::Vector3(1001, 1, 1)).getMesh();
+    unsigned int const i1 = mesh.addPoint(0, 0, 0);
+    unsigned int const i2 = mesh.addPoint(1e-7, 0, 0);
+    unsigned int const i3 = mesh.addPoint(0, 1e-7, 0);
+    mesh.addTriangle(i1, i2, i3);
+
+    std::shared_ptr<const geo::MeshBVH> const bvh = mesh.getBVH();
+    EXPECT_FALSE(bvh->contains(geo::Vector3(2e-8, 2e-8, -1e-8)));
+    EXPECT_FALSE(bvh->contains(geo::Vector3(2e-8, 2e-8, 1e-8)));
+    EXPECT_TRUE(bvh->contains(geo::Vector3(1000.5, 0, 0)));
+}
+
+TEST(MeshBVH, RayWithTinyDirectionComponent)
+{
+    geo::Mesh mesh;
+    mesh.addPoint(0, 0, 0);
+    mesh.addPoint(0, 1, 0);
+    mesh.addPoint(0, 0, 1);
+    mesh.addTriangle(0, 1, 2);
+
+    double distance = 0;
+    ASSERT_TRUE(
+        mesh.getBVH()->intersect(geo::Ray(geo::Vector3(-1, -5e-11, 0.25), geo::Vector3(1, 1e-10, 0)), 0, 10, distance));
+    EXPECT_NEAR(distance, 1.0, 1e-9);
+}
+
+TEST(MeshBVH, OpenMeshOutsideBoundingBox)
+{
+    // Two copies of the same open triangle have a winding number above 0.5 just above the triangle, which is outside
+    // of its (flat) bounding box
+    geo::Mesh mesh;
+    for (unsigned int k = 0; k < 2; ++k)
+    {
+        unsigned int const i1 = mesh.addPoint(-1, -1, 0);
+        unsigned int const i2 = mesh.addPoint(1, -1, 0);
+        unsigned int const i3 = mesh.addPoint(0, 1, 0);
+        mesh.addTriangle(i1, i2, i3);
+    }
+    EXPECT_FALSE(mesh.getBVH()->isClosed());
+    EXPECT_TRUE(mesh.getBVH()->contains(geo::Vector3(0, 0, 0.1)));
+}
+
 TEST(MeshBVH, Empty)
 {
     geo::Shape const shape;

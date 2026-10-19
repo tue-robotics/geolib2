@@ -59,7 +59,7 @@ public:
 
     /**
      * @brief Whether the mesh is closed, i.e. every edge is used equally often in both directions, independent of
-     * (duplicated) vertex indices
+     * (duplicated) vertex indices. Vertex positions are compared on a grid of 1e-9 times the size of the mesh.
      */
     bool isClosed() const { return closed_; }
 
@@ -96,6 +96,12 @@ protected:
     std::vector<Node> nodes_;
 
     std::vector<Triangle> triangles_;
+
+    /**
+     * @brief Per triangle, whether it collapses when snapping its vertices to the grid used for the closedness check.
+     * Ray crossings of these triangles are handled as degenerate.
+     */
+    std::vector<char> collapsed_;
 
     bool closed_;
 
