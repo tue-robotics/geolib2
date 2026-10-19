@@ -3,6 +3,7 @@
 #include <geolib/Box.h>
 #include <geolib/datatypes.h>
 #include <geolib/HeightMap.h>
+#include <geolib/HeightMapNode.h>
 #include <geolib/Octree.h>
 
 #include <algorithm>
@@ -115,6 +116,30 @@ TEST_F(HeightMapTest, IntersectSphere)
             continue; // Touching, either answer is fine
         ASSERT_EQ(hmap.intersect(p, radius), d2 <= radius * radius) << "p = " << p << ", radius = " << radius;
     }
+}
+
+TEST(HeightMapCopy, Assignment)
+{
+    geo::HeightMap a = geo::HeightMap::fromGrid({{1, 0}, {0, 0}}, 1.0);
+    geo::HeightMap b = geo::HeightMap::fromGrid({{0, 0}, {0, 2}}, 1.0);
+    b = a; // deep copy
+    a = geo::HeightMap::fromGrid({{0, 0}, {0, 0}}, 1.0);
+    const geo::HeightMap& b_ref = b;
+    b = b_ref; // self assignment
+
+    EXPECT_TRUE(b.contains(geo::Vector3(0.5, 0.5, 0.5)));
+    EXPECT_FALSE(b.contains(geo::Vector3(1.5, 1.5, 0.5)));
+    EXPECT_FALSE(a.contains(geo::Vector3(0.5, 0.5, 0.5)));
+
+    geo::HeightMapNode node(geo::Box(geo::Vector3(0, 0, 0), geo::Vector3(1, 1, 1)));
+    node.children_[0] = new geo::HeightMapNode(geo::Box(geo::Vector3(0, 0, 0), geo::Vector3(0.5, 0.5, 1)));
+    node.children_[0]->occupied_ = true;
+    geo::HeightMapNode copy(geo::Box(geo::Vector3(0, 0, 0), geo::Vector3(1, 1, 1)));
+    copy.children_[3] = new geo::HeightMapNode(geo::Box(geo::Vector3(0.5, 0.5, 0), geo::Vector3(1, 1, 1)));
+    copy = node;
+    EXPECT_NE(copy.children_[0], node.children_[0]);
+    EXPECT_EQ(copy.children_[3], nullptr);
+    EXPECT_TRUE(copy.contains(geo::Vector3(0.25, 0.25, 0.5)));
 }
 
 TEST(HeightMapEmpty, Queries)

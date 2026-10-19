@@ -1,3 +1,4 @@
+#include <array>
 #include <utility>
 
 #include "geolib/Box.h"
@@ -53,12 +54,26 @@ HeightMapNode& HeightMapNode::operator=(const HeightMapNode& rhs)
 {
     if (this != &rhs)
     {
+        // Copy all children before deleting any, so the tree stays valid in case copying throws
+        std::array<HeightMapNode*, 4> children{};
+        try
+        {
+            for (unsigned int i = 0; i < 4; ++i)
+                children[i] = rhs.children_[i] ? rhs.children_[i]->clone() : nullptr;
+        }
+        catch (...)
+        {
+            for (const HeightMapNode* child : children)
+                delete child;
+            throw;
+        }
+
         box_ = rhs.box_;
         occupied_ = rhs.occupied_;
         for (unsigned int i = 0; i < 4; ++i)
         {
             delete children_[i];
-            children_[i] = rhs.children_[i] ? rhs.children_[i]->clone() : nullptr;
+            children_[i] = children[i];
         }
     }
     return *this;

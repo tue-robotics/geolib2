@@ -35,9 +35,11 @@ HeightMap& HeightMap::operator=(const HeightMap& rhs)
 {
     if (this != &rhs)
     {
+        // Copy before deleting, so the tree stays valid in case copying throws
+        HeightMapNode* root = rhs.root_ ? new HeightMapNode(*rhs.root_) : nullptr;
         Shape::operator=(rhs);
         delete root_;
-        root_ = rhs.root_ ? new HeightMapNode(*rhs.root_) : nullptr;
+        root_ = root;
     }
     return *this;
 }
