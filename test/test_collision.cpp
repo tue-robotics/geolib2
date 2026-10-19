@@ -239,6 +239,22 @@ TEST(ShapeRay, ThroughVertex)
     EXPECT_NEAR(distance, 9.5 * std::sqrt(3), 1e-9);
 }
 
+TEST(ShapeRay, TangentToBoundingSphere)
+{
+    // The ray only touches the first vertex, which lies on the bounding sphere of the mesh
+    geo::Mesh mesh;
+    mesh.addPoint(1, 0.3, 0.7);
+    mesh.addPoint(0, 0, 0);
+    mesh.addPoint(0, 0, 0.5);
+    mesh.addTriangle(0, 1, 2);
+    geo::Shape shape;
+    shape.setMesh(mesh);
+
+    double distance = 0;
+    ASSERT_TRUE(shape.intersect(geo::Ray(geo::Vector3(0.7, 1.3, 0.7), geo::Vector3(0.3, -1, 0)), 0, 10, distance));
+    EXPECT_NEAR(distance, std::sqrt(0.09 + 1), 1e-6);
+}
+
 TEST(CompositeRay, DistantNearestHit)
 {
     // The second child is hit slightly closer than the first one. The distance of the first hit should not be rounded
