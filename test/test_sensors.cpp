@@ -70,6 +70,11 @@ TEST(LRFRender, AngleRangeBeyondPi)
     unsigned int const i = static_cast<unsigned int>(std::round(a / lrf.getAngleIncrement()));
     EXPECT_GT(ranges[i], 4.3);
     EXPECT_LT(ranges[i], 4.6);
+
+    // The cartesian lookup should be consistent with the angle lookup and the rendering
+    EXPECT_EQ(lrf.getAngleUpperIndex(std::cos(a), std::sin(a)), lrf.getAngleUpperIndex(a));
+    EXPECT_EQ(lrf.getAngleUpperIndex(std::cos(a), std::sin(a)) - 1,
+              static_cast<unsigned int>(a / lrf.getAngleIncrement()));
 }
 
 // ----------------------------------------------------------------------------------------------------

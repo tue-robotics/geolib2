@@ -147,6 +147,21 @@ TEST(ShapeSphere, OpenMeshBothSides)
     EXPECT_FALSE(tri.intersect(geo::Vector3(0, 1.3, 0), 0.29));
 }
 
+TEST(ShapeSphere, RepeatedVertex)
+{
+    // Degenerate triangle with a repeated vertex, which collapses to the segment from the origin to (1, 0, 0)
+    geo::Mesh mesh;
+    mesh.addPoint(0, 0, 0);
+    mesh.addPoint(0, 0, 0);
+    mesh.addPoint(1, 0, 0);
+    mesh.addTriangle(0, 1, 2);
+    geo::Shape shape;
+    shape.setMesh(mesh);
+
+    EXPECT_TRUE(shape.intersect(geo::Vector3(0.5, 0.1, 0), 0.2));
+    EXPECT_FALSE(shape.intersect(geo::Vector3(0.5, 0.3, 0), 0.2));
+}
+
 TEST(ShapeContains, TriangleSoupEdgeHit)
 {
     geo::Shape const soup = makeTriangleSoupBox();
@@ -186,6 +201,17 @@ TEST(ShapeRay, MeshIntersection)
     EXPECT_FALSE(soup.intersect(geo::Ray(geo::Vector3(-5, 0.1, 0.2), geo::Vector3(-1, 0, 0)), 0, 100, distance));
     EXPECT_FALSE(soup.intersect(geo::Ray(geo::Vector3(-5, 2, 0.2), geo::Vector3(1, 0, 0)), 0, 100, distance));
     EXPECT_FALSE(soup.intersect(geo::Ray(geo::Vector3(-5, 0.1, 0.2), geo::Vector3(1, 0, 0)), 0, 4, distance));
+}
+
+TEST(ShapeRay, DistantRaySmallMesh)
+{
+    geo::Box const box(geo::Vector3(-0.005, -0.005, -0.005), geo::Vector3(0.005, 0.005, 0.005));
+    geo::Shape shape;
+    shape.setMesh(box.getMesh());
+
+    double distance = 0;
+    ASSERT_TRUE(shape.intersect(geo::Ray(geo::Vector3(1e6, 1e6, 0), geo::Vector3(-1, -1, 0)), 0, 1e7, distance));
+    EXPECT_NEAR(distance, (1e6 - 0.005) * std::sqrt(2), 1e-3);
 }
 
 TEST(CompositeRay, MeshChild)

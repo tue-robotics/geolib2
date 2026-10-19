@@ -46,6 +46,21 @@ Vector3 closestPointOnTriangle(const Vector3& p, const Vector3& a, const Vector3
     Vector3 const ab = b - a;
     Vector3 const ac = c - a;
 
+    if (ab.cross(ac).length2() == 0)
+    {
+        // Degenerate (zero area) triangle, e.g. with a repeated vertex. The region tests below would divide by zero, so
+        // the closest point is taken from the edges.
+        Vector3 const q1 = closestPointOnSegment(p, a, b);
+        Vector3 const q2 = closestPointOnSegment(p, b, c);
+        Vector3 const q3 = closestPointOnSegment(p, c, a);
+        double const l1 = (p - q1).length2();
+        double const l2 = (p - q2).length2();
+        double const l3 = (p - q3).length2();
+        if (l1 <= l2 && l1 <= l3)
+            return q1;
+        return l2 <= l3 ? q2 : q3;
+    }
+
     // Vertex region of a
     Vector3 const ap = p - a;
     double const d1 = ab.dot(ap);
@@ -82,22 +97,8 @@ Vector3 closestPointOnTriangle(const Vector3& p, const Vector3& a, const Vector3
     if (va <= 0 && (d4 - d3) >= 0 && (d5 - d6) >= 0)
         return b + ((d4 - d3) / ((d4 - d3) + (d5 - d6))) * (c - b);
 
-    double const denom = va + vb + vc;
-    if (denom <= 0)
-    {
-        // Degenerate (zero area) triangle, so the closest point lies on one of the edges
-        Vector3 const q1 = closestPointOnSegment(p, a, b);
-        Vector3 const q2 = closestPointOnSegment(p, b, c);
-        Vector3 const q3 = closestPointOnSegment(p, c, a);
-        double const l1 = (p - q1).length2();
-        double const l2 = (p - q2).length2();
-        double const l3 = (p - q3).length2();
-        if (l1 <= l2 && l1 <= l3)
-            return q1;
-        return l2 <= l3 ? q2 : q3;
-    }
-
     // Face region
+    double const denom = va + vb + vc;
     return a + (vb / denom) * ab + (vc / denom) * ac;
 }
 
@@ -124,9 +125,9 @@ bool Shape::intersect(const Ray& r, float t0, float t1, double& distance) const
     const Vector3& o = r.getOrigin();
     const Vector3& dir = r.getDirection(); // unit length
 
-    // Ray should pass the bounding sphere of the mesh
-    double const o_dir = o.dot(dir);
-    if (o.length2() - (o_dir * o_dir) > mesh.getSquaredMaxRadius())
+    // Ray should pass the bounding sphere of the mesh. The squared distance of the line to the origin is calculated
+    // with the cross product, as |o|^2 - (o dot dir)^2 suffers from cancellation for distant origins.
+    if (o.cross(dir).length2() > mesh.getSquaredMaxRadius() * dir.length2())
         return false;
 
     bool hit = false;

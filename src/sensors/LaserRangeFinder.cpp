@@ -365,8 +365,17 @@ uint LaserRangeFinder::getAngleUpperIndex(double angle) const
 
 uint LaserRangeFinder::getAngleUpperIndex(double x, double y) const
 {
-    // Calculate the ray index corresponding to the cartesian point (x, y)
-    return getAngleUpperIndex(atan2(y, x));
+    // Calculate the ray index corresponding to the cartesian point (x, y). The angle is normalized to
+    // (center - pi, center + pi], with center the middle of the sensor range. This way, sensors with angles beyond
+    // +/- pi are supported, while angles outside the sensor range are clamped to the nearest end of the range. For
+    // sensors which are symmetric around zero, this is equal to the range of atan2.
+    double const center = 0.5 * (a_min_ + a_max_);
+    double a = std::atan2(y, x);
+    while (a > center + (0.5 * TWO_PI))
+        a -= TWO_PI;
+    while (a <= center - (0.5 * TWO_PI))
+        a += TWO_PI;
+    return getAngleUpperIndex(a);
 }
 
 int LaserRangeFinder::getAngleUpperIndexRaw(double angle) const
