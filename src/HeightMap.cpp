@@ -31,6 +31,17 @@ HeightMap::~HeightMap()
     delete root_;
 }
 
+HeightMap& HeightMap::operator=(const HeightMap& rhs)
+{
+    if (this != &rhs)
+    {
+        Shape::operator=(rhs);
+        delete root_;
+        root_ = rhs.root_ ? new HeightMapNode(*rhs.root_) : nullptr;
+    }
+    return *this;
+}
+
 HeightMap* HeightMap::clone() const
 {
     return new HeightMap(*this);
@@ -43,6 +54,16 @@ bool HeightMap::intersect(const Ray& r, float t0, float t1, double& distance) co
         return false;
     }
     return root_->intersect(r, t0, t1, distance);
+}
+
+bool HeightMap::intersect(const Vector3& p, const double RADIUS) const
+{
+    return root_ && root_->intersect(p, RADIUS);
+}
+
+bool HeightMap::contains(const Vector3& p) const
+{
+    return root_ && root_->contains(p);
 }
 
 HeightMap HeightMap::fromGrid(const std::vector<std::vector<double>>& grid, double resolution)

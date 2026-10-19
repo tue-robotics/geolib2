@@ -46,6 +46,21 @@ public:
 
     bool intersect(const Box& b) const;
 
+    /**
+     * @brief Determines whether a sphere intersects the occupied space of the octree, using the tree structure
+     * @param p center of the sphere
+     * @param radius radius of the sphere
+     * @return True means the sphere intersects
+     */
+    bool intersect(const Vector3& p, const double radius) const;
+
+    /**
+     * @brief Smallest axis aligned box which includes all occupied cubes. Calculated from the tree, so it is always
+     * up to date.
+     * @return bounding box
+     */
+    Box getBoundingBox() const;
+
     const Mesh& getMesh() const;
 
 protected:
@@ -60,6 +75,19 @@ protected:
     OctreeNode* root_;
 
     mutable Mesh mesh_;
+
+    mutable bool bounding_box_cache_valid_{false}; // Invalidated together with mesh_, on any change of the tree
+    mutable Vector3 bounding_box_min_cache_;
+    mutable Vector3 bounding_box_max_cache_;
+
+    /**
+     * @brief Clear all cached results, as they have become invalid. Should be called on any change of the tree.
+     */
+    void invalidateCache()
+    {
+        mesh_.clear();
+        bounding_box_cache_valid_ = false;
+    }
 };
 
 } // namespace geo

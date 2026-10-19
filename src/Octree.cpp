@@ -3,6 +3,7 @@
 #include <cmath>
 
 #include "geolib/Box.h"
+#include "geolib/Mesh.h"
 #include "geolib/Octree.h"
 #include "geolib/OctreeNode.h"
 #include "geolib/Ray.h"
@@ -39,13 +40,13 @@ void Octree::clear()
 {
     delete root_;
     root_ = new OctreeNode(size_, this);
-    mesh_.clear();
+    invalidateCache();
 }
 
 void Octree::add(const Vector3& p)
 {
     root_->add(p - offset_);
-    mesh_.clear();
+    invalidateCache();
 }
 
 void Octree::getCubes(std::vector<Box>& cubes) const
@@ -104,7 +105,7 @@ void Octree::raytrace(const Ray& r, float t0, float t1)
         r.getOrigin() - offset_, r.getDirection(), static_cast<float>(t0 + dist + (resolution_ * 0.1)), t1, offset_);
     this->add(r.getOrigin() + r.getDirection() * t1);
 
-    mesh_.clear();
+    invalidateCache();
 }
 
 bool Octree::contains(const Vector3& p) const
@@ -130,6 +131,41 @@ bool Octree::intersect(const Box& b) const
     return root_->intersect(
         Box(Vector3(std::max(min.x, offset_.x), std::max(min.y, offset_.y), std::max(min.z, offset_.z)) - offset_,
             Vector3(std::min(max.x, max_.x), std::min(max.y, max_.y), std::min(max.z, max_.z)) - offset_));
+}
+
+bool Octree::intersect(const Vector3& p, const double RADIUS) const
+{
+    if (RADIUS <= 0)
+    {
+        return contains(p);
+    }
+
+    // The sphere should intersect the cube of the root node
+    double d2 = 0;
+    for (unsigned int i = 0; i < 3; ++i)
+    {
+        double const d = std::max({offset_[i] - p[i], 0.0, p[i] - max_[i]});
+        d2 += d * d;
+    }
+    if (d2 > RADIUS * RADIUS)
+    {
+        return false;
+    }
+
+    return root_->intersect(p - offset_, RADIUS);
+}
+
+Box Octree::getBoundingBox() const
+{
+    if (!bounding_box_cache_valid_)
+    {
+        // Same result as for an empty mesh, in case nothing is occupied
+        bounding_box_min_cache_ = Vector3(1e9, 1e9, 1e9);
+        bounding_box_max_cache_ = Vector3(-1e9, -1e9, -1e9);
+        root_->extendBoundingBox(bounding_box_min_cache_, bounding_box_max_cache_, offset_);
+        bounding_box_cache_valid_ = true;
+    }
+    return {bounding_box_min_cache_, bounding_box_max_cache_};
 }
 
 const Mesh& Octree::getMesh() const
