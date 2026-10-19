@@ -208,6 +208,9 @@ if(BUILD_TESTING)
   ament_add_gtest(test_box test/test_box.cpp)
   target_link_libraries(test_box geolib)
 
+  ament_add_gtest(test_collision test/test_collision.cpp)
+  target_link_libraries(test_collision geolib)
+
   ament_add_gtest(test_composite_shape test/test_composite_shape.cpp)
   target_link_libraries(test_composite_shape geolib)
 
@@ -219,6 +222,9 @@ if(BUILD_TESTING)
 
   ament_add_gtest(test_math_types test/test_math_types.cpp)
   target_link_libraries(test_math_types geolib)
+
+  ament_add_gtest(test_sensors test/test_sensors.cpp)
+  target_link_libraries(test_sensors geolib)
 endif()
 
 ament_package()

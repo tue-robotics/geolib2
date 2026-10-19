@@ -12,6 +12,8 @@
 namespace geo
 {
 
+namespace { const double TWO_PI = 2 * std::acos(-1.0); } // namespace
+
 LaserRangeFinder::LaserRangeFinder() : a_min_(0), a_max_(0), range_min_(0), range_max_(0), num_beams_(0), angle_incr_(0)
 {
 }
@@ -55,9 +57,21 @@ void LaserRangeFinder::RenderResult::renderLine(const Vec2& p1, const Vec2& p2)
             return;
     }
 
-    // Get the angle / beam indices based on the slope
-    int const i_p1 = lrf_->getAngleUpperIndexRaw(p1.x, p1.y);
-    int const i_p2 = lrf_->getAngleUpperIndexRaw(p2.x, p2.y);
+    // Get the angle / beam indices based on the slope. The angles are normalized to [a_min, a_min + 2 pi), such that
+    // the discontinuity in the indices lies at the start of the sensor range, instead of at +/- pi. This way, sensors
+    // with angles beyond +/- pi are supported as well.
+    auto const beam_index = [this](const Vec2& p)
+    {
+        double a = std::atan2(p.y, p.x) - lrf_->a_min_;
+        while (a < 0)
+            a += TWO_PI;
+        while (a >= TWO_PI)
+            a -= TWO_PI;
+        // a is non-negative, so truncation is equal to floor
+        return static_cast<int>(a / lrf_->angle_incr_) + 1;
+    };
+    int const i_p1 = beam_index(p1);
+    int const i_p2 = beam_index(p2);
 
     // Get the minimum and maximum
     int const i_min = std::min<int>(i_p1, i_p2);
@@ -171,14 +185,10 @@ void LaserRangeFinder::render(const LaserRangeFinder::RenderOptions& opt, LaserR
         if (std::abs(pose.getOrigin().getZ()) > max_radius)
             return;
 
-        double const dist_sq = pose.getOrigin().length2();
-
-        if (dist_sq > max_radius * max_radius)
-        {
-            // If nearest object point is certainly further away than max_range, do not render
-            if (sqrt(dist_sq) - max_radius > range_max_)
-                return;
-        }
+        // If nearest object point is certainly further away than max_range, do not render. A max range of zero means
+        // that the range is not limited.
+        if (range_max_ > 0 && pose.getOrigin().length() - max_radius > range_max_)
+            return;
     }
 
     const std::vector<TriangleI>& triangles = opt.getMesh().getTriangleIs();
@@ -361,7 +371,8 @@ uint LaserRangeFinder::getAngleUpperIndex(double x, double y) const
 
 int LaserRangeFinder::getAngleUpperIndexRaw(double angle) const
 {
-    return static_cast<int>((angle - a_min_) / angle_incr_) + 1;
+    // floor instead of truncation towards zero, to get the correct index for angles below the minimum angle
+    return static_cast<int>(std::floor((angle - a_min_) / angle_incr_)) + 1;
 }
 
 int LaserRangeFinder::getAngleUpperIndexRaw(double x, double y) const

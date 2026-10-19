@@ -30,11 +30,11 @@ public:
     virtual Shape* clone() const;
 
     /**
-     * @brief intersect: currently always throws a logic error
-     * @param r
-     * @param t0
-     * @param t1
-     * @param distance
+     * @brief Determines whether a ray intersects the surface of the shape
+     * @param r ray, expressed in the frame of the shape
+     * @param t0 minimum distance along the ray
+     * @param t1 maximum distance along the ray
+     * @param distance distance along the ray to the nearest intersection in (t0, t1); only set on intersection
      * @return true when the ray intersects the shape
      */
     virtual bool intersect(const Ray& r, float t0, float t1, double& distance) const;

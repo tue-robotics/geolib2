@@ -8,6 +8,7 @@
 #include <console_bridge/console.h>
 
 #include <cmath>
+#include <limits>
 #include <stdexcept>
 #include <string>
 #include <sys/types.h>
@@ -30,31 +31,29 @@ Box* Box::clone() const
 
 bool Box::intersect(const Ray& r, float t0, float t1, double& distance) const
 {
-
-    float tmin = NAN;
-    float tmax = NAN;
-    float tymin = NAN;
-    float tymax = NAN;
-    float tzmin = NAN;
-    float tzmax = NAN;
+    // Slab test
     const geo::Vec3& origin = r.getOrigin();
     const geo::Vec3& inv_direction = r.getInvDirection();
     const std::array<int, 3>& sign = r.getSign();
-    tmin = static_cast<float>((bounds[sign[0]].x - origin.x) * inv_direction.x);
-    tmax = static_cast<float>((bounds[1 - sign[0]].x - origin.x) * inv_direction.x);
-    tymin = static_cast<float>((bounds[sign[1]].y - origin.y) * inv_direction.y);
-    tymax = static_cast<float>((bounds[1 - sign[1]].y - origin.y) * inv_direction.y);
 
-    if ((tmin > tymax) || (tymin > tmax))
-        return false;
-    tmin = std::max(tymin, tmin);
-    tmax = std::min(tymax, tmax);
-    tzmin = static_cast<float>((bounds[sign[2]].z - origin.z) * inv_direction.z);
-    tzmax = static_cast<float>((bounds[1 - sign[2]].z - origin.z) * inv_direction.z);
-    if ((tmin > tzmax) || (tzmin > tmax))
-        return false;
-    tmin = std::max(tzmin, tmin);
-    tmax = std::min(tzmax, tmax);
+    double tmin = -std::numeric_limits<double>::infinity();
+    double tmax = std::numeric_limits<double>::infinity();
+    for (uint i = 0; i < 3; ++i)
+    {
+        if (std::isinf(inv_direction[i]))
+        {
+            // Ray is parallel to this slab, so it can only hit the box if the origin lies within the slab. This is
+            // checked explicitly, as 0 * inf is undefined.
+            if (origin[i] < bounds[0][i] || origin[i] > bounds[1][i])
+                return false;
+            continue;
+        }
+
+        tmin = std::max(tmin, (bounds[sign[i]][i] - origin[i]) * inv_direction[i]);
+        tmax = std::min(tmax, (bounds[1 - sign[i]][i] - origin[i]) * inv_direction[i]);
+        if (tmin > tmax)
+            return false;
+    }
 
     distance = tmin;
     return t0 < tmax && tmin < t1;
@@ -62,7 +61,13 @@ bool Box::intersect(const Ray& r, float t0, float t1, double& distance) const
 
 double Box::getMaxRadius() const
 {
-    return std::max(getMin().length(), getMax().length());
+    // The farthest point of the box is the corner with, per axis, the bound farthest from the origin
+    const Vector3& min = getMin();
+    const Vector3& max = getMax();
+    return Vector3(std::max(std::abs(min.x), std::abs(max.x)),
+                   std::max(std::abs(min.y), std::abs(max.y)),
+                   std::max(std::abs(min.z), std::abs(max.z)))
+        .length();
 }
 
 bool Box::intersect(const Box& other) const
@@ -77,7 +82,7 @@ bool Box::intersect(const Box& other) const
         return false;
     if (std::abs(c1.y - c2.y) > (r1.y + r2.y))
         return false;
-    if (std::abs(c1.y - c2.z) > (r1.z + r2.z))
+    if (std::abs(c1.z - c2.z) > (r1.z + r2.z))
         return false;
 
     return true;
@@ -161,6 +166,8 @@ void Box::generate_mesh_()
 {
     const Vector3& min = getMin();
     const Vector3& max = getMax();
+
+    mesh_.clear();
 
     unsigned int const p0 = mesh_.addPoint(min.x, min.y, min.z); // 0
     unsigned int const p1 = mesh_.addPoint(max.x, min.y, min.z); // 1

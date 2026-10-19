@@ -3,21 +3,13 @@
 #include "geolib/datatypes.h"
 #include "geolib/Mesh.h"
 #include "geolib/Ray.h"
-#include "geolib/Triangle.h"
 
 #include <algorithm>
-
-#include <console_bridge/console.h>
-
 #include <cmath>
 #include <ios>
 #include <istream>
-#include <map>
 #include <ostream>
-#include <stdexcept>
 #include <string>
-#include <sys/types.h>
-#include <utility>
 #include <vector>
 
 namespace geo
@@ -27,154 +19,86 @@ namespace
 {
 
 /**
- * @brief Check whether a point p is within distance radius of the line segment. The starting point is described by @b a
- * and the vector from the starting point to the end point @b ab
- * @param p Point to check
- * @param radius2 Radius squared to check with
- * @param a Starting point of linesegment
- * @param ab Linesegment from A to B
- * @return
+ * @brief Tolerance used to consider a point to be on the surface of a shape
  */
-bool checkLinesegment(const Vector3& p, const double RADIUS2, const Vector3& a, const Vector3& ab)
+constexpr double SURFACE_EPS = 1e-9;
+
+/**
+ * @brief Closest point to @b p on the line segment from @b a to @b b
+ */
+Vector3 closestPointOnSegment(const Vector3& p, const Vector3& a, const Vector3& b)
 {
-    geo::Vector3 const ap = p - a;
-    double const d1_2 = ap.length2(); // Distance between a and p, squared
-    double const d2 = ab.dot(ap); // Dot product between ab and ap; projection of p on linesegment ab
-
-    if (d2 < 0)
-        // If ab dot ap < 0, there can't be any intersection, because the orientated linesegment points away
-        return false;
-
-    double const d2_2 = d2 * d2 / ab.length2(); // Distance between a and the projection of p on linesegment ab, squared
-    return d2_2 <= ab.length2() * (1 + 1e-9) && d1_2 - d2_2 <= RADIUS2 * (1 + 1e-9); // To prevent any numerical issues
+    Vector3 const ab = b - a;
+    double const l2 = ab.length2();
+    if (l2 == 0)
+        return a;
+    double const t = std::min(1.0, std::max(0.0, (p - a).dot(ab) / l2));
+    return a + t * ab;
 }
 
 /**
- *\a https://members.loria.fr/SLazard/ARC-Visi3D/Pant-project/files/Line_Segment_Triangle.html
+ * @brief Closest point to @b p on the triangle (a, b, c), including its interior. Determines the Voronoi region of
+ * the triangle in which p lies.
+ * \a Ericson, C. (2004). Real-Time Collision Detection, section 5.1.5
  */
-class LineSegment
+Vector3 closestPointOnTriangle(const Vector3& p, const Vector3& a, const Vector3& b, const Vector3& c)
 {
-public:
-    LineSegment(const geo::Vector3& a, const geo::Vector3& b) : a_(a), B(b)
+    Vector3 const ab = b - a;
+    Vector3 const ac = c - a;
+
+    // Vertex region of a
+    Vector3 const ap = p - a;
+    double const d1 = ab.dot(ap);
+    double const d2 = ac.dot(ap);
+    if (d1 <= 0 && d2 <= 0)
+        return a;
+
+    // Vertex region of b
+    Vector3 const bp = p - b;
+    double const d3 = ab.dot(bp);
+    double const d4 = ac.dot(bp);
+    if (d3 >= 0 && d4 <= d3)
+        return b;
+
+    // Edge region of ab
+    double const vc = (d1 * d4) - (d3 * d2);
+    if (vc <= 0 && d1 >= 0 && d3 <= 0)
+        return a + (d1 / (d1 - d3)) * ab;
+
+    // Vertex region of c
+    Vector3 const cp = p - c;
+    double const d5 = ab.dot(cp);
+    double const d6 = ac.dot(cp);
+    if (d6 >= 0 && d5 <= d6)
+        return c;
+
+    // Edge region of ac
+    double const vb = (d5 * d2) - (d1 * d6);
+    if (vb <= 0 && d2 >= 0 && d6 <= 0)
+        return a + (d2 / (d2 - d6)) * ac;
+
+    // Edge region of bc
+    double const va = (d3 * d6) - (d5 * d4);
+    if (va <= 0 && (d4 - d3) >= 0 && (d5 - d6) >= 0)
+        return b + ((d4 - d3) / ((d4 - d3) + (d5 - d6))) * (c - b);
+
+    double const denom = va + vb + vc;
+    if (denom <= 0)
     {
-        U_ = B - a_;
-        V_ = a_.cross(B);
+        // Degenerate (zero area) triangle, so the closest point lies on one of the edges
+        Vector3 const q1 = closestPointOnSegment(p, a, b);
+        Vector3 const q2 = closestPointOnSegment(p, b, c);
+        Vector3 const q3 = closestPointOnSegment(p, c, a);
+        double const l1 = (p - q1).length2();
+        double const l2 = (p - q2).length2();
+        double const l3 = (p - q3).length2();
+        if (l1 <= l2 && l1 <= l3)
+            return q1;
+        return l2 <= l3 ? q2 : q3;
     }
 
-    [[nodiscard]]
-    const geo::Vector3& a() const
-    {
-        return a_;
-    }
-    [[nodiscard]]
-    const geo::Vector3& b() const
-    {
-        return B;
-    }
-    [[nodiscard]]
-    const geo::Vector3& u() const
-    {
-        return U_;
-    }
-    [[nodiscard]]
-    const geo::Vector3& v() const
-    {
-        return V_;
-    }
-
-protected:
-    geo::Vector3 a_;
-    geo::Vector3 B;
-    geo::Vector3 U_, V_;
-};
-using LS = geo::LineSegment;
-
-/**
- * @brief Determining the direction in which \a \b q passes around \a \b p.
- * The direction is taken from looking from the base to tip of the vector \a \b p.
- * Zero means intersection
- * Positive means \a \b q passses clockwise around \a \b p.
- * Negative means \a \b q passes counter clockwise around \a \b p.
- *\a https://members.loria.fr/SLazard/ARC-Visi3D/Pant-project/files/Line_Segment_Triangle.html
- * @param p First line
- * @param q Second line
- * @return side value
- */
-double sideProduct(const geo::LS& p, const geo::LS& q)
-{
-    return p.u().dot(q.v()) + q.u().dot(p.v());
-}
-
-/**
- * @brief Check if linesegment does intersect with line
- *\a https://members.loria.fr/SLazard/ARC-Visi3D/Pant-project/files/Line_Segment_Triangle.html
- * @param l line
- * @param ls linesegment
- * @param outside A point outside the plane which contains both the line and the linesegment
- * @return Intersection or not
- */
-bool lineLinesegmentIntersection(const geo::LS& l, const geo::LS& ls, const geo::Vector3& outside)
-{
-    double const s = sideProduct(l, ls);
-    if (s != 0)
-    {
-        return false;
-    }
-
-    double const s1 = sideProduct(l, geo::LS(outside, ls.a()));
-    double const s2 = sideProduct(l, geo::LS(ls.b(), outside));
-
-    return s1 * s2 >= 0;
-}
-
-/**
- * @brief Check if a line that is in the same plane as the triangle does actually intersect with the triangle
- *\a https://members.loria.fr/SLazard/ARC-Visi3D/Pant-project/files/Line_Segment_Triangle.html
- * @param t Triangle
- * @param line line
- * @return Intersection or not
- */
-bool compute2DIntersection(const geo::Triangle& t, const geo::LS& line)
-{
-    double s2 = NAN;
-    double s3 = NAN;
-
-    // Skipping s1, as we don't change v1 and v2, so that edge, doesn't change
-
-    geo::Vector3 p3;
-    for (uint i = 0; i < 3; ++i)
-    {
-        p3 = geo::Vector3(t.p3());
-        p3[i] += 1; // Move point outside the plane
-
-        s2 = sideProduct(line, geo::LS(t.p2(), p3));
-        s3 = sideProduct(line, geo::LS(p3, t.p1()));
-
-        if (std::abs(s2) >= 1e-16 || std::abs(s3) >= 1e-16) // s2==0 && s3==0
-            break;
-    }
-
-    for (uint i = 0; i < 3; ++i)
-    {
-        const geo::Vector3& p1 = t[i];
-        const geo::Vector3& p2 = t[(i + 1) % 3];
-        s2 = sideProduct(line, geo::LS(p2, p3));
-        s3 = sideProduct(line, geo::LS(p3, p1));
-
-        if (s2 * s3 >= 0)
-        { // s2 and s3 have the same sign and are non zero
-            for (uint i = 0; i < 3; ++i)
-            {
-                const geo::Vector3& v1 = t[i];
-                const geo::Vector3& v2 = t[(i + 1) % 3];
-                if (lineLinesegmentIntersection(line, geo::LS(v1, v2), p3))
-                {
-                    return true;
-                }
-            }
-        }
-    }
-    return false;
+    // Face region
+    return a + (vb / denom) * ab + (vc / denom) * ac;
 }
 
 } // namespace
@@ -190,17 +114,65 @@ Shape* Shape::clone() const
     return new Shape(*this);
 }
 
-bool Shape::intersect(const Ray& /*r*/, float /*t0*/, float /*t1*/, double& /*distance*/) const
+/**
+ * Moller-Trumbore ray-triangle intersection, applied to all triangles of the mesh.
+ * \a https://doi.org/10.1080/10867651.1997.10487468
+ **/
+bool Shape::intersect(const Ray& r, float t0, float t1, double& distance) const
 {
-    throw std::logic_error("intersect(Ray, float, float, double) not implemented");
-    return false;
+    const Mesh& mesh = getMesh();
+    const Vector3& o = r.getOrigin();
+    const Vector3& dir = r.getDirection(); // unit length
+
+    // Ray should pass the bounding sphere of the mesh
+    double const o_dir = o.dot(dir);
+    if (o.length2() - (o_dir * o_dir) > mesh.getSquaredMaxRadius())
+        return false;
+
+    bool hit = false;
+    double t_nearest = t1;
+
+    const std::vector<geo::Vector3>& t_points = mesh.getPoints();
+    for (const auto& it : mesh.getTriangleIs())
+    {
+        const Vector3& v1 = t_points[it.i1_];
+        Vector3 const e1 = t_points[it.i2_] - v1;
+        Vector3 const e2 = t_points[it.i3_] - v1;
+
+        Vector3 const pvec = dir.cross(e2);
+        double const det = e1.dot(pvec);
+        if (det == 0)
+            // Ray is parallel to the triangle
+            continue;
+
+        double const inv_det = 1 / det;
+        Vector3 const tvec = o - v1;
+        double const u = tvec.dot(pvec) * inv_det;
+        if (u < 0 || u > 1)
+            continue;
+
+        Vector3 const qvec = tvec.cross(e1);
+        double const v = dir.dot(qvec) * inv_det;
+        if (v < 0 || u + v > 1)
+            continue;
+
+        double const t = e2.dot(qvec) * inv_det;
+        if (t > t0 && t < t_nearest)
+        {
+            t_nearest = t;
+            hit = true;
+        }
+    }
+
+    if (hit)
+        distance = t_nearest;
+
+    return hit;
 }
 
 /**
- *  Main logic:
- * \a http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.49.9172&rep=rep1&type=pdf
- *  Projection in triangle logic:
- * \a https://www.baeldung.com/cs/check-if-point-is-in-2d-triangle#1-mathematical-idea-2
+ * The sphere intersects the shape if the distance from its center to the closest point on any of the triangles is at
+ * most its radius, or if its center lies within the shape.
  **/
 bool Shape::intersect(const Vector3& p, const double RADIUS) const
 {
@@ -212,57 +184,22 @@ bool Shape::intersect(const Vector3& p, const double RADIUS) const
 
     if (RADIUS > 0.)
     {
-        const double radius2 = RADIUS * RADIUS;
-        // load triangles
+        const double radius2 = RADIUS * RADIUS * (1 + 1e-9); // To prevent any numerical issues
         const std::vector<geo::Vector3>& t_points = mesh.getPoints();
-        const std::vector<TriangleI>& triangles_i = mesh.getTriangleIs();
-        for (auto it : triangles_i)
+        for (const auto& it : mesh.getTriangleIs())
         {
             const Vector3& v1 = t_points[it.i1_];
             const Vector3& v2 = t_points[it.i2_];
             const Vector3& v3 = t_points[it.i3_];
 
-            // check endpoints
-            if ((v1 - p).length2() < radius2)
-                return true;
-            if ((v2 - p).length2() < radius2)
-                return true;
-            if ((v3 - p).length2() < radius2)
-                return true;
-
-            Vector3 const e1 = v2 - v1;
-            Vector3 const e2 = v3 - v2;
-            Vector3 const e3 = v1 - v3;
-
-            // check line segments
-            if (checkLinesegment(p, radius2, v1, e1))
-                return true;
-            if (checkLinesegment(p, radius2, v2, e2))
-                return true;
-            if (checkLinesegment(p, radius2, v3, e3))
-                return true;
-
-            // check surface
-            Vector3 const n = e1.cross(e2); // normal vector
-            double projected_distance2 = (v1 - p).dot(n); // projected_distance^2 = ((p-v1) dot n)^2 / |n|^2
-            projected_distance2 = projected_distance2 * projected_distance2 / n.length2();
-
-            if (projected_distance2 > radius2)
-                // If projection distance is too big, no intersection for this triangle
+            // Cheap rejection: the distance to the plane of the triangle is a lower bound of the distance to the
+            // triangle. ((p - v1) dot n)^2 / |n|^2 > radius^2
+            Vector3 const n = (v2 - v1).cross(v3 - v1);
+            double const plane_distance = (p - v1).dot(n);
+            if (plane_distance * plane_distance > radius2 * n.length2())
                 continue;
 
-            // check that the projection falls within the triangle
-            Vector3 const q = p - sqrt(projected_distance2) * n.normalized();
-
-            Vector3 const cross1 = e1.cross(q - v1);
-            Vector3 const cross2 = e2.cross(q - v2);
-            Vector3 const cross3 = e3.cross(q - v3);
-
-            double const dot1 = cross1.dot(cross2);
-            double const dot2 = cross2.dot(cross3);
-            double const dot3 = cross3.dot(cross1);
-
-            if (dot1 > 0 && dot2 > 0 && dot3 > 0)
+            if ((p - closestPointOnTriangle(p, v1, v2, v3)).length2() <= radius2)
                 return true;
         }
     }
@@ -270,206 +207,54 @@ bool Shape::intersect(const Vector3& p, const double RADIUS) const
 }
 
 /**
- *  Let the line segment P connect points p and an arbitrary point p_out outside of the shape
- *  We count the number of intersections between P and the shape. A positive number means point p is inside the shape.
- *  We use plucker coordinates to determine whether or not a triangle intersects line segment P.
- *  more details \a https://members.loria.fr/SLazard/ARC-Visi3D/Pant-project/files/Line_Segment_Triangle.html
+ *  The generalized winding number of the mesh around point p is calculated, which is the sum of the signed solid
+ *  angles of all triangles, as seen from p, divided by 4 pi. For a closed mesh, it is (-)1 inside and 0 outside. In
+ *  contrast to ray casting, this is robust for rays hitting edges or vertices, duplicated vertices and small holes in
+ *  the mesh. Points on the surface of the mesh are considered to be inside.
+ *  Solid angle of a triangle: \a https://doi.org/10.1109/TBME.1983.325207
+ *  Generalized winding number: \a https://doi.org/10.1145/2461912.2461916
  **/
 bool Shape::contains(const Vector3& p) const
 {
     const Mesh& mesh = getMesh();
-    if (p.length2() > mesh.getSquaredMaxRadius())
+    if (p.length2() > mesh.getSquaredMaxRadius() * (1 + 1e-9))
     {
         return false;
     }
 
-    int intersect_count = 0;
+    double solid_angle = 0;
 
-    // determine plucker coordinates of line p
-    Vector3 const p_out = Vector3(1.1 * mesh.getMaxRadius(), 0, 0);
-    geo::LS const line(p, p_out);
-
-    // create hit maps
-    std::map<uint, std::map<uint, int>> edge_hit_map;
-    std::map<uint, int> vertex_hit_map;
-
-    // load triangles
     const std::vector<geo::Vector3>& t_points = mesh.getPoints();
-    const std::vector<TriangleI>& triangles_i = mesh.getTriangleIs();
-    for (auto it : triangles_i)
+    for (const auto& it : mesh.getTriangleIs())
     {
         const Vector3& v1 = t_points[it.i1_];
         const Vector3& v2 = t_points[it.i2_];
         const Vector3& v3 = t_points[it.i3_];
 
-        geo::LS const e1(v1, v2);
-        geo::LS const e2(v2, v3);
-        geo::LS const e3(v3, v1);
+        Vector3 const a = v1 - p;
+        Vector3 const b = v2 - p;
+        Vector3 const c = v3 - p;
 
-        double const s1 = sideProduct(line, e1);
-        double const s2 = sideProduct(line, e2);
-        double const s3 = sideProduct(line, e3);
-
-        // Determine whether v1, v2 and v3 circle line p (counter) clockwise.
-        bool const clockwise = s1 >= -1e-16 && s2 >= -1e-16 && s3 >= -1e-16; // >=0
-        ushort const clockwise_nz = (s1 > 1e-16) + (s2 > 1e-16) + (s3 > 1e-16); // >0
-        bool const counterclockwise = s1 <= 1e-16 && s2 <= 1e-16 && s3 <= 1e-16; // <=0
-        ushort const counterclockwise_nz = (s1 < -1e-16) + (s2 < -1e-16) + (s3 < -1e-16); // <0
-
-        if (!clockwise && !counterclockwise)
+        // det = a dot (b x c) = (v1 - p) dot n, which is proportional to the distance of p to the plane of the triangle
+        Vector3 const n = (v2 - v1).cross(v3 - v1);
+        double const det = a.dot(n);
+        if (det * det <= SURFACE_EPS * SURFACE_EPS * n.length2())
         {
-            // No intersection
-            CONSOLE_BRIDGE_logDebug("No intersection");
-            continue;
-        }
-        if (clockwise && counterclockwise)
-        { // s1=0; s2=0; s3=0
-            // Coplanar
-            CONSOLE_BRIDGE_logDebug("Coplanar");
-            if (compute2DIntersection(Triangle(v1, v2, v3), line))
-            {
-                CONSOLE_BRIDGE_logDebug("Coplanar in the triangle");
+            // p lies in the plane of the triangle. Either it is on the triangle, or the solid angle is zero.
+            if ((p - closestPointOnTriangle(p, v1, v2, v3)).length2() <= SURFACE_EPS * SURFACE_EPS)
                 return true;
-            }
-            CONSOLE_BRIDGE_logDebug("Coplanar outside the triangle");
             continue;
         }
-        if ((clockwise && clockwise_nz > 0) || (counterclockwise && counterclockwise_nz > 0))
-        {
-            // 3 same sign -> proper intersection
-            // 2 same sign, 1 zero -> intersection on edge
-            // 2 zero, 1 non-zero -> intersection at vertex
 
-            // Now check whether the intersection lies in the line segment
-            geo::LS const l4(p_out, v1);
-            geo::LS const l5(v1, p);
-
-            double const s4 = sideProduct(l4, e2);
-            double const s5 = sideProduct(l5, e2);
-
-            if (s4 * s5 >= -1e-16)
-            { // s4*s5 >= 0
-                if (clockwise_nz == 2 || counterclockwise_nz == 2)
-                {
-                    // Edge intersection
-                    CONSOLE_BRIDGE_logDebug("Edge intersection");
-                    uint i1 = 0;
-                    uint i2 = 0;
-                    if (std::abs(s1) < 1e-16)
-                    {
-                        i1 = it.i1_;
-                        i2 = it.i2_;
-                    }
-                    else if (std::abs(s2) < 1e-16)
-                    {
-                        i1 = it.i2_;
-                        i2 = it.i3_;
-                    }
-                    else
-                    { // if (std::abs(s3) < 1e-16)
-                        i1 = it.i3_;
-                        i2 = it.i1_;
-                    }
-                    uint& i_min = i1;
-                    uint i_max = i2;
-                    if (i_max < i_min)
-                        std::swap(i_min, i_max);
-                    if (std::abs((p - t_points[i_min]).length() + (t_points[i_max] - p).length() -
-                                 (t_points[i_max] - t_points[i_min]).length()) <= 1e-12)
-                    { // For numerical issues
-                        CONSOLE_BRIDGE_logDebug("Point is on an edge of the mesh");
-                        return true;
-                    }
-
-                    // Make sure map entries exist
-                    auto search = edge_hit_map.find(i_min);
-                    if (search == edge_hit_map.end())
-                    {
-                        edge_hit_map[i_min] = std::map<uint, int>();
-                    }
-                    auto search2 = edge_hit_map[i_min].find(i_max - i_min - 1);
-                    if (search2 == edge_hit_map[i_min].end())
-                    {
-                        edge_hit_map[i_min][i_max - i_min - 1] = 0;
-                    }
-
-                    int& hit_entry = edge_hit_map[i_min][i_max - i_min - 1];
-                    if (hit_entry == clockwise - counterclockwise)
-                    {
-                        // Don't count an edge multiple times with the same direction
-                        continue;
-                    }
-
-                    hit_entry += clockwise - counterclockwise;
-                }
-                else if (clockwise_nz == 1 || counterclockwise_nz == 1)
-                {
-                    // vertex intersection
-                    CONSOLE_BRIDGE_logDebug("Vertex intersection");
-                    // vertex intersection
-                    uint i = 0;
-                    if (std::abs(s2) > 1e-16)
-                        i = it.i1_;
-                    else if (std::abs(s3) > 1e-16)
-                        i = it.i2_;
-                    else // if (std::abs(s1) > 1e-16)
-                        i = it.i3_;
-
-                    if (t_points[i] == p)
-                    {
-                        CONSOLE_BRIDGE_logDebug("Point is a vertex of the mesh");
-                        return true;
-                    }
-
-                    // Make sure map entries exist
-                    auto search = vertex_hit_map.find(i);
-                    if (search == vertex_hit_map.end())
-                    {
-                        vertex_hit_map[i] = 0;
-                    }
-
-                    int& hit_entry = vertex_hit_map[i];
-                    if (hit_entry == clockwise - counterclockwise)
-                    {
-                        // Don't count a vertex multiple times with the same direction
-                        continue;
-                    }
-
-                    hit_entry += clockwise - counterclockwise;
-                }
-                else
-                {
-                    // Proper intersection
-                    CONSOLE_BRIDGE_logDebug("Proper intersection");
-                    // https://www.geeksforgeeks.org/check-whether-a-given-point-lies-inside-a-triangle-or-not/
-                    double const s = geo::triangleArea(v1, v2, v3);
-                    if (s < 1e-12)
-                        CONSOLE_BRIDGE_logError("Triangle has a zero area");
-
-                    double const s1 = geo::triangleArea(v2, p, v3);
-                    double const s2 = geo::triangleArea(p, v1, v3);
-                    double const s3 = geo::triangleArea(p, v1, v2);
-
-                    if (std::abs(s1 + s2 + s3 - s) < 1e-12)
-                    {
-                        CONSOLE_BRIDGE_logDebug("Point is on a triangle");
-                        return true;
-                    }
-                }
-                // Update intersect count
-                intersect_count += clockwise - counterclockwise;
-            }
-        }
+        double const la = a.length();
+        double const lb = b.length();
+        double const lc = c.length();
+        double const denom = (la * lb * lc) + (a.dot(b) * lc) + (a.dot(c) * lb) + (b.dot(c) * la);
+        solid_angle += 2 * std::atan2(det, denom);
     }
 
-    if (intersect_count < 0 || intersect_count > 1)
-    {
-        CONSOLE_BRIDGE_logError("intersect_count is %i, it should be 0 or 1! Is your shape constructed correctly?",
-                                intersect_count);
-        return false;
-    }
-
-    return intersect_count > 0;
+    // Accept both orientations of the triangles (normals pointing outwards or inwards)
+    return std::abs(solid_angle) > 2 * std::acos(-1.0); // |winding number| > 0.5
 }
 
 Box Shape::getBoundingBox() const
