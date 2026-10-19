@@ -34,8 +34,9 @@ bool Shape::intersect(const Ray& r, float t0, float t1, double& distance) const
     const Vector3& dir = r.getDirection();
 
     // Ray should pass the bounding sphere of the mesh. The squared distance of the line to the origin is calculated
-    // with the cross product, as |o|^2 - (o dot dir)^2 suffers from cancellation for distant origins.
-    if (o.cross(dir).length2() > mesh.getSquaredMaxRadius() * dir.length2())
+    // with the cross product, as |o|^2 - (o dot dir)^2 suffers from cancellation for distant origins. A margin is used,
+    // such that rays touching the sphere are not rejected due to roundoff.
+    if (o.cross(dir).length2() > mesh.getSquaredMaxRadius() * dir.length2() * (1 + 1e-9))
         return false;
 
     return mesh.getBVH()->intersect(r, t0, t1, distance);
