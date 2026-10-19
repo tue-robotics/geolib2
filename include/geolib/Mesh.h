@@ -3,6 +3,8 @@
 
 #include "Triangle.h"
 
+#include <atomic>
+#include <memory>
 #include <vector>
 
 namespace geo
@@ -23,6 +25,8 @@ struct TriangleI
         return out;
     }
 };
+
+class MeshBVH;
 
 /** Mesh storage. */
 class Mesh
@@ -132,6 +136,13 @@ public:
      */
     geo::Vector3 getTriangleNormal(unsigned int index) const;
 
+    /**
+     * @brief Bounding volume hierarchy of the triangles, which accelerates ray, sphere and point queries. Built on
+     * first use and cached until the mesh is changed. Safe to call from multiple threads. Copies of the mesh share it.
+     * @return the bounding volume hierarchy
+     */
+    std::shared_ptr<const MeshBVH> getBVH() const;
+
 protected:
     mutable double max_radius_cache_{}; ///< Cached maximum radius.
     mutable double max_radius_squared_cache_{}; ///< Cached squared maximum radius.
@@ -142,12 +153,16 @@ protected:
 
     mutable std::vector<Triangle> triangles_cache_; ///< Cached output result.
 
+    /// Cached bounding volume hierarchy. Only accessed using std::atomic_load/std::atomic_store.
+    mutable std::shared_ptr<const MeshBVH> bvh_cache_;
+
     /** Clear cached computed results, as they have become invalid. */
     void invalidateCache()
     {
         triangles_cache_.clear();
         max_radius_squared_cache_ = 0;
         max_radius_cache_ = 0;
+        std::atomic_store(&bvh_cache_, std::shared_ptr<const MeshBVH>());
     }
 };
 

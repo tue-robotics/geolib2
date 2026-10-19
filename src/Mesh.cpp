@@ -1,12 +1,15 @@
 #include "geolib/Mesh.h"
 #include "geolib/datatypes.h"
 #include "geolib/math_types.h"
+#include "geolib/MeshBVH.h"
 #include "geolib/Triangle.h"
 
 #include <algorithm>
+#include <atomic>
 #include <cmath>
 #include <cstddef>
 #include <map>
+#include <memory>
 #include <vector>
 
 namespace geo
@@ -140,6 +143,8 @@ void Mesh::filterOverlappingVertices()
         it.i2_ = i_map[it.i2_];
         it.i3_ = i_map[it.i3_];
     }
+
+    invalidateCache();
 }
 
 double Mesh::getSquaredMaxRadius() const
@@ -172,6 +177,19 @@ geo::Vector3 Mesh::getTriangleNormal(unsigned int index) const
     const geo::Vector3& p3 = points_[t.i3_];
 
     return ((p3 - p1).cross(p2 - p1)).normalized();
+}
+
+std::shared_ptr<const MeshBVH> Mesh::getBVH() const
+{
+    // Built outside of any lock. In case multiple threads build it simultaneously, they all get a valid hierarchy and
+    // one of them is cached.
+    std::shared_ptr<const MeshBVH> bvh = std::atomic_load(&bvh_cache_);
+    if (!bvh)
+    {
+        bvh = std::make_shared<const MeshBVH>(*this);
+        std::atomic_store(&bvh_cache_, bvh);
+    }
+    return bvh;
 }
 
 } // namespace geo
