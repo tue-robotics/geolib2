@@ -224,6 +224,34 @@ TEST(ShapeRay, DistantRaySmallMesh)
     EXPECT_NEAR(distance, (1e6 - 0.005) * std::sqrt(2), 1e-3);
 }
 
+TEST(ShapeRay, ThroughVertex)
+{
+    // The ray passes exactly through a corner of the box, where roundoff can put the hit just outside of all triangles
+    // sharing that corner
+    geo::Box const box(geo::Vector3(-0.5, -0.5, -0.5), geo::Vector3(0.5, 0.5, 0.5));
+    geo::Shape shape;
+    shape.setMesh(box.getMesh());
+
+    double distance = 0;
+    ASSERT_TRUE(shape.intersect(geo::Ray(geo::Vector3(10, 10, 10), geo::Vector3(-1, -1, -1)), 0, 100, distance));
+    EXPECT_NEAR(distance, 9.5 * std::sqrt(3), 1e-9);
+    ASSERT_TRUE(shape.intersect(geo::Ray(geo::Vector3(10, 10, 10), geo::Vector3(-1, -1, -1)), 0, 17, distance));
+    EXPECT_NEAR(distance, 9.5 * std::sqrt(3), 1e-9);
+}
+
+TEST(CompositeRay, DistantNearestHit)
+{
+    // The second child is hit slightly closer than the first one. The distance of the first hit should not be rounded
+    // down when used as maximum distance for the second child.
+    geo::CompositeShape comp;
+    comp.addShape(geo::Box(geo::Vector3(0, 0, 0), geo::Vector3(1, 1, 1)), geo::Pose3D::identity());
+    comp.addShape(geo::Box(geo::Vector3(1, 0, 0), geo::Vector3(2, 1, 1.01)), geo::Pose3D::identity());
+
+    double distance = 0;
+    ASSERT_TRUE(comp.intersect(geo::Ray(geo::Vector3(1, 0.5, 1000001.03), geo::Vector3(0, 0, -1)), 0, 2e6, distance));
+    EXPECT_NEAR(distance, 1000000.02, 1e-6);
+}
+
 TEST(CompositeRay, MeshChild)
 {
     geo::CompositeShape comp;
@@ -241,6 +269,16 @@ TEST(CompositeRay, MeshChild)
 // ----------------------------------------------------------------------------------------------------
 //                                            HeightMap
 // ----------------------------------------------------------------------------------------------------
+
+TEST(HeightMapRay, DistantNearestHit)
+{
+    // Same as above, for the children of a quad tree node
+    geo::HeightMap const hmap = geo::HeightMap::fromGrid({{1, 0}, {1.01, 0}}, 1.0);
+
+    double distance = 0;
+    ASSERT_TRUE(hmap.intersect(geo::Ray(geo::Vector3(1, 0.5, 1000001.03), geo::Vector3(0, 0, -1)), 0, 2e6, distance));
+    EXPECT_NEAR(distance, 1000000.02, 1e-6);
+}
 
 TEST(HeightMapRay, NearestHit)
 {

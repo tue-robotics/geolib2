@@ -1,3 +1,5 @@
+#include <cmath>
+#include <limits>
 #include <utility>
 
 #include "geolib/Box.h"
@@ -6,6 +8,21 @@
 
 namespace geo
 {
+
+namespace
+{
+
+/**
+ * @brief Smallest float which is not smaller than @b d. Used to pass a distance as (float) maximum distance, without
+ * discarding hits up to that distance due to rounding down.
+ */
+float roundUpToFloat(double d)
+{
+    auto const f = static_cast<float>(d);
+    return f < d ? std::nextafter(f, std::numeric_limits<float>::infinity()) : f;
+}
+
+} // namespace
 
 HeightMapNode::HeightMapNode(Box box) : box_(std::move(box)), occupied_(false)
 {
@@ -74,7 +91,7 @@ bool HeightMapNode::intersect(const Ray& r, float t0, float t1, double& distance
     for (const HeightMapNode* child : children_)
     {
         double d = 0;
-        if (child && child->intersect(r, t0, hit ? static_cast<float>(distance) : t1, d) && (!hit || d < distance))
+        if (child && child->intersect(r, t0, hit ? roundUpToFloat(distance) : t1, d) && (!hit || d < distance))
         {
             distance = d;
             hit = true;
