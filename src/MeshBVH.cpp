@@ -142,13 +142,13 @@ bool rayIntersectsBox(
 }
 
 /**
- * @brief Inverse of a direction, with infinity for (near) zero components, like Ray does
+ * @brief Inverse of a direction, with signed infinity for zero components, like Ray does
  */
 Vector3 inverseDirection(const Vector3& dir)
 {
     Vector3 inv;
     for (unsigned int i = 0; i < 3; ++i)
-        inv[i] = std::abs(dir[i]) < 1e-9 ? std::copysign(std::numeric_limits<double>::infinity(), dir[i]) : 1 / dir[i];
+        inv[i] = dir[i] == 0 ? std::copysign(std::numeric_limits<double>::infinity(), dir[i]) : 1 / dir[i];
     return inv;
 }
 
