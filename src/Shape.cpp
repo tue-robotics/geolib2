@@ -24,6 +24,13 @@ namespace
 constexpr double SURFACE_EPS = 1e-9;
 
 /**
+ * @brief Tolerance on the barycentric coordinates of a ray-triangle intersection. Without it, roundoff can put a hit on
+ * a shared edge or vertex just outside of all triangles sharing it. Accepting hits just outside of a triangle is
+ * harmless when looking for the nearest hit.
+ */
+constexpr double BARYCENTRIC_EPS = 1e-9;
+
+/**
  * @brief Closest point to @b p on the line segment from @b a to @b b
  */
 Vector3 closestPointOnSegment(const Vector3& p, const Vector3& a, const Vector3& b)
@@ -149,12 +156,12 @@ bool Shape::intersect(const Ray& r, float t0, float t1, double& distance) const
         double const inv_det = 1 / det;
         Vector3 const tvec = o - v1;
         double const u = tvec.dot(pvec) * inv_det;
-        if (u < 0 || u > 1)
+        if (u < -BARYCENTRIC_EPS || u > 1 + BARYCENTRIC_EPS)
             continue;
 
         Vector3 const qvec = tvec.cross(e1);
         double const v = dir.dot(qvec) * inv_det;
-        if (v < 0 || u + v > 1)
+        if (v < -BARYCENTRIC_EPS || u + v > 1 + BARYCENTRIC_EPS)
             continue;
 
         double const t = e2.dot(qvec) * inv_det;
