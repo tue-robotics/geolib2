@@ -167,6 +167,13 @@ const std::array<Vector3, 3> RAY_DIRECTIONS = {Vector3(0.3141592, 0.5772156, 0.7
                                                Vector3(0.1234567, -0.8765432, 0.3819660).normalized()};
 
 /**
+ * @brief Tolerance on the barycentric coordinates of a ray-triangle intersection when looking for the nearest hit.
+ * Without it, roundoff can put a hit on a shared edge or vertex just outside of all triangles sharing it. Accepting
+ * hits just outside of a triangle is harmless when looking for the nearest hit.
+ */
+constexpr double BARYCENTRIC_EPS = 1e-9;
+
+/**
  * @brief Relative tolerance on barycentric coordinates and angles, below which a ray crossing is considered degenerate
  */
 constexpr double DEGENERATE_EPS = 1e-9;
@@ -406,12 +413,12 @@ bool MeshBVH::intersect(const Ray& r, double t0, double t1, double& distance) co
             double const inv_det = 1 / det;
             Vector3 const tvec = o - t[0];
             double const u = tvec.dot(pvec) * inv_det;
-            if (u < 0 || u > 1)
+            if (u < -BARYCENTRIC_EPS || u > 1 + BARYCENTRIC_EPS)
                 continue;
 
             Vector3 const qvec = tvec.cross(e1);
             double const v = dir.dot(qvec) * inv_det;
-            if (v < 0 || u + v > 1)
+            if (v < -BARYCENTRIC_EPS || u + v > 1 + BARYCENTRIC_EPS)
                 continue;
 
             double const t_hit = e2.dot(qvec) * inv_det;
