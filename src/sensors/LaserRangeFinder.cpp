@@ -189,6 +189,29 @@ void LaserRangeFinder::render(const LaserRangeFinder::RenderOptions& opt, LaserR
         // that the range is not limited.
         if (range_max_ > 0 && pose.getOrigin().length() - max_radius > range_max_)
             return;
+
+        // If the object is completely outside of the angle range of the sensor, do not render. In the laser plane, the
+        // bounding sphere is a disc, which covers the angles [a - half_width, a + half_width]. One angle increment is
+        // used as margin.
+        double const range_width = a_max_ - a_min_;
+        if (range_width + (2 * angle_incr_) < TWO_PI)
+        {
+            const Vector3& c = pose.getOrigin();
+            double const disc_radius = std::sqrt((max_radius * max_radius) - (c.z * c.z));
+            double const d = std::sqrt((c.x * c.x) + (c.y * c.y));
+            if (d > disc_radius)
+            {
+                double const half_width = std::asin(disc_radius / d);
+                // Angle of the center, relative to a_min, normalized to [0, 2 pi)
+                double a = std::atan2(c.y, c.x) - a_min_;
+                while (a < 0)
+                    a += TWO_PI;
+                while (a >= TWO_PI)
+                    a -= TWO_PI;
+                if (a - half_width > range_width + angle_incr_ && a + half_width < TWO_PI - angle_incr_)
+                    return;
+            }
+        }
     }
 
     const std::vector<TriangleI>& triangles = opt.getMesh().getTriangleIs();

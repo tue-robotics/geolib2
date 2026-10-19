@@ -35,8 +35,12 @@ struct RasterizeResult
     int max_x, max_y;
 };
 
-static PointerMap EMPTY_POINTER_MAP;
-static TriangleMap EMPTY_TRIANGLE_MAP;
+/**
+ * @brief Default arguments, meaning that no pointer map respectively triangle map is requested. These are never filled.
+ * inline, so there is one object in the whole program, instead of one per translation unit.
+ */
+inline PointerMap EMPTY_POINTER_MAP;
+inline TriangleMap EMPTY_TRIANGLE_MAP;
 
 class Mesh;
 class DepthCamera;
@@ -114,7 +118,7 @@ class DefaultRenderResult : public RenderResult
 public:
     DefaultRenderResult(cv::Mat& image, void* pointer, PointerMap& pointer_map, TriangleMap& triangle_map) :
         geo::RenderResult(image.cols, image.rows), image_(image), pointer_(pointer), pointer_map_(pointer_map),
-        triangle_map_(triangle_map)
+        triangle_map_(triangle_map), fill_triangle_map_(&triangle_map != &EMPTY_TRIANGLE_MAP)
     {
 
         // reserve pointer map. assign instead of resize, as resize does not change the size of existing columns
@@ -127,9 +131,9 @@ public:
             }
         }
 
-        // reserve triangle map
-        if (triangle_map_.empty() || (int)triangle_map_.size() != image.cols ||
-            (int)triangle_map_[0].size() != image.rows)
+        // reserve triangle map, unless it is not requested
+        if (fill_triangle_map_ && (triangle_map_.empty() || (int)triangle_map_.size() != image.cols ||
+                                   (int)triangle_map_[0].size() != image.rows))
         {
             triangle_map_.assign(image_.cols, std::vector<int>(image_.rows, -1));
         }
@@ -148,6 +152,7 @@ protected:
     void* pointer_;
     PointerMap& pointer_map_;
     TriangleMap& triangle_map_;
+    bool fill_triangle_map_;
 };
 
 /**

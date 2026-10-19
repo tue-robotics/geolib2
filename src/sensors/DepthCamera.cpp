@@ -27,7 +27,7 @@ void DefaultRenderResult::renderPixel(int x, int y, float depth, int i_triangle)
             pointer_map_[x][y] = pointer_;
         }
 
-        if (!triangle_map_.empty())
+        if (fill_triangle_map_)
         {
             triangle_map_[x][y] = i_triangle;
         }
