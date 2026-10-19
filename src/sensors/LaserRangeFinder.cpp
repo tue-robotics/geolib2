@@ -57,70 +57,61 @@ void LaserRangeFinder::RenderResult::renderLine(const Vec2& p1, const Vec2& p2)
             return;
     }
 
-    // Get the angle / beam indices based on the slope. The angles are normalized to [a_min, a_min + 2 pi), such that
-    // the discontinuity in the indices lies at the start of the sensor range, instead of at +/- pi. This way, sensors
-    // with angles beyond +/- pi are supported as well.
-    auto const beam_index = [this](const Vec2& p)
+    // Back-face culling: only render lines which go counterclockwise, as seen from the sensor. Determined from the end
+    // points themselves, as their (quantized) beam indices are not accurate enough.
+    if (p1.cross(p2) <= 0)
+        return;
+
+    // Get the angles of the end points relative to the minimum angle, normalized to [0, 2 pi), such that the
+    // discontinuity lies at the start of the sensor range, instead of at +/- pi. This way, sensors with angles beyond
+    // +/- pi are supported as well.
+    auto const relative_angle = [this](const Vec2& p)
     {
         double a = std::atan2(p.y, p.x) - lrf_->a_min_;
         while (a < 0)
             a += TWO_PI;
         while (a >= TWO_PI)
             a -= TWO_PI;
-        // a is non-negative, so truncation is equal to floor
-        return static_cast<int>(a / lrf_->angle_incr_) + 1;
+        return a;
     };
-    int const i_p1 = beam_index(p1);
-    int const i_p2 = beam_index(p2);
+    double const a1 = relative_angle(p1);
+    double const a2 = relative_angle(p2);
 
-    // Get the minimum and maximum
-    int const i_min = std::min<int>(i_p1, i_p2);
-    int const i_max = std::max<int>(i_p1, i_p2);
+    // Index of the first beam with a larger angle. The angle is non-negative, so truncation is equal to floor.
+    auto const i_p1 = static_cast<uint>(a1 / lrf_->angle_incr_) + 1;
+    auto const i_p2 = static_cast<uint>(a2 / lrf_->angle_incr_) + 1;
 
-    // We need to differentiate between two cases:
-    // - from min to max is less than half a circle
-    // - from min to max is more than half a circle (the line can be 'occluded' by the blind spot of the sensor)
-
-    // In the latter case, we may need to render two parts
+    // The line goes counterclockwise from p1 to p2, covering less than half a circle. We need to differentiate between
+    // two cases, based on the angles (the indices are not accurate enough):
+    // - it does not pass the start of the sensor range (a1 <= a2): render the beams from p1 to p2
+    // - it passes the start of the sensor range (a1 > a2), so possibly through the blind spot of the sensor: render the
+    //   beams from p1 to the end of the range, and from the start of the range to p2
 
     uint i_min1 = 0;
     uint i_max1 = 0;
     uint i_min2 = 0;
     uint i_max2 = 0;
-    if (i_max - i_min < static_cast<int>(lrf_->i_half_circle_))
+    if (a1 <= a2)
     {
-        // Back-face culling: if the normal is pointing outwards, ommit this line
-        if (i_p1 > i_p2)
-            return;
-
         // Both points in the blind spot (i's are both larger number of beams), so don't render a line
-        // NOLINT(modernize-use-integer-sign-comparison) - C++11 compatibility required for older distros
-        if (i_min >= static_cast<int>(lrf_->num_beams_)) // NOLINT(modernize-use-integer-sign-comparison)
+        if (i_p1 >= lrf_->num_beams_)
             return;
 
         // The line is fully in view, so only need to render one part
-        i_min1 = static_cast<uint>(std::max<int>(0, i_min));
-        i_max1 = std::min<uint>(lrf_->num_beams_, static_cast<uint>(std::max<int>(0, i_max)));
-
-        // No second part
-        i_min2 = 0;
-        i_max2 = 0;
+        i_min1 = i_p1;
+        i_max1 = std::min<uint>(lrf_->num_beams_, i_p2);
 
         min_i = std::min<uint>(min_i, i_min1);
         max_i = std::max<uint>(max_i, i_max1);
     }
     else
     {
-        // Back-face culling: if the normal is pointing outwards, ommit this line
-        if (i_p2 > i_p1)
-            return;
-
         // We may need to draw two parts, because the line can be 'occluded' by the blind spot of the sensor
-        i_min1 = static_cast<uint>(std::max<int>(0, i_max));
+        i_min1 = i_p1;
         i_max1 = lrf_->num_beams_;
 
         i_min2 = 0;
-        i_max2 = std::min<uint>(lrf_->num_beams_, static_cast<uint>(std::max<int>(0, i_min)));
+        i_max2 = std::min<uint>(lrf_->num_beams_, i_p2);
 
         min_i = 0;
         max_i = lrf_->num_beams_;

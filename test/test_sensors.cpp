@@ -112,6 +112,50 @@ TEST(LRFRender, ObjectsAtTheEdgeOfTheAngleRange)
     EXPECT_GT(ranges[400], 0);
 }
 
+TEST(LRFRender, HalfCircleIndexDifference)
+{
+    // The difference of the (quantized) beam indices of the end points equals half a circle, while the angle between
+    // them is less than half a circle. The line faces the sensor and should be rendered.
+    {
+        geo::LaserRangeFinder lrf;
+        lrf.setAngleLimits(-2, 2);
+        lrf.setNumBeams(41);
+        std::vector<double> ranges(41, 0);
+        lrf.renderLine(geo::Vec2(std::cos(1.0), std::sin(1.0)), geo::Vec2(std::cos(-2.15), std::sin(-2.15)), ranges);
+        for (unsigned int i = 0; i < 41; ++i)
+        {
+            // Beam i has angle -2 + 0.1 * i
+            if (i >= 31)
+            {
+                EXPECT_GT(ranges[i], 0) << "i = " << i;
+            }
+            else if (i < 30)
+            {
+                EXPECT_EQ(ranges[i], 0) << "i = " << i;
+            }
+        }
+    }
+    {
+        geo::LaserRangeFinder lrf;
+        lrf.setAngleLimits(0, 6.2);
+        lrf.setNumBeams(63);
+        std::vector<double> ranges(63, 0);
+        lrf.renderLine(geo::Vec2(std::cos(2.02), std::sin(2.02)), geo::Vec2(std::cos(5.12), std::sin(5.12)), ranges);
+        for (unsigned int i = 0; i < 63; ++i)
+        {
+            // Beam i has angle 0.1 * i
+            if (i >= 21 && i <= 51)
+            {
+                EXPECT_GT(ranges[i], 0) << "i = " << i;
+            }
+            else
+            {
+                EXPECT_EQ(ranges[i], 0) << "i = " << i;
+            }
+        }
+    }
+}
+
 // ----------------------------------------------------------------------------------------------------
 //                                            DepthCamera
 // ----------------------------------------------------------------------------------------------------
