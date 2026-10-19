@@ -45,8 +45,9 @@ Vector3 closestPointOnTriangle(const Vector3& p, const Vector3& a, const Vector3
 {
     Vector3 const ab = b - a;
     Vector3 const ac = c - a;
+    Vector3 const n = ab.cross(ac);
 
-    if (ab.cross(ac).length2() == 0)
+    if (n.length2() == 0)
     {
         // Degenerate (zero area) triangle, e.g. with a repeated vertex. The region tests below would divide by zero, so
         // the closest point is taken from the edges.
@@ -60,6 +61,10 @@ Vector3 closestPointOnTriangle(const Vector3& p, const Vector3& a, const Vector3
             return q1;
         return l2 <= l3 ? q2 : q3;
     }
+
+    // The (unnormalized) barycentric weights va, vb and vc are calculated as triple products, i.e.
+    // vc = n dot ((a - p) x (b - p)). This is equal to Ericson's d1 * d4 - d3 * d2 (Lagrange's identity), but does not
+    // suffer from cancellation for thin triangles.
 
     // Vertex region of a
     Vector3 const ap = p - a;
@@ -76,7 +81,7 @@ Vector3 closestPointOnTriangle(const Vector3& p, const Vector3& a, const Vector3
         return b;
 
     // Edge region of ab
-    double const vc = (d1 * d4) - (d3 * d2);
+    double const vc = n.dot(ap.cross(bp)); // (a - p) x (b - p) = ap x bp
     if (vc <= 0 && d1 >= 0 && d3 <= 0)
         return a + (d1 / (d1 - d3)) * ab;
 
@@ -88,12 +93,12 @@ Vector3 closestPointOnTriangle(const Vector3& p, const Vector3& a, const Vector3
         return c;
 
     // Edge region of ac
-    double const vb = (d5 * d2) - (d1 * d6);
+    double const vb = n.dot(cp.cross(ap)); // (c - p) x (a - p) = cp x ap
     if (vb <= 0 && d2 >= 0 && d6 <= 0)
         return a + (d2 / (d2 - d6)) * ac;
 
     // Edge region of bc
-    double const va = (d3 * d6) - (d5 * d4);
+    double const va = n.dot(bp.cross(cp)); // (b - p) x (c - p) = bp x cp
     if (va <= 0 && (d4 - d3) >= 0 && (d5 - d6) >= 0)
         return b + ((d4 - d3) / ((d4 - d3) + (d5 - d6))) * (c - b);
 

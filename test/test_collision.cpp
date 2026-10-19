@@ -172,6 +172,24 @@ TEST(ShapeSphere, RepeatedVertex)
     EXPECT_FALSE(shape.intersect(geo::Vector3(0.5, 0.3, 0), 0.2));
 }
 
+TEST(ShapeSphere, SliverTriangle)
+{
+    // Thin, but non-degenerate triangle, with a point on it
+    geo::Mesh mesh;
+    mesh.addPoint(0, 0, 0);
+    mesh.addPoint(1, 0, 0);
+    mesh.addPoint(1, 1e-6, 0);
+    mesh.addTriangle(0, 1, 2);
+    geo::Shape shape;
+    shape.setMesh(mesh);
+
+    geo::Vector3 const p(0.75, 5e-7, 0);
+    EXPECT_TRUE(shape.contains(p));
+    EXPECT_TRUE(shape.intersect(p, 1e-6));
+    EXPECT_TRUE(shape.intersect(geo::Vector3(0.75, 5e-7, 1e-7), 2e-7));
+    EXPECT_FALSE(shape.intersect(geo::Vector3(0.75, 5e-7, 1e-7), 5e-8));
+}
+
 TEST(ShapeContains, TriangleSoupEdgeHit)
 {
     geo::Shape const soup = makeTriangleSoupBox();
