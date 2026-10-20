@@ -326,6 +326,125 @@ TEST(MeshBVH, OpenMeshOutsideBoundingBox)
     EXPECT_TRUE(mesh.getBVH()->contains(geo::Vector3(0, 0, 0.1)));
 }
 
+namespace
+{
+
+/**
+ * @brief Brute force nearest ray-triangle intersection, with the same barycentric tolerance as the hierarchy
+ */
+bool bruteForceIntersect(const geo::Mesh& mesh, const geo::Ray& r, double& distance)
+{
+    bool hit = false;
+    distance = 1e9;
+    const auto& points = mesh.getPoints();
+    for (const auto& t : mesh.getTriangleIs())
+    {
+        geo::Vector3 const v0 = points[t.i1_];
+        geo::Vector3 const e1 = points[t.i2_] - v0;
+        geo::Vector3 const e2 = points[t.i3_] - v0;
+        geo::Vector3 const pvec = r.getDirection().cross(e2);
+        double const det = e1.dot(pvec);
+        if (det == 0)
+            continue;
+        geo::Vector3 const tvec = r.getOrigin() - v0;
+        double const u = tvec.dot(pvec) / det;
+        geo::Vector3 const qvec = tvec.cross(e1);
+        double const v = r.getDirection().dot(qvec) / det;
+        double const d = e2.dot(qvec) / det;
+        if (u >= -1e-9 && v >= -1e-9 && u + v <= 1 + 1e-9 && d > 0 && d < distance)
+        {
+            distance = d;
+            hit = true;
+        }
+    }
+    return hit;
+}
+
+} // namespace
+
+TEST(MeshBVH, RaysThroughEdgesAndVertices)
+{
+    // Many axis aligned boxes, so many leaves of the hierarchy are flat. Rays from far away aimed exactly at vertices,
+    // edges and faces should not be lost due to roundoff in the box tests of the hierarchy.
+    std::mt19937 gen(29);
+    std::uniform_int_distribution<int> grid(-20, 20);
+    std::uniform_real_distribution<double> u(-1, 1);
+    geo::Mesh mesh;
+    std::vector<geo::Vector3> targets;
+    for (unsigned int k = 0; k < 200; ++k)
+    {
+        geo::Vector3 const c(grid(gen) * 0.25, grid(gen) * 0.25, grid(gen) * 0.25);
+        geo::Box const box(c - geo::Vector3(0.1, 0.1, 0.1), c + geo::Vector3(0.1, 0.1, 0.1));
+        mesh.add(box.getMesh());
+        for (const auto& p : box.getMesh().getPoints())
+            targets.push_back(p);
+        targets.push_back(c + geo::Vector3(0.1, 0, 0));
+        targets.push_back(c + geo::Vector3(0.1, 0.1, 0.03));
+    }
+
+    std::shared_ptr<const geo::MeshBVH> const bvh = mesh.getBVH();
+    for (const geo::Vector3& target : targets)
+    {
+        for (unsigned int j = 0; j < 10; ++j)
+        {
+            geo::Vector3 const o = geo::Vector3(u(gen), u(gen), u(gen)).normalized() * (j < 5 ? 50.0 : 5000.0);
+            geo::Ray const r(o, target - o);
+            double d_bvh = 0;
+            double d_brute = 0;
+            ASSERT_TRUE(bruteForceIntersect(mesh, r, d_brute));
+            ASSERT_TRUE(bvh->intersect(r, 0, 1e9, d_bvh)) << "target = " << target << ", o = " << o;
+            ASSERT_NEAR(d_bvh, d_brute, 1e-9 * d_brute) << "target = " << target << ", o = " << o;
+        }
+    }
+}
+
+TEST(MeshBVH, NearlyParallelCrossing)
+{
+    // Long box, of which one face is tilted only 5e-10 rad from the first direction used by contains. A point just
+    // inside of that face leaves the box through it, about 10 m further along the ray.
+    geo::Vector3 const d = geo::Vector3(0.3141592, 0.5772156, 0.7536423).normalized();
+    geo::Vector3 const u = d.cross(geo::Vector3(0, 0, 1)).normalized();
+    geo::Vector3 const w = d.cross(u);
+    double const tilt = 5e-10;
+    geo::Vector3 const length_dir = (d + (tilt * w)).normalized(); // the box is longer along this direction
+    geo::Vector3 const normal = w - (tilt * d); // normal of the tilted face, approximately
+
+    geo::Mesh mesh;
+    // Box with corner at the origin, spanned by length_dir (100 m), u (1 m) and normal (1 m)
+    for (unsigned int i = 0; i < 8; ++i)
+        mesh.addPoint((((i & 1) != 0U) ? 100.0 : 0.0) * length_dir + (((i & 2) != 0U) ? 1.0 : 0.0) * u +
+                      (((i & 4) != 0U) ? 1.0 : 0.0) * normal);
+    geo::Box const ref(geo::Vector3(0, 0, 0), geo::Vector3(1, 1, 1));
+    for (const auto& t : ref.getMesh().getTriangleIs())
+        mesh.addTriangle(t.i1_, t.i2_, t.i3_);
+    ASSERT_TRUE(mesh.getBVH()->isClosed());
+
+    // 5e-9 inside the tilted face (at 'normal' = 0), near the start of the box
+    geo::Vector3 const p = (1.0 * length_dir) + (0.5 * u) + (5e-9 * normal);
+    EXPECT_TRUE(mesh.getBVH()->contains(p));
+}
+
+TEST(MeshBVH, ZeroAreaTriangleInClosedMesh)
+{
+    geo::Mesh mesh = geo::Box(geo::Vector3(-0.5, -0.5, -0.5), geo::Vector3(0.5, 0.5, 0.5)).getMesh();
+    // Zero area triangle with collinear vertices, along an edge of the box (twice, in both orientations)
+    unsigned int const i1 = mesh.addPoint(-0.5, -0.5, -0.5);
+    unsigned int const i2 = mesh.addPoint(0.0, -0.5, -0.5);
+    unsigned int const i3 = mesh.addPoint(0.5, -0.5, -0.5);
+    mesh.addTriangle(i1, i2, i3);
+    mesh.addTriangle(i3, i2, i1);
+    ASSERT_TRUE(mesh.getBVH()->isClosed());
+
+    std::mt19937 gen(31);
+    std::uniform_real_distribution<double> u(-0.7, 0.7);
+    geo::Box const box(geo::Vector3(-0.5, -0.5, -0.5), geo::Vector3(0.5, 0.5, 0.5));
+    for (unsigned int i = 0; i < 2000; ++i)
+    {
+        geo::Vector3 const p(u(gen), u(gen), u(gen));
+        ASSERT_EQ(mesh.getBVH()->contains(p), box.contains(p)) << "p = " << p;
+    }
+}
+
 TEST(MeshBVH, Empty)
 {
     geo::Shape const shape;

@@ -20,7 +20,26 @@ Mesh::Mesh()
     invalidateCache();
 }
 
+Mesh::Mesh(const Mesh& other) :
+    points_(other.points_), triangles_i_(other.triangles_i_), bvh_cache_(std::atomic_load(&other.bvh_cache_))
+{
+}
+
 Mesh::~Mesh() = default;
+
+Mesh& Mesh::operator=(const Mesh& other)
+{
+    if (this != &other)
+    {
+        points_ = other.points_;
+        triangles_i_ = other.triangles_i_;
+        triangles_cache_.clear();
+        max_radius_squared_cache_ = 0;
+        max_radius_cache_ = 0;
+        bvh_cache_ = std::atomic_load(&other.bvh_cache_);
+    }
+    return *this;
+}
 
 unsigned int Mesh::addPoint(double x, double y, double z)
 {

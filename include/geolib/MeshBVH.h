@@ -69,6 +69,12 @@ public:
     bool empty() const { return triangles_.empty(); }
 
     /**
+     * @brief Squared maximum distance of the vertices of the triangles to the origin, i.e. of the bounding sphere
+     * around the origin. Zero if there are no triangles.
+     */
+    double getSquaredMaxRadius() const { return squared_max_radius_; }
+
+    /**
      * @brief Number of nodes of the hierarchy
      */
     std::size_t numNodes() const { return nodes_.size(); }
@@ -104,6 +110,8 @@ protected:
     std::vector<char> collapsed_;
 
     bool closed_;
+
+    double squared_max_radius_;
 
     unsigned int build(std::vector<unsigned int>& order,
                        const std::vector<Vector3>& centroids,

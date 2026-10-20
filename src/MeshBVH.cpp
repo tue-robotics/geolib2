@@ -122,11 +122,18 @@ double squaredDistanceToBox(const Vector3& p, const Vector3& min, const Vector3&
 }
 
 /**
+ * @brief Relative tolerance of the ray-box test of the nodes of the hierarchy
+ */
+constexpr double BOX_EPS = 1e-9;
+
+/**
  * @brief Slab test of a ray against the axis aligned box [@b min, @b max], for distances along the ray in [t0, t1]
  */
 bool rayIntersectsBox(
     const Vector3& o, const Vector3& inv_dir, const Vector3& min, const Vector3& max, double t0, double t1)
 {
+    double lo = t0;
+    double hi = t1;
     for (unsigned int i = 0; i < 3; ++i)
     {
         if (std::isinf(inv_dir[i]))
@@ -138,12 +145,15 @@ bool rayIntersectsBox(
         }
         double const ta = (min[i] - o[i]) * inv_dir[i];
         double const tb = (max[i] - o[i]) * inv_dir[i];
-        t0 = std::max(t0, std::min(ta, tb));
-        t1 = std::min(t1, std::max(ta, tb));
-        if (t0 > t1)
-            return false;
+        lo = std::max(lo, std::min(ta, tb));
+        hi = std::min(hi, std::max(ta, tb));
     }
-    return true;
+
+    // Roundoff can make a ray through an edge or corner of a box, or through a flat box, appear to (just) miss it,
+    // which would discard hits on the triangles in it. Therefore, a small relative tolerance is used. Including a box
+    // too many only costs some triangle tests.
+    double const scale = std::abs(lo) + (std::isfinite(hi) ? std::abs(hi) : 0.0);
+    return lo <= hi + (BOX_EPS * (1 + scale));
 }
 
 /**
@@ -187,7 +197,7 @@ constexpr double DEGENERATE_EPS = 1e-9;
 
 // ----------------------------------------------------------------------------------------------------
 
-MeshBVH::MeshBVH(const Mesh& mesh) : closed_(false)
+MeshBVH::MeshBVH(const Mesh& mesh) : closed_(false), squared_max_radius_(0)
 {
     const std::vector<Vector3>& points = mesh.getPoints();
     const std::vector<TriangleI>& triangles_i = mesh.getTriangleIs();
@@ -207,7 +217,11 @@ MeshBVH::MeshBVH(const Mesh& mesh) : closed_(false)
 
     triangles_.reserve(triangles_i.size());
     for (const auto& t : triangles_i)
+    {
         triangles_.push_back({points[t.i1_], points[t.i2_], points[t.i3_]});
+        for (const Vector3& v : triangles_.back())
+            squared_max_radius_ = std::max(squared_max_radius_, v.length2());
+    }
 
     nodes_.reserve(2 * ((triangles_i.size() / MAX_LEAF_SIZE) + 1));
     build(order, centroids, 0, static_cast<unsigned int>(order.size()));
@@ -381,7 +395,7 @@ bool MeshBVH::intersect(const Ray& r, double t0, double t1, double& distance) co
 
     const Vector3& o = r.getOrigin();
     const Vector3& dir = r.getDirection();
-    Vector3 const inv_dir = inverseDirection(dir);
+    const Vector3& inv_dir = r.getInvDirection();
 
     bool hit = false;
     double t_nearest = t1;
@@ -397,8 +411,16 @@ bool MeshBVH::intersect(const Ray& r, double t0, double t1, double& distance) co
 
         if (node.count == 0)
         {
-            stack[stack_size++] = node.first;
-            stack[stack_size++] = static_cast<unsigned int>(&node - nodes_.data()) + 1;
+            // Visit the child nearest along the ray first, so the nearest hit, and thereby the pruning distance, is
+            // found early. The order of the projections of the box centers along the ray is used (times two, which does
+            // not matter).
+            unsigned int const child1 = static_cast<unsigned int>(&node - nodes_.data()) + 1;
+            unsigned int const child2 = node.first;
+            double const d1 = dir.dot(nodes_[child1].min + nodes_[child1].max);
+            double const d2 = dir.dot(nodes_[child2].min + nodes_[child2].max);
+            // The last one pushed is visited first
+            stack[stack_size++] = d1 <= d2 ? child2 : child1;
+            stack[stack_size++] = d1 <= d2 ? child1 : child2;
             continue;
         }
 
@@ -547,13 +569,19 @@ bool MeshBVH::countCrossings(const Vector3& p, const Vector3& dir, int& count) c
             Vector3 const e2 = t[2] - t[0];
             Vector3 const tvec = p - t[0];
 
+            Vector3 const n = e1.cross(e2);
+            double const n_length = n.length();
+            if (n_length == 0)
+                // Zero area triangle. It has no solid angle, and in a closed mesh, its edges are edges of other
+                // triangles, where a crossing is detected as degenerate.
+                continue;
+
             Vector3 const pvec = dir.cross(e2);
-            double const det = e1.dot(pvec); // = -dir dot (e1 x e2)
-            double const n_length = e1.cross(e2).length();
-            if (std::abs(det) <= DEGENERATE_EPS * n_length)
+            double const det = e1.dot(pvec); // = -dir dot n
+            if (det == 0)
             {
-                // Ray (almost) parallel to the triangle. Only a problem if the ray (almost) lies in its plane.
-                if (n_length == 0 || std::abs(tvec.dot(e1.cross(e2))) <= DEGENERATE_EPS * n_length)
+                // Ray parallel to the triangle. Only a problem if the ray (almost) lies in its plane.
+                if (std::abs(tvec.dot(n)) <= DEGENERATE_EPS * n_length)
                     return false;
                 continue;
             }
@@ -571,6 +599,10 @@ bool MeshBVH::countCrossings(const Vector3& p, const Vector3& dir, int& count) c
 
             if (u < DEGENERATE_EPS || v < DEGENERATE_EPS || u + v > 1 - DEGENERATE_EPS)
                 // Crossing (almost) on an edge or vertex, which might be counted zero or multiple times
+                return false;
+
+            if (std::abs(det) <= DEGENERATE_EPS * n_length)
+                // Ray almost parallel to the triangle, so the crossing (and whether there is one) is not reliable
                 return false;
 
             if (collapsed_[i])

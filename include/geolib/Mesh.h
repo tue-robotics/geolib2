@@ -3,7 +3,6 @@
 
 #include "Triangle.h"
 
-#include <atomic>
 #include <memory>
 #include <vector>
 
@@ -35,7 +34,22 @@ class Mesh
 public:
     Mesh();
 
+    /**
+     * @brief Copies the geometry and shares the bounding volume hierarchy. The other cached results are not copied, but
+     * recalculated when needed, so copying does not read caches which another thread might be filling.
+     */
+    Mesh(const Mesh& other);
+
+    Mesh(Mesh&& other) = default;
+
     virtual ~Mesh();
+
+    /**
+     * @copydoc Mesh(const Mesh&)
+     */
+    Mesh& operator=(const Mesh& other);
+
+    Mesh& operator=(Mesh&& other) = default;
 
     /**
      * Add a point to the mesh.
@@ -153,7 +167,8 @@ protected:
 
     mutable std::vector<Triangle> triangles_cache_; ///< Cached output result.
 
-    /// Cached bounding volume hierarchy. Only accessed using std::atomic_load/std::atomic_store.
+    /// Cached bounding volume hierarchy. Const members, which may run concurrently, only access it using
+    /// std::atomic_load/std::atomic_store. Non-const members may not run concurrently with any other access.
     mutable std::shared_ptr<const MeshBVH> bvh_cache_;
 
     /** Clear cached computed results, as they have become invalid. */
@@ -162,7 +177,7 @@ protected:
         triangles_cache_.clear();
         max_radius_squared_cache_ = 0;
         max_radius_cache_ = 0;
-        std::atomic_store(&bvh_cache_, std::shared_ptr<const MeshBVH>());
+        bvh_cache_.reset(); // Not atomic, as non-const members may not run concurrently with any other access
     }
 };
 

@@ -9,6 +9,7 @@
 #include <cmath>
 #include <ios>
 #include <istream>
+#include <memory>
 #include <ostream>
 #include <string>
 #include <vector>
@@ -29,17 +30,18 @@ Shape* Shape::clone() const
 
 bool Shape::intersect(const Ray& r, float t0, float t1, double& distance) const
 {
-    const Mesh& mesh = getMesh();
+    // Only the bounding volume hierarchy is used, which is immutable, so this is safe to call from multiple threads
+    std::shared_ptr<const MeshBVH> const bvh = getMesh().getBVH();
     const Vector3& o = r.getOrigin();
     const Vector3& dir = r.getDirection();
 
     // Ray should pass the bounding sphere of the mesh. The squared distance of the line to the origin is calculated
     // with the cross product, as |o|^2 - (o dot dir)^2 suffers from cancellation for distant origins. A margin is used,
     // such that rays touching the sphere are not rejected due to roundoff.
-    if (o.cross(dir).length2() > mesh.getSquaredMaxRadius() * dir.length2() * (1 + 1e-9))
+    if (o.cross(dir).length2() > bvh->getSquaredMaxRadius() * dir.length2() * (1 + 1e-9))
         return false;
 
-    return mesh.getBVH()->intersect(r, t0, t1, distance);
+    return bvh->intersect(r, t0, t1, distance);
 }
 
 /**
@@ -48,13 +50,13 @@ bool Shape::intersect(const Ray& r, float t0, float t1, double& distance) const
  **/
 bool Shape::intersect(const Vector3& p, const double RADIUS) const
 {
-    const Mesh& mesh = getMesh();
-    if (p.length() - RADIUS > mesh.getMaxRadius())
+    std::shared_ptr<const MeshBVH> const bvh = getMesh().getBVH();
+    if (p.length() - RADIUS > std::sqrt(bvh->getSquaredMaxRadius()))
     {
         return false;
     }
 
-    if (RADIUS > 0. && mesh.getBVH()->intersectSurface(p, RADIUS))
+    if (RADIUS > 0. && bvh->intersectSurface(p, RADIUS))
     {
         return true;
     }
@@ -68,13 +70,13 @@ bool Shape::intersect(const Vector3& p, const double RADIUS) const
  **/
 bool Shape::contains(const Vector3& p) const
 {
-    const Mesh& mesh = getMesh();
-    if (p.length2() > mesh.getSquaredMaxRadius() * (1 + 1e-9))
+    std::shared_ptr<const MeshBVH> const bvh = getMesh().getBVH();
+    if (p.length2() > bvh->getSquaredMaxRadius() * (1 + 1e-9))
     {
         return false;
     }
 
-    return mesh.getBVH()->contains(p);
+    return bvh->contains(p);
 }
 
 Box Shape::getBoundingBox() const
