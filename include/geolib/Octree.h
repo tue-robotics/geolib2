@@ -20,6 +20,8 @@ public:
 
     Octree(const Octree& orig);
 
+    Octree& operator=(const Octree& rhs);
+
     virtual Octree* clone() const;
 
     virtual ~Octree();

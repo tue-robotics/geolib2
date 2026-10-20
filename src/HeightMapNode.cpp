@@ -71,6 +71,9 @@ HeightMapNode& HeightMapNode::operator=(const HeightMapNode& rhs)
 {
     if (this != &rhs)
     {
+        // Copy the box first, as it might throw as well. In that case, this node is unchanged.
+        box_ = rhs.box_;
+
         // Copy all children before deleting any, so the tree stays valid in case copying throws
         std::array<HeightMapNode*, 4> children{};
         try
@@ -85,7 +88,6 @@ HeightMapNode& HeightMapNode::operator=(const HeightMapNode& rhs)
             throw;
         }
 
-        box_ = rhs.box_;
         occupied_ = rhs.occupied_;
         for (unsigned int i = 0; i < 4; ++i)
         {

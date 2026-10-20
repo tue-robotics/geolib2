@@ -1,6 +1,7 @@
 #include <algorithm>
 
 #include <cmath>
+#include <memory>
 
 #include "geolib/Box.h"
 #include "geolib/Mesh.h"
@@ -24,6 +25,25 @@ Octree::Octree(const Octree& orig) :
     Shape(orig), resolution_(orig.resolution_), offset_(orig.offset_), max_(orig.max_), size_(orig.size_),
     root_(new OctreeNode(*orig.root_, this))
 {
+}
+
+Octree& Octree::operator=(const Octree& rhs)
+{
+    if (this != &rhs)
+    {
+        // Copy before deleting, so the octree stays valid in case copying throws. The nodes of the copy refer to this
+        // octree.
+        std::unique_ptr<OctreeNode> root(new OctreeNode(*rhs.root_, this));
+        Shape::operator=(rhs);
+        resolution_ = rhs.resolution_;
+        offset_ = rhs.offset_;
+        max_ = rhs.max_;
+        size_ = rhs.size_;
+        delete root_;
+        root_ = root.release();
+        invalidateCache();
+    }
+    return *this;
 }
 
 Octree::~Octree()
@@ -103,9 +123,7 @@ void Octree::raytrace(const Ray& r, float t0, float t1)
 
     root_->raytrace(
         r.getOrigin() - offset_, r.getDirection(), static_cast<float>(t0 + dist + (resolution_ * 0.1)), t1, offset_);
-    this->add(r.getOrigin() + r.getDirection() * t1);
-
-    invalidateCache();
+    this->add(r.getOrigin() + r.getDirection() * t1); // Also invalidates the cache
 }
 
 bool Octree::contains(const Vector3& p) const

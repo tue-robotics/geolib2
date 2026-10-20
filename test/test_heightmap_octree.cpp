@@ -5,9 +5,11 @@
 #include <geolib/HeightMap.h>
 #include <geolib/HeightMapNode.h>
 #include <geolib/Octree.h>
+#include <geolib/OctreeNode.h>
 
 #include <algorithm>
 #include <random>
+#include <type_traits>
 #include <vector>
 
 namespace
@@ -212,6 +214,61 @@ TEST_F(OctreeTest, BoundingBox)
     // The bounding box should follow changes of the octree
     tree.add(geo::Vector3(1.95, 1.95, 1.95));
     EXPECT_GT(tree.getBoundingBox().getMax().x, 1.9);
+}
+
+TEST_F(OctreeTest, Contains)
+{
+    for (const auto& c : cubes)
+        ASSERT_TRUE(tree.contains(c.getCenter())) << "center = " << c.getCenter();
+
+    std::mt19937 gen(23);
+    std::uniform_real_distribution<double> u(-2.5, 2.5);
+    for (unsigned int i = 0; i < 5000; ++i)
+    {
+        geo::Vector3 const p(u(gen), u(gen), u(gen));
+        double const d2 = referenceSquaredDistance(p);
+        if (d2 == 0 && std::none_of(cubes.begin(),
+                                    cubes.end(),
+                                    [&p](const geo::Box& c)
+                                    {
+                                        return p.x > c.getMin().x && p.x < c.getMax().x && p.y > c.getMin().y &&
+                                               p.y < c.getMax().y && p.z > c.getMin().z && p.z < c.getMax().z;
+                                    }))
+            continue; // On the boundary of a cube, either answer is fine
+        ASSERT_EQ(tree.contains(p), d2 == 0) << "p = " << p;
+    }
+}
+
+TEST_F(OctreeTest, CopyAssignment)
+{
+    geo::Octree copy(2.0, 0.5);
+    copy.add(geo::Vector3(0.9, 0.9, 0.9));
+    copy = tree; // deep copy
+    const geo::Octree& copy_ref = copy;
+    copy = copy_ref; // self assignment
+
+    tree.clear(); // must not affect the copy
+    tree.add(geo::Vector3(1.95, 1.95, 1.95));
+
+    std::vector<geo::Box> copy_cubes;
+    copy.getCubes(copy_cubes);
+    ASSERT_EQ(copy_cubes.size(), cubes.size());
+    EXPECT_DOUBLE_EQ(copy.getResolution(), tree.getResolution());
+    for (const auto& c : cubes)
+        EXPECT_TRUE(copy.contains(c.getCenter()));
+    EXPECT_FALSE(copy.contains(geo::Vector3(1.95, 1.95, 1.95)));
+    EXPECT_FALSE(tree.contains(cubes.front().getCenter()));
+
+    // Adding to the copy should use the resolution of the copy, i.e. its nodes should refer to the copy
+    copy.add(geo::Vector3(-1.95, -1.95, -1.95));
+    EXPECT_TRUE(copy.contains(geo::Vector3(-1.95, -1.95, -1.95)));
+}
+
+TEST(OctreeNodeCopy, NotCopyable)
+{
+    // A node owns its children, but has no tree independent copy, so copying it would share the children
+    static_assert(!std::is_copy_constructible<geo::OctreeNode>::value, "OctreeNode should not be copy constructible");
+    static_assert(!std::is_copy_assignable<geo::OctreeNode>::value, "OctreeNode should not be copy assignable");
 }
 
 int main(int argc, char** argv)

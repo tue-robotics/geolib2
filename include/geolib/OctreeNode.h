@@ -18,6 +18,13 @@ public:
 
     OctreeNode(const OctreeNode& orig, Octree* tree);
 
+    /**
+     * @brief A node owns its children and refers to its tree, so it can only be copied for a tree, using the
+     * constructor above
+     */
+    OctreeNode(const OctreeNode& orig) = delete;
+    OctreeNode& operator=(const OctreeNode& rhs) = delete;
+
     virtual ~OctreeNode();
 
     OctreeNode* clone(Octree* tree) const;

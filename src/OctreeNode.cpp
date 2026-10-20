@@ -251,23 +251,27 @@ bool OctreeNode::contains(const Vector3& p) const
         return true;
     }
 
+    // Same as in add: the children use coordinates relative to their own minimum corner
     int index = 0;
 
-    const double x = p.x;
-    const double y = p.y;
-    const double z = p.z;
+    double x = p.x;
+    double y = p.y;
+    double z = p.z;
 
     if (x > split_)
     {
         index += 4;
+        x -= split_;
     }
     if (y > split_)
     {
         index += 2;
+        y -= split_;
     }
     if (z > split_)
     {
         index += 1;
+        z -= split_;
     }
 
     if (!children_[index])
@@ -275,7 +279,7 @@ bool OctreeNode::contains(const Vector3& p) const
         return false;
     }
 
-    return children_[index]->contains(p);
+    return children_[index]->contains(Vector3(x, y, z));
 }
 
 // NOLINTNEXTLINE(misc-no-recursion)

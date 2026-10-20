@@ -6,6 +6,7 @@
 #include <algorithm>
 #include <cassert>
 #include <cstdlib>
+#include <memory>
 #include <vector>
 
 namespace geo
@@ -23,7 +24,6 @@ HeightMap::HeightMap(const HeightMap& orig) : Shape(orig)
     {
         root_ = nullptr;
     }
-    mesh_ = orig.mesh_;
 }
 
 HeightMap::~HeightMap()
@@ -35,11 +35,12 @@ HeightMap& HeightMap::operator=(const HeightMap& rhs)
 {
     if (this != &rhs)
     {
-        // Copy before deleting, so the tree stays valid in case copying throws
-        HeightMapNode* root = rhs.root_ ? new HeightMapNode(*rhs.root_) : nullptr;
+        // Copy before deleting, so the tree stays valid in case copying throws. Owned by a unique_ptr until it is
+        // assigned, so it is not leaked in case copying the shape throws.
+        std::unique_ptr<HeightMapNode> root(rhs.root_ ? new HeightMapNode(*rhs.root_) : nullptr);
         Shape::operator=(rhs);
         delete root_;
-        root_ = root;
+        root_ = root.release();
     }
     return *this;
 }
