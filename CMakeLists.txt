@@ -62,6 +62,7 @@ add_library(geolib SHARED
   src/HeightMap.cpp
   src/HeightMapNode.cpp
   src/Mesh.cpp
+  src/MeshBVH.cpp
   src/Octree.cpp
   src/OctreeNode.cpp
   src/Ray.cpp
@@ -213,6 +214,9 @@ if(BUILD_TESTING)
 
   ament_add_gtest(test_composite_shape test/test_composite_shape.cpp)
   target_link_libraries(test_composite_shape geolib)
+
+  ament_add_gtest(test_mesh_bvh test/test_mesh_bvh.cpp)
+  target_link_libraries(test_mesh_bvh geolib)
 
   ament_add_gtest(test_shape test/test_shape.cpp)
   target_link_libraries(test_shape geolib)

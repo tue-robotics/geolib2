@@ -3,6 +3,7 @@
 
 #include "Triangle.h"
 
+#include <memory>
 #include <vector>
 
 namespace geo
@@ -24,6 +25,8 @@ struct TriangleI
     }
 };
 
+class MeshBVH;
+
 /** Mesh storage. */
 class Mesh
 {
@@ -31,7 +34,22 @@ class Mesh
 public:
     Mesh();
 
+    /**
+     * @brief Copies the geometry and shares the bounding volume hierarchy. The other cached results are not copied, but
+     * recalculated when needed, so copying does not read caches which another thread might be filling.
+     */
+    Mesh(const Mesh& other);
+
+    Mesh(Mesh&& other) = default;
+
     virtual ~Mesh();
+
+    /**
+     * @copydoc Mesh(const Mesh&)
+     */
+    Mesh& operator=(const Mesh& other);
+
+    Mesh& operator=(Mesh&& other) = default;
 
     /**
      * Add a point to the mesh.
@@ -132,6 +150,13 @@ public:
      */
     geo::Vector3 getTriangleNormal(unsigned int index) const;
 
+    /**
+     * @brief Bounding volume hierarchy of the triangles, which accelerates ray, sphere and point queries. Built on
+     * first use and cached until the mesh is changed. Safe to call from multiple threads. Copies of the mesh share it.
+     * @return the bounding volume hierarchy
+     */
+    std::shared_ptr<const MeshBVH> getBVH() const;
+
 protected:
     mutable double max_radius_cache_{}; ///< Cached maximum radius.
     mutable double max_radius_squared_cache_{}; ///< Cached squared maximum radius.
@@ -142,12 +167,17 @@ protected:
 
     mutable std::vector<Triangle> triangles_cache_; ///< Cached output result.
 
+    /// Cached bounding volume hierarchy. Const members, which may run concurrently, only access it using
+    /// std::atomic_load/std::atomic_store. Non-const members may not run concurrently with any other access.
+    mutable std::shared_ptr<const MeshBVH> bvh_cache_;
+
     /** Clear cached computed results, as they have become invalid. */
     void invalidateCache()
     {
         triangles_cache_.clear();
         max_radius_squared_cache_ = 0;
         max_radius_cache_ = 0;
+        bvh_cache_.reset(); // Not atomic, as non-const members may not run concurrently with any other access
     }
 };
 
