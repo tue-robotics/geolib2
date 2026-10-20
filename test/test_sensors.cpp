@@ -77,6 +77,88 @@ TEST(LRFRender, AngleRangeBeyondPi)
               static_cast<unsigned int>(a / lrf.getAngleIncrement()));
 }
 
+TEST(LRFRender, ObjectsAtTheEdgeOfTheAngleRange)
+{
+    // Scanner with a blind spot behind it
+    geo::LaserRangeFinder lrf;
+    lrf.setAngleLimits(-2.0, 2.0);
+    lrf.setNumBeams(401); // increment of 0.01 rad
+    geo::Box const box(geo::Vector3(-0.5, -0.5, -0.5), geo::Vector3(0.5, 0.5, 0.5));
+
+    // Boxes at 5 m cover about +/- 0.1 rad. Centered just outside of the angle range, but partly within it.
+    for (double const a : {2.08, -2.08})
+    {
+        std::vector<double> ranges(401, 0);
+        lrf.render(box, geo::Pose3D::identity(), geo::Pose3D(5 * std::cos(a), 5 * std::sin(a), 0), ranges);
+        unsigned int const i = a > 0 ? 400 : 0;
+        EXPECT_GT(ranges[i], 4.4) << "a = " << a;
+        EXPECT_LT(ranges[i], 5.0) << "a = " << a;
+    }
+
+    // Completely in the blind spot
+    for (double const a : {2.3, M_PI, -2.3})
+    {
+        std::vector<double> ranges(401, 0);
+        lrf.render(box, geo::Pose3D::identity(), geo::Pose3D(5 * std::cos(a), 5 * std::sin(a), 0), ranges);
+        for (double const r : ranges)
+            ASSERT_EQ(r, 0) << "a = " << a;
+    }
+
+    // Large object in the blind spot, which reaches into the angle range on both sides
+    geo::Box const wall(geo::Vector3(-0.5, -20, -0.5), geo::Vector3(0.5, 20, 0.5));
+    std::vector<double> ranges(401, 0);
+    lrf.render(wall, geo::Pose3D::identity(), geo::Pose3D(-3, 0, 0), ranges);
+    EXPECT_GT(ranges[0], 0);
+    EXPECT_GT(ranges[400], 0);
+}
+
+namespace
+{
+
+/**
+ * @brief Counts the lines which are rendered
+ */
+class CountingRenderResult : public geo::LaserRangeFinder::RenderResult
+{
+public:
+    explicit CountingRenderResult(std::vector<double>& ranges) : geo::LaserRangeFinder::RenderResult(ranges) {}
+
+    void renderLine(const geo::Vec2& p1, const geo::Vec2& p2) override
+    {
+        ++n_lines;
+        geo::LaserRangeFinder::RenderResult::renderLine(p1, p2);
+    }
+
+    unsigned int n_lines = 0;
+};
+
+} // namespace
+
+TEST(LRFRender, BlindSpotCulled)
+{
+    geo::LaserRangeFinder lrf;
+    lrf.setAngleLimits(-2.0, 2.0);
+    lrf.setNumBeams(401);
+    geo::Box const box(geo::Vector3(-0.5, -0.5, -0.5), geo::Vector3(0.5, 0.5, 0.5));
+
+    for (double const a : {2.3, M_PI, -2.3, 0.0, 2.08})
+    {
+        std::vector<double> ranges(401, 0);
+        CountingRenderResult res(ranges);
+        geo::LaserRangeFinder::RenderOptions opt;
+        opt.setMesh(box.getMesh(), geo::Pose3D(5 * std::cos(a), 5 * std::sin(a), 0));
+        lrf.render(opt, res);
+        if (std::abs(a) > 2.2)
+        {
+            EXPECT_EQ(res.n_lines, 0u) << "a = " << a; // Culled, before rendering any line
+        }
+        else
+        {
+            EXPECT_GT(res.n_lines, 0u) << "a = " << a;
+        }
+    }
+}
+
 TEST(LRFRender, HalfCircleIndexDifference)
 {
     // The difference of the (quantized) beam indices of the end points equals half a circle, while the angle between
@@ -294,6 +376,33 @@ TEST(DepthCameraRender, TriangleMapResizedOnSizeChange)
         EXPECT_EQ(triangle_map[x].size(), 6u);
         EXPECT_EQ(pointer_map[x].size(), 6u);
     }
+}
+
+TEST(DepthCameraRender, DefaultTriangleMapUntouched)
+{
+    geo::DepthCamera const cam(64, 48, 50, 50, 32, 24, 0, 0);
+    geo::Box const box(geo::Vector3(-0.5, -0.5, -0.5), geo::Vector3(0.5, 0.5, 0.5));
+
+    cv::Mat image = cv::Mat::zeros(48, 64, CV_32FC1);
+    cam.rasterize(box, geo::Pose3D(0, 0, -3), image);
+    EXPECT_GT(cv::countNonZero(image), 0);
+
+    // The default triangle map is shared, so it should not be filled when it is not requested
+    EXPECT_TRUE(geo::EMPTY_TRIANGLE_MAP.empty());
+    EXPECT_TRUE(geo::EMPTY_POINTER_MAP.empty());
+}
+
+TEST(DepthCameraRender, DefaultPointerMapUntouched)
+{
+    geo::DepthCamera const cam(64, 48, 50, 50, 32, 24, 0, 0);
+    geo::Box const box(geo::Vector3(-0.5, -0.5, -0.5), geo::Vector3(0.5, 0.5, 0.5));
+
+    // A pointer, but the default pointer map, which is shared, so it should not be filled
+    int id = 0;
+    cv::Mat image = cv::Mat::zeros(48, 64, CV_32FC1);
+    cam.rasterize(box, geo::Pose3D(0, 0, -3), image, geo::EMPTY_POINTER_MAP, &id);
+    EXPECT_GT(cv::countNonZero(image), 0);
+    EXPECT_TRUE(geo::EMPTY_POINTER_MAP.empty());
 }
 
 TEST(DepthCameraRender, OutsideFrustumNotRendered)
