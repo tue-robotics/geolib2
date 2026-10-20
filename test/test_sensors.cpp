@@ -156,6 +156,63 @@ TEST(LRFRender, HalfCircleIndexDifference)
     }
 }
 
+namespace
+{
+
+/**
+ * @brief Exposes the protected index functions
+ */
+class TestableLRF : public geo::LaserRangeFinder
+{
+public:
+    using geo::LaserRangeFinder::getAngleUpperIndexRaw;
+};
+
+} // namespace
+
+TEST(LRFRender, Unconfigured)
+{
+    // No beams, so the angle increment is zero. Should not render anything (nor divide by zero).
+    geo::LaserRangeFinder lrf;
+    std::vector<double> ranges;
+    lrf.renderLine(geo::Vec2(1, -1), geo::Vec2(1, 1), ranges);
+    EXPECT_TRUE(ranges.empty());
+}
+
+TEST(LRFRender, RawIndexConsistentWithClampedIndex)
+{
+    TestableLRF lrf;
+    lrf.setAngleLimits(0, 2 * M_PI * 359 / 360);
+    lrf.setNumBeams(360);
+    for (double const a : {0.3, M_PI - 0.1, M_PI + 0.5, 2 * M_PI - 0.3})
+    {
+        double const x = std::cos(a);
+        double const y = std::sin(a);
+        EXPECT_EQ(lrf.getAngleUpperIndexRaw(x, y), static_cast<int>(lrf.getAngleUpperIndex(x, y))) << "a = " << a;
+        EXPECT_EQ(lrf.getAngleUpperIndexRaw(x, y), lrf.getAngleUpperIndexRaw(a)) << "a = " << a;
+    }
+}
+
+TEST(LRFRender, LargeAngleOffset)
+{
+    // The same sensor range, shifted by many full turns, should render the same
+    geo::LaserRangeFinder lrf1;
+    lrf1.setAngleLimits(-2, 2);
+    lrf1.setNumBeams(41);
+    geo::LaserRangeFinder lrf2;
+    double const offset = 2 * M_PI * 1e5;
+    lrf2.setAngleLimits(-2 + offset, 2 + offset);
+    lrf2.setNumBeams(41);
+
+    std::vector<double> ranges1(41, 0);
+    std::vector<double> ranges2(41, 0);
+    lrf1.renderLine(geo::Vec2(2, -1), geo::Vec2(2, 1), ranges1);
+    lrf2.renderLine(geo::Vec2(2, -1), geo::Vec2(2, 1), ranges2);
+    for (unsigned int i = 0; i < 41; ++i)
+        EXPECT_NEAR(ranges1[i], ranges2[i], 1e-6) << "i = " << i;
+    EXPECT_GT(ranges1[20], 0);
+}
+
 // ----------------------------------------------------------------------------------------------------
 //                                            DepthCamera
 // ----------------------------------------------------------------------------------------------------

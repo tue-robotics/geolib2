@@ -45,7 +45,8 @@ CompositeShape* CompositeShape::clone() const
 
 bool CompositeShape::intersect(const Ray& r, float t0, float t1, double& distance) const
 {
-    if (!bb_.intersect(r, t0, t1, distance))
+    double bb_distance = NAN;
+    if (!bb_.intersect(r, t0, t1, bb_distance))
     {
         return false;
     }
