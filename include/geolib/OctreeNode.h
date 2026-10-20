@@ -18,6 +18,13 @@ public:
 
     OctreeNode(const OctreeNode& orig, Octree* tree);
 
+    /**
+     * @brief A node owns its children and refers to its tree, so it can only be copied for a tree, using the
+     * constructor above
+     */
+    OctreeNode(const OctreeNode& orig) = delete;
+    OctreeNode& operator=(const OctreeNode& rhs) = delete;
+
     virtual ~OctreeNode();
 
     OctreeNode* clone(Octree* tree) const;
@@ -33,6 +40,23 @@ public:
     bool contains(const Vector3& p) const;
 
     bool intersect(const Box& b) const;
+
+    /**
+     * @brief Determines whether a sphere intersects the occupied space of this node. The sphere is assumed to intersect
+     * the cube of this node.
+     * @param p center of the sphere, relative to the minimum corner of this node
+     * @param radius radius of the sphere
+     * @return True means the sphere intersects
+     */
+    bool intersect(const Vector3& p, double radius) const;
+
+    /**
+     * @brief Extend the axis aligned box [min, max] such that it includes the occupied space of this node
+     * @param min minimum corner of the box
+     * @param max maximum corner of the box
+     * @param offset position of the minimum corner of this node
+     */
+    void extendBoundingBox(Vector3& min, Vector3& max, const Vector3& offset) const;
 
 protected:
     double size_;

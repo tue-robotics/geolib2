@@ -25,11 +25,28 @@ public:
 
     HeightMapNode(HeightMapNode&& orig) noexcept;
 
+    HeightMapNode& operator=(const HeightMapNode& rhs);
+
     virtual ~HeightMapNode();
 
     HeightMapNode* clone() const;
 
     bool intersect(const Ray& r, float t0, float t1, double& distance) const;
+
+    /**
+     * @brief Determines whether a sphere intersects the occupied space of this node
+     * @param p center of the sphere
+     * @param radius radius of the sphere
+     * @return True means the sphere intersects
+     */
+    bool intersect(const Vector3& p, double radius) const;
+
+    /**
+     * @brief Determines whether a point lies within the occupied space of this node
+     * @param p point to test
+     * @return True means point p lies inside
+     */
+    bool contains(const Vector3& p) const;
 
     // the bounding box of the node
     Box box_;

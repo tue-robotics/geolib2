@@ -1,3 +1,4 @@
+#include <algorithm>
 #include <cmath>
 
 #include "geolib/Box.h"
@@ -9,6 +10,25 @@
 
 namespace geo
 {
+
+namespace
+{
+
+/**
+ * @brief Squared distance from @b p to the cube [@b min, @b min + @b size]
+ */
+double squaredDistanceToCube(const Vector3& p, const Vector3& min, double size)
+{
+    double d2 = 0;
+    for (unsigned int i = 0; i < 3; ++i)
+    {
+        double const d = std::max({min[i] - p[i], 0.0, p[i] - (min[i] + size)});
+        d2 += d * d;
+    }
+    return d2;
+}
+
+} // namespace
 
 OctreeNode::OctreeNode(double size, Octree* tree) : size_(size), split_(size_ / 2), occupied_(false), tree_(tree)
 {
@@ -231,23 +251,27 @@ bool OctreeNode::contains(const Vector3& p) const
         return true;
     }
 
+    // Same as in add: the children use coordinates relative to their own minimum corner
     int index = 0;
 
-    const double x = p.x;
-    const double y = p.y;
-    const double z = p.z;
+    double x = p.x;
+    double y = p.y;
+    double z = p.z;
 
     if (x > split_)
     {
         index += 4;
+        x -= split_;
     }
     if (y > split_)
     {
         index += 2;
+        y -= split_;
     }
     if (z > split_)
     {
         index += 1;
+        z -= split_;
     }
 
     if (!children_[index])
@@ -255,7 +279,7 @@ bool OctreeNode::contains(const Vector3& p) const
         return false;
     }
 
-    return children_[index]->contains(p);
+    return children_[index]->contains(Vector3(x, y, z));
 }
 
 // NOLINTNEXTLINE(misc-no-recursion)
@@ -297,6 +321,68 @@ bool OctreeNode::intersect(const Box& b) const
     }
 
     return false;
+}
+
+// NOLINTNEXTLINE(misc-no-recursion)
+bool OctreeNode::intersect(const Vector3& p, double radius) const
+{
+    if (occupied_)
+    {
+        return true;
+    }
+
+    double const radius2 = radius * radius;
+    for (int x = 0; x <= 1; ++x)
+    {
+        for (int y = 0; y <= 1; ++y)
+        {
+            for (int z = 0; z <= 1; ++z)
+            {
+                const OctreeNode* child = children_[(4 * x) + (2 * y) + z];
+                if (!child)
+                {
+                    continue;
+                }
+
+                Vector3 const offset(split_ * x, split_ * y, split_ * z);
+                if (squaredDistanceToCube(p, offset, split_) <= radius2 && child->intersect(p - offset, radius))
+                {
+                    return true;
+                }
+            }
+        }
+    }
+
+    return false;
+}
+
+// NOLINTNEXTLINE(misc-no-recursion)
+void OctreeNode::extendBoundingBox(Vector3& min, Vector3& max, const Vector3& offset) const
+{
+    if (occupied_)
+    {
+        for (unsigned int i = 0; i < 3; ++i)
+        {
+            min[i] = std::min(min[i], offset[i]);
+            max[i] = std::max(max[i], offset[i] + size_);
+        }
+        return;
+    }
+
+    for (int x = 0; x <= 1; ++x)
+    {
+        for (int y = 0; y <= 1; ++y)
+        {
+            for (int z = 0; z <= 1; ++z)
+            {
+                const OctreeNode* child = children_[(4 * x) + (2 * y) + z];
+                if (child)
+                {
+                    child->extendBoundingBox(min, max, offset + Vector3(split_ * x, split_ * y, split_ * z));
+                }
+            }
+        }
+    }
 }
 
 } // namespace geo

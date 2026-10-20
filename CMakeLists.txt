@@ -217,6 +217,9 @@ if(BUILD_TESTING)
   ament_add_gtest(test_shape test/test_shape.cpp)
   target_link_libraries(test_shape geolib)
 
+  ament_add_gtest(test_heightmap_octree test/test_heightmap_octree.cpp)
+  target_link_libraries(test_heightmap_octree geolib)
+
   ament_add_gtest(test_lrf test/test_lrf.cpp)
   target_link_libraries(test_lrf geolib)
 

@@ -23,9 +23,28 @@ public:
 
     virtual ~HeightMap();
 
+    HeightMap& operator=(const HeightMap& rhs);
+
     HeightMap* clone() const;
 
+    using Shape::intersect;
+
     bool intersect(const Ray&, float t0, float t1, double& distance) const;
+
+    /**
+     * @brief Determines whether a sphere intersects the height map, using the quad tree
+     * @param p center of the sphere
+     * @param radius radius of the sphere
+     * @return True means the sphere intersects the height map
+     */
+    bool intersect(const Vector3& p, const double radius) const;
+
+    /**
+     * @brief Determines whether a point lies within the height map, using the quad tree
+     * @param p point to test
+     * @return True means point p lies inside the height map
+     */
+    bool contains(const Vector3& p) const;
 
     /**
      * @brief fromGrid: instantiate a Heightmap from a grid

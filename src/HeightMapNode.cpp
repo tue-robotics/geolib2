@@ -1,8 +1,10 @@
+#include <array>
 #include <cmath>
 #include <limits>
 #include <utility>
 
 #include "geolib/Box.h"
+#include "geolib/datatypes.h"
 #include "geolib/HeightMapNode.h"
 #include "geolib/Ray.h"
 
@@ -64,7 +66,46 @@ HeightMapNode::HeightMapNode(HeightMapNode&& orig) noexcept : box_(std::move(ori
     }
 }
 
-HeightMapNode::~HeightMapNode() = default;
+// NOLINTNEXTLINE(misc-no-recursion)
+HeightMapNode& HeightMapNode::operator=(const HeightMapNode& rhs)
+{
+    if (this != &rhs)
+    {
+        // Copy the box first, as it might throw as well. In that case, this node is unchanged.
+        box_ = rhs.box_;
+
+        // Copy all children before deleting any, so the tree stays valid in case copying throws
+        std::array<HeightMapNode*, 4> children{};
+        try
+        {
+            for (unsigned int i = 0; i < 4; ++i)
+                children[i] = rhs.children_[i] ? rhs.children_[i]->clone() : nullptr;
+        }
+        catch (...)
+        {
+            for (const HeightMapNode* child : children)
+                delete child;
+            throw;
+        }
+
+        occupied_ = rhs.occupied_;
+        for (unsigned int i = 0; i < 4; ++i)
+        {
+            delete children_[i];
+            children_[i] = children[i];
+        }
+    }
+    return *this;
+}
+
+// NOLINTNEXTLINE(misc-no-recursion)
+HeightMapNode::~HeightMapNode()
+{
+    for (const HeightMapNode* child : children_)
+    {
+        delete child;
+    }
+}
 
 // NOLINTNEXTLINE(misc-no-recursion)
 HeightMapNode* HeightMapNode::clone() const
@@ -99,6 +140,56 @@ bool HeightMapNode::intersect(const Ray& r, float t0, float t1, double& distance
     }
 
     return hit;
+}
+
+// NOLINTNEXTLINE(misc-no-recursion)
+bool HeightMapNode::intersect(const Vector3& p, double radius) const
+{
+    if (!box_.intersect(p, radius))
+    {
+        return false;
+    }
+
+    if (occupied_)
+    {
+        return true;
+    }
+
+    // NOLINTNEXTLINE(readability-use-anyofallof) - std::any_of with a lambda triggers misc-no-recursion
+    for (const HeightMapNode* child : children_)
+    {
+        if (child && child->intersect(p, radius))
+        {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+// NOLINTNEXTLINE(misc-no-recursion)
+bool HeightMapNode::contains(const Vector3& p) const
+{
+    if (!box_.contains(p))
+    {
+        return false;
+    }
+
+    if (occupied_)
+    {
+        return true;
+    }
+
+    // NOLINTNEXTLINE(readability-use-anyofallof) - std::any_of with a lambda triggers misc-no-recursion
+    for (const HeightMapNode* child : children_)
+    {
+        if (child && child->contains(p))
+        {
+            return true;
+        }
+    }
+
+    return false;
 }
 
 } // namespace geo
