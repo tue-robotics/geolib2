@@ -286,6 +286,18 @@ TEST(CompositeRay, DistantNearestHit)
     EXPECT_NEAR(distance, 1000000.02, 1e-6);
 }
 
+TEST(CompositeRay, DistanceUnchangedOnMiss)
+{
+    // The ray passes through the bounding box of the composite, but between its children
+    geo::CompositeShape comp;
+    comp.addShape(geo::Box(geo::Vector3(0, 0, 0), geo::Vector3(1, 1, 1)), geo::Pose3D::identity());
+    comp.addShape(geo::Box(geo::Vector3(2, 2, 0), geo::Vector3(3, 3, 1)), geo::Pose3D::identity());
+
+    double distance = 42;
+    EXPECT_FALSE(comp.intersect(geo::Ray(geo::Vector3(-5, 2.5, 0.5), geo::Vector3(1, -0.2, 0)), 0, 100, distance));
+    EXPECT_EQ(distance, 42);
+}
+
 TEST(CompositeRay, MeshChild)
 {
     geo::CompositeShape comp;
