@@ -117,13 +117,13 @@ public:
         triangle_map_(triangle_map)
     {
 
-        // reserve pointer map
+        // reserve pointer map. assign instead of resize, as resize does not change the size of existing columns
         if (pointer_)
         {
             if (pointer_map_.empty() || (int)pointer_map_.size() != image.cols ||
                 (int)pointer_map_[0].size() != image.rows)
             {
-                pointer_map_.resize(image.cols, std::vector<void*>(image.rows, (void*)NULL));
+                pointer_map_.assign(image.cols, std::vector<void*>(image.rows, (void*)NULL));
             }
         }
 
@@ -131,7 +131,7 @@ public:
         if (triangle_map_.empty() || (int)triangle_map_.size() != image.cols ||
             (int)triangle_map_[0].size() != image.rows)
         {
-            triangle_map_.resize(image_.cols, std::vector<int>(image_.rows, -1));
+            triangle_map_.assign(image_.cols, std::vector<int>(image_.rows, -1));
         }
     }
 

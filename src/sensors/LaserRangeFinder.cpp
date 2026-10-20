@@ -12,6 +12,35 @@
 namespace geo
 {
 
+namespace
+{
+
+const double TWO_PI = 2 * std::acos(-1.0);
+
+/**
+ * @brief Wrap an angle to [0, 2 pi). Without fmod in the common case of angles less than one turn out of range, for
+ * speed, but with fmod otherwise, to take constant time for any angle.
+ */
+double wrapTwoPi(double a)
+{
+    if (a < 0)
+        a += TWO_PI;
+    else if (a >= TWO_PI)
+        a -= TWO_PI;
+
+    if (a < 0 || a >= TWO_PI)
+    {
+        a = std::fmod(a, TWO_PI);
+        if (a < 0)
+            a += TWO_PI;
+        if (a >= TWO_PI) // Due to rounding of a + 2 pi for tiny negative a
+            a = 0;
+    }
+    return a;
+}
+
+} // namespace
+
 LaserRangeFinder::LaserRangeFinder() : a_min_(0), a_max_(0), range_min_(0), range_max_(0), num_beams_(0), angle_incr_(0)
 {
 }
@@ -55,58 +84,57 @@ void LaserRangeFinder::RenderResult::renderLine(const Vec2& p1, const Vec2& p2)
             return;
     }
 
-    // Get the angle / beam indices based on the slope
-    int const i_p1 = lrf_->getAngleUpperIndexRaw(p1.x, p1.y);
-    int const i_p2 = lrf_->getAngleUpperIndexRaw(p2.x, p2.y);
+    // Without beams, there is nothing to render (and the angle increment is zero)
+    if (lrf_->num_beams_ == 0 || lrf_->angle_incr_ <= 0)
+        return;
 
-    // Get the minimum and maximum
-    int const i_min = std::min<int>(i_p1, i_p2);
-    int const i_max = std::max<int>(i_p1, i_p2);
+    // Back-face culling: only render lines which go counterclockwise, as seen from the sensor. Determined from the end
+    // points themselves, as their (quantized) beam indices are not accurate enough.
+    if (p1.cross(p2) <= 0)
+        return;
 
-    // We need to differentiate between two cases:
-    // - from min to max is less than half a circle
-    // - from min to max is more than half a circle (the line can be 'occluded' by the blind spot of the sensor)
+    // Get the angles of the end points relative to the minimum angle, normalized to [0, 2 pi), such that the
+    // discontinuity lies at the start of the sensor range, instead of at +/- pi. This way, sensors with angles beyond
+    // +/- pi are supported as well.
+    auto const relative_angle = [this](const Vec2& p) { return wrapTwoPi(std::atan2(p.y, p.x) - lrf_->a_min_); };
+    double const a1 = relative_angle(p1);
+    double const a2 = relative_angle(p2);
 
-    // In the latter case, we may need to render two parts
+    // Index of the first beam with a larger angle. The angle is non-negative, so truncation is equal to floor.
+    auto const i_p1 = static_cast<uint>(a1 / lrf_->angle_incr_) + 1;
+    auto const i_p2 = static_cast<uint>(a2 / lrf_->angle_incr_) + 1;
+
+    // The line goes counterclockwise from p1 to p2, covering less than half a circle. We need to differentiate between
+    // two cases, based on the angles (the indices are not accurate enough):
+    // - it does not pass the start of the sensor range (a1 <= a2): render the beams from p1 to p2
+    // - it passes the start of the sensor range (a1 > a2), so possibly through the blind spot of the sensor: render the
+    //   beams from p1 to the end of the range, and from the start of the range to p2
 
     uint i_min1 = 0;
     uint i_max1 = 0;
     uint i_min2 = 0;
     uint i_max2 = 0;
-    if (i_max - i_min < static_cast<int>(lrf_->i_half_circle_))
+    if (a1 <= a2)
     {
-        // Back-face culling: if the normal is pointing outwards, ommit this line
-        if (i_p1 > i_p2)
-            return;
-
         // Both points in the blind spot (i's are both larger number of beams), so don't render a line
-        // NOLINT(modernize-use-integer-sign-comparison) - C++11 compatibility required for older distros
-        if (i_min >= static_cast<int>(lrf_->num_beams_)) // NOLINT(modernize-use-integer-sign-comparison)
+        if (i_p1 >= lrf_->num_beams_)
             return;
 
         // The line is fully in view, so only need to render one part
-        i_min1 = static_cast<uint>(std::max<int>(0, i_min));
-        i_max1 = std::min<uint>(lrf_->num_beams_, static_cast<uint>(std::max<int>(0, i_max)));
-
-        // No second part
-        i_min2 = 0;
-        i_max2 = 0;
+        i_min1 = i_p1;
+        i_max1 = std::min<uint>(lrf_->num_beams_, i_p2);
 
         min_i = std::min<uint>(min_i, i_min1);
         max_i = std::max<uint>(max_i, i_max1);
     }
     else
     {
-        // Back-face culling: if the normal is pointing outwards, ommit this line
-        if (i_p2 > i_p1)
-            return;
-
         // We may need to draw two parts, because the line can be 'occluded' by the blind spot of the sensor
-        i_min1 = static_cast<uint>(std::max<int>(0, i_max));
+        i_min1 = i_p1;
         i_max1 = lrf_->num_beams_;
 
         i_min2 = 0;
-        i_max2 = std::min<uint>(lrf_->num_beams_, static_cast<uint>(std::max<int>(0, i_min)));
+        i_max2 = std::min<uint>(lrf_->num_beams_, i_p2);
 
         min_i = 0;
         max_i = lrf_->num_beams_;
@@ -171,14 +199,10 @@ void LaserRangeFinder::render(const LaserRangeFinder::RenderOptions& opt, LaserR
         if (std::abs(pose.getOrigin().getZ()) > max_radius)
             return;
 
-        double const dist_sq = pose.getOrigin().length2();
-
-        if (dist_sq > max_radius * max_radius)
-        {
-            // If nearest object point is certainly further away than max_range, do not render
-            if (sqrt(dist_sq) - max_radius > range_max_)
-                return;
-        }
+        // If nearest object point is certainly further away than max_range, do not render. A max range of zero means
+        // that the range is not limited.
+        if (range_max_ > 0 && pose.getOrigin().length() - max_radius > range_max_)
+            return;
     }
 
     const std::vector<TriangleI>& triangles = opt.getMesh().getTriangleIs();
@@ -339,8 +363,6 @@ void LaserRangeFinder::calculateRays()
         angles_[i] = a;
         a += angle_incr_;
     }
-
-    i_half_circle_ = static_cast<uint>(std::acos(-1.0) / angle_incr_);
 }
 
 double LaserRangeFinder::getAngleIncrement() const
@@ -355,19 +377,23 @@ uint LaserRangeFinder::getAngleUpperIndex(double angle) const
 
 uint LaserRangeFinder::getAngleUpperIndex(double x, double y) const
 {
-    // Calculate the ray index corresponding to the cartesian point (x, y)
-    return getAngleUpperIndex(atan2(y, x));
+    return std::min<uint>(num_beams_, std::max<int>(0, getAngleUpperIndexRaw(x, y)));
 }
 
 int LaserRangeFinder::getAngleUpperIndexRaw(double angle) const
 {
-    return static_cast<int>((angle - a_min_) / angle_incr_) + 1;
+    // floor instead of truncation towards zero, to get the correct index for angles below the minimum angle
+    return static_cast<int>(std::floor((angle - a_min_) / angle_incr_)) + 1;
 }
 
 int LaserRangeFinder::getAngleUpperIndexRaw(double x, double y) const
 {
-    // Calculate the ray index corresponding to the cartesian point (x, y)
-    return getAngleUpperIndexRaw(atan2(y, x));
+    // Calculate the ray index corresponding to the cartesian point (x, y). The angle is normalized to
+    // (center - pi, center + pi], with center the middle of the sensor range. This way, sensors with angles beyond
+    // +/- pi are supported, while angles outside the sensor range end up at the nearest end of the range. For
+    // sensors which are symmetric around zero, this is equal to the range of atan2.
+    double const upper = (0.5 * (a_min_ + a_max_)) + (0.5 * TWO_PI);
+    return getAngleUpperIndexRaw(upper - wrapTwoPi(upper - std::atan2(y, x)));
 }
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *

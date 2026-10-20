@@ -6,6 +6,7 @@
 
 #include <algorithm>
 #include <array>
+#include <cmath>
 #include <opencv2/core/hal/interface.h>
 #include <opencv2/core/types.hpp>
 #include <sensor_msgs/msg/camera_info.hpp> // NOLINT(misc-include-cleaner)
@@ -149,7 +150,26 @@ void DepthCamera::render(const RenderOptions& opt, RenderResult& res) const
     const Mesh& mesh = *opt.mesh_;
     const Pose3D& pose = opt.pose_;
 
-    if (mesh.getMaxRadius() < pose.getOrigin().z)
+    // Do not render in case the bounding sphere of the mesh is completely behind the camera
+    double const max_radius = mesh.getMaxRadius();
+    const Vector3& center = pose.getOrigin();
+    if (max_radius < center.z)
+    {
+        return;
+    }
+
+    // Do not render in case the bounding sphere of the mesh is completely outside one of the side planes of the view
+    // frustum. For points in front of the camera (z < 0), pixel coordinate u >= 0 is equivalent to
+    // fx * x - cx * z + Tx >= 0, and likewise for the other image borders.
+    auto const outside = [max_radius, &center](double nx, double ny, double nz, double d)
+    {
+        return (nx * center.x) + (ny * center.y) + (nz * center.z) + d <
+               -max_radius * std::sqrt((nx * nx) + (ny * ny) + (nz * nz));
+    };
+    double const width = res.getWidth();
+    double const height = res.getHeight();
+    if (outside(fx(), 0, -cx(), Tx()) || outside(-fx(), 0, cx() - width, -Tx()) || outside(0, -fy(), -cy(), Ty()) ||
+        outside(0, fy(), cy() - height, -Ty()))
     {
         return;
     }
@@ -349,9 +369,10 @@ void DepthCamera::drawTriangle2D(const geo::Vec3T<T>& p1,
         int const min_y = std::min<int>(p1.y, std::min<int>(p2.y, p3.y));
         int const max_y = std::max<int>(p1.y, std::max<int>(p2.y, p3.y));
         int const min_x = std::min<int>(p1.x, std::min<int>(p2.x, p3.x));
-        int const max_x = std::max<int>(p1.x, std::max<int>(p2.x, p3.x));
 
-        if (min_x < res.getWidth() && max_x > 0 && min_y < res.getHeight() && max_y > 0)
+        // Check whether the triangle overlaps with the image. floor, as truncation would map (-1, 0) to pixel 0 as well
+        if (min_x < res.getWidth() && std::floor(std::max({p1.x, p2.x, p3.x})) >= 0 && min_y < res.getHeight() &&
+            std::floor(std::max({p1.y, p2.y, p3.y})) >= 0)
         {
 
             const geo::Vec3T<T>* p_min = &p1;
@@ -427,6 +448,17 @@ void DepthCamera::drawTrianglePart(int y_start,
                                    RenderResult& res,
                                    uint i_triangle)
 {
+    // Inverse depth is affine in image space, so within this part of the triangle it is bounded by its values at the
+    // corners. Interpolation can overshoot those, as it is done per whole pixel. Especially for slivers, that would
+    // result in negative or extremely large depths. Therefore, the inverse depth is clamped to these bounds.
+    float d_min = std::min(d_start, d_end);
+    float d_max = std::max(d_start, d_end);
+    if (y_end > y_start)
+    {
+        auto const n_rows = static_cast<float>(y_end - y_start);
+        d_min = std::min({d_min, d_start + (d_start_delta * n_rows), d_end + (d_end_delta * n_rows)});
+        d_max = std::max({d_max, d_start + (d_start_delta * n_rows), d_end + (d_end_delta * n_rows)});
+    }
 
     if (y_start < 0)
     {
@@ -442,7 +474,7 @@ void DepthCamera::drawTrianglePart(int y_start,
     for (int y = y_start; y <= y_end; ++y)
     {
         float d = d_start;
-        float const d_delta = (d_end - d_start) / (x_end - x_start);
+        float const d_delta = x_end > x_start ? (d_end - d_start) / (x_end - x_start) : 0.0f;
 
         int x_start2 = 0;
         if (x_start < 0)
@@ -455,11 +487,11 @@ void DepthCamera::drawTrianglePart(int y_start,
             x_start2 = static_cast<int>(x_start);
         }
 
-        int const x_end2 = std::min(res.getWidth() - 1, static_cast<int>(x_end));
+        int const x_end2 = std::min(res.getWidth() - 1, static_cast<int>(std::floor(x_end)));
 
         for (int x = x_start2; x <= x_end2; ++x)
         {
-            float const depth = 1.0f / d;
+            float const depth = 1.0f / std::min(std::max(d, d_min), d_max);
 
             res.renderPixel(x, y, depth, static_cast<int>(i_triangle));
             d += d_delta;

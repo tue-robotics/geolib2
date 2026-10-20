@@ -1,3 +1,5 @@
+#include <cmath>
+#include <limits>
 #include <utility>
 
 #include "geolib/Box.h"
@@ -6,6 +8,21 @@
 
 namespace geo
 {
+
+namespace
+{
+
+/**
+ * @brief Smallest float which is not smaller than @b d. Used to pass a distance as (float) maximum distance, without
+ * discarding hits up to that distance due to rounding down.
+ */
+float roundUpToFloat(double d)
+{
+    auto const f = static_cast<float>(d);
+    return f < d ? std::nextafter(f, std::numeric_limits<float>::infinity()) : f;
+}
+
+} // namespace
 
 HeightMapNode::HeightMapNode(Box box) : box_(std::move(box)), occupied_(false)
 {
@@ -58,13 +75,6 @@ HeightMapNode* HeightMapNode::clone() const
 // NOLINTNEXTLINE(misc-no-recursion)
 bool HeightMapNode::intersect(const Ray& r, float t0, float t1, double& distance) const
 {
-    /*if (box_.intersect(r.origin)) {
-        std::cout << "TEST!" << std::endl;
-        if (box_.intersect(r, t0, t1, distance)) {
-            std::cout << "    YES: " << distance << std::endl;
-        }
-    }*/
-
     if (!box_.intersect(r, t0, t1, distance))
     {
         return false;
@@ -75,28 +85,20 @@ bool HeightMapNode::intersect(const Ray& r, float t0, float t1, double& distance
         return true;
     }
 
-    unsigned int i_child_origin = 5;
-    for (unsigned int i = 0; i < 4; ++i)
+    // Find the nearest hit of all children. Children which are further away than the nearest hit so far, are culled by
+    // their bounding box.
+    bool hit = false;
+    for (const HeightMapNode* child : children_)
     {
-        if (children_[i] && children_[i]->box_.contains(r.getOrigin()))
+        double d = 0;
+        if (child && child->intersect(r, t0, hit ? roundUpToFloat(distance) : t1, d) && (!hit || d < distance))
         {
-            if (children_[i]->intersect(r, t0, t1, distance))
-            {
-                return true;
-            }
-            i_child_origin = i;
+            distance = d;
+            hit = true;
         }
     }
 
-    for (unsigned int i = 0; i < 4; ++i)
-    {
-        if (i != i_child_origin && children_[i] && children_[i]->intersect(r, t0, t1, distance))
-        {
-            return true;
-        }
-    }
-
-    return false;
+    return hit;
 }
 
 } // namespace geo

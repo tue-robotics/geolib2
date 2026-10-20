@@ -136,9 +136,6 @@ protected:
 
     double angle_incr_;
 
-    // Number of beams in a half circle
-    uint i_half_circle_{};
-
     /**
      * @brief Get the index of the first beam with a higher angle than \p angle. Results may lie outside of the sensor
      * range.

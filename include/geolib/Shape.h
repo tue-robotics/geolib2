@@ -30,11 +30,15 @@ public:
     virtual Shape* clone() const;
 
     /**
-     * @brief intersect: currently always throws a logic error
-     * @param r
-     * @param t0
-     * @param t1
-     * @param distance
+     * @brief Determines whether a ray intersects the shape
+     *
+     * For a mesh, distance is the nearest intersection with its surface in (t0, t1). Shapes which are volumes (Box,
+     * HeightMap, Octree), report the distance at which the ray enters the volume, which can be smaller than t0, or
+     * negative, in case the ray starts within it. A CompositeShape reports the nearest of its children.
+     * @param r ray, expressed in the frame of the shape
+     * @param t0 minimum distance along the ray
+     * @param t1 maximum distance along the ray
+     * @param distance distance along the ray to the intersection, see above; only set on intersection
      * @return true when the ray intersects the shape
      */
     virtual bool intersect(const Ray& r, float t0, float t1, double& distance) const;

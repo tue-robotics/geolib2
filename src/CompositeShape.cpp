@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <cmath>
 #include <console_bridge/console.h>
+#include <limits>
 
 #include <stdexcept>
 #include <string>
@@ -15,6 +16,21 @@
 
 namespace geo
 {
+
+namespace
+{
+
+/**
+ * @brief Smallest float which is not smaller than @b d. Used to pass a distance as (float) maximum distance, without
+ * discarding hits up to that distance due to rounding down.
+ */
+float roundUpToFloat(double d)
+{
+    auto const f = static_cast<float>(d);
+    return f < d ? std::nextafter(f, std::numeric_limits<float>::infinity()) : f;
+}
+
+} // namespace
 
 CompositeShape::CompositeShape() : max_radius_(0), min_(1e10, 1e10, 1e10), max_(-1e10, -1e10, -1e10), bb_(-min_, -max_)
 {
@@ -29,7 +45,8 @@ CompositeShape* CompositeShape::clone() const
 
 bool CompositeShape::intersect(const Ray& r, float t0, float t1, double& distance) const
 {
-    if (!bb_.intersect(r, t0, t1, distance))
+    double bb_distance = NAN;
+    if (!bb_.intersect(r, t0, t1, bb_distance))
     {
         return false;
     }
@@ -46,7 +63,7 @@ bool CompositeShape::intersect(const Ray& r, float t0, float t1, double& distanc
         Ray const r_t(pose_inv * r.getOrigin(), pose_inv.getBasis() * r.getDirection());
 
         double d = NAN;
-        if (shape.intersect(r_t, t0, static_cast<float>(min_distance), d))
+        if (shape.intersect(r_t, t0, roundUpToFloat(min_distance), d) && d < min_distance)
         {
             min_distance = d;
             hit = true;
