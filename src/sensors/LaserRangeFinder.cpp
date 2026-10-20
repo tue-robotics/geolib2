@@ -12,7 +12,34 @@
 namespace geo
 {
 
-namespace { const double TWO_PI = 2 * std::acos(-1.0); } // namespace
+namespace
+{
+
+const double TWO_PI = 2 * std::acos(-1.0);
+
+/**
+ * @brief Wrap an angle to [0, 2 pi). Without fmod in the common case of angles less than one turn out of range, for
+ * speed, but with fmod otherwise, to take constant time for any angle.
+ */
+double wrapTwoPi(double a)
+{
+    if (a < 0)
+        a += TWO_PI;
+    else if (a >= TWO_PI)
+        a -= TWO_PI;
+
+    if (a < 0 || a >= TWO_PI)
+    {
+        a = std::fmod(a, TWO_PI);
+        if (a < 0)
+            a += TWO_PI;
+        if (a >= TWO_PI) // Due to rounding of a + 2 pi for tiny negative a
+            a = 0;
+    }
+    return a;
+}
+
+} // namespace
 
 LaserRangeFinder::LaserRangeFinder() : a_min_(0), a_max_(0), range_min_(0), range_max_(0), num_beams_(0), angle_incr_(0)
 {
@@ -57,6 +84,10 @@ void LaserRangeFinder::RenderResult::renderLine(const Vec2& p1, const Vec2& p2)
             return;
     }
 
+    // Without beams, there is nothing to render (and the angle increment is zero)
+    if (lrf_->num_beams_ == 0 || lrf_->angle_incr_ <= 0)
+        return;
+
     // Back-face culling: only render lines which go counterclockwise, as seen from the sensor. Determined from the end
     // points themselves, as their (quantized) beam indices are not accurate enough.
     if (p1.cross(p2) <= 0)
@@ -65,15 +96,7 @@ void LaserRangeFinder::RenderResult::renderLine(const Vec2& p1, const Vec2& p2)
     // Get the angles of the end points relative to the minimum angle, normalized to [0, 2 pi), such that the
     // discontinuity lies at the start of the sensor range, instead of at +/- pi. This way, sensors with angles beyond
     // +/- pi are supported as well.
-    auto const relative_angle = [this](const Vec2& p)
-    {
-        double a = std::atan2(p.y, p.x) - lrf_->a_min_;
-        while (a < 0)
-            a += TWO_PI;
-        while (a >= TWO_PI)
-            a -= TWO_PI;
-        return a;
-    };
+    auto const relative_angle = [this](const Vec2& p) { return wrapTwoPi(std::atan2(p.y, p.x) - lrf_->a_min_); };
     double const a1 = relative_angle(p1);
     double const a2 = relative_angle(p2);
 
@@ -340,8 +363,6 @@ void LaserRangeFinder::calculateRays()
         angles_[i] = a;
         a += angle_incr_;
     }
-
-    i_half_circle_ = static_cast<uint>(std::acos(-1.0) / angle_incr_);
 }
 
 double LaserRangeFinder::getAngleIncrement() const
@@ -356,17 +377,7 @@ uint LaserRangeFinder::getAngleUpperIndex(double angle) const
 
 uint LaserRangeFinder::getAngleUpperIndex(double x, double y) const
 {
-    // Calculate the ray index corresponding to the cartesian point (x, y). The angle is normalized to
-    // (center - pi, center + pi], with center the middle of the sensor range. This way, sensors with angles beyond
-    // +/- pi are supported, while angles outside the sensor range are clamped to the nearest end of the range. For
-    // sensors which are symmetric around zero, this is equal to the range of atan2.
-    double const center = 0.5 * (a_min_ + a_max_);
-    double a = std::atan2(y, x);
-    while (a > center + (0.5 * TWO_PI))
-        a -= TWO_PI;
-    while (a <= center - (0.5 * TWO_PI))
-        a += TWO_PI;
-    return getAngleUpperIndex(a);
+    return std::min<uint>(num_beams_, std::max<int>(0, getAngleUpperIndexRaw(x, y)));
 }
 
 int LaserRangeFinder::getAngleUpperIndexRaw(double angle) const
@@ -377,8 +388,12 @@ int LaserRangeFinder::getAngleUpperIndexRaw(double angle) const
 
 int LaserRangeFinder::getAngleUpperIndexRaw(double x, double y) const
 {
-    // Calculate the ray index corresponding to the cartesian point (x, y)
-    return getAngleUpperIndexRaw(atan2(y, x));
+    // Calculate the ray index corresponding to the cartesian point (x, y). The angle is normalized to
+    // (center - pi, center + pi], with center the middle of the sensor range. This way, sensors with angles beyond
+    // +/- pi are supported, while angles outside the sensor range end up at the nearest end of the range. For
+    // sensors which are symmetric around zero, this is equal to the range of atan2.
+    double const upper = (0.5 * (a_min_ + a_max_)) + (0.5 * TWO_PI);
+    return getAngleUpperIndexRaw(upper - wrapTwoPi(upper - std::atan2(y, x)));
 }
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
