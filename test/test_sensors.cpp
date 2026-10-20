@@ -112,6 +112,53 @@ TEST(LRFRender, ObjectsAtTheEdgeOfTheAngleRange)
     EXPECT_GT(ranges[400], 0);
 }
 
+namespace
+{
+
+/**
+ * @brief Counts the lines which are rendered
+ */
+class CountingRenderResult : public geo::LaserRangeFinder::RenderResult
+{
+public:
+    explicit CountingRenderResult(std::vector<double>& ranges) : geo::LaserRangeFinder::RenderResult(ranges) {}
+
+    void renderLine(const geo::Vec2& p1, const geo::Vec2& p2) override
+    {
+        ++n_lines;
+        geo::LaserRangeFinder::RenderResult::renderLine(p1, p2);
+    }
+
+    unsigned int n_lines = 0;
+};
+
+} // namespace
+
+TEST(LRFRender, BlindSpotCulled)
+{
+    geo::LaserRangeFinder lrf;
+    lrf.setAngleLimits(-2.0, 2.0);
+    lrf.setNumBeams(401);
+    geo::Box const box(geo::Vector3(-0.5, -0.5, -0.5), geo::Vector3(0.5, 0.5, 0.5));
+
+    for (double const a : {2.3, M_PI, -2.3, 0.0, 2.08})
+    {
+        std::vector<double> ranges(401, 0);
+        CountingRenderResult res(ranges);
+        geo::LaserRangeFinder::RenderOptions opt;
+        opt.setMesh(box.getMesh(), geo::Pose3D(5 * std::cos(a), 5 * std::sin(a), 0));
+        lrf.render(opt, res);
+        if (std::abs(a) > 2.2)
+        {
+            EXPECT_EQ(res.n_lines, 0u) << "a = " << a; // Culled, before rendering any line
+        }
+        else
+        {
+            EXPECT_GT(res.n_lines, 0u) << "a = " << a;
+        }
+    }
+}
+
 TEST(LRFRender, HalfCircleIndexDifference)
 {
     // The difference of the (quantized) beam indices of the end points equals half a circle, while the angle between
@@ -342,6 +389,19 @@ TEST(DepthCameraRender, DefaultTriangleMapUntouched)
 
     // The default triangle map is shared, so it should not be filled when it is not requested
     EXPECT_TRUE(geo::EMPTY_TRIANGLE_MAP.empty());
+    EXPECT_TRUE(geo::EMPTY_POINTER_MAP.empty());
+}
+
+TEST(DepthCameraRender, DefaultPointerMapUntouched)
+{
+    geo::DepthCamera const cam(64, 48, 50, 50, 32, 24, 0, 0);
+    geo::Box const box(geo::Vector3(-0.5, -0.5, -0.5), geo::Vector3(0.5, 0.5, 0.5));
+
+    // A pointer, but the default pointer map, which is shared, so it should not be filled
+    int id = 0;
+    cv::Mat image = cv::Mat::zeros(48, 64, CV_32FC1);
+    cam.rasterize(box, geo::Pose3D(0, 0, -3), image, geo::EMPTY_POINTER_MAP, &id);
+    EXPECT_GT(cv::countNonZero(image), 0);
     EXPECT_TRUE(geo::EMPTY_POINTER_MAP.empty());
 }
 

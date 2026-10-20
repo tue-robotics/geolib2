@@ -118,11 +118,12 @@ class DefaultRenderResult : public RenderResult
 public:
     DefaultRenderResult(cv::Mat& image, void* pointer, PointerMap& pointer_map, TriangleMap& triangle_map) :
         geo::RenderResult(image.cols, image.rows), image_(image), pointer_(pointer), pointer_map_(pointer_map),
-        triangle_map_(triangle_map), fill_triangle_map_(&triangle_map != &EMPTY_TRIANGLE_MAP)
+        triangle_map_(triangle_map), fill_pointer_map_(pointer != nullptr && &pointer_map != &EMPTY_POINTER_MAP),
+        fill_triangle_map_(&triangle_map != &EMPTY_TRIANGLE_MAP)
     {
 
         // reserve pointer map. assign instead of resize, as resize does not change the size of existing columns
-        if (pointer_)
+        if (fill_pointer_map_)
         {
             if (pointer_map_.empty() || (int)pointer_map_.size() != image.cols ||
                 (int)pointer_map_[0].size() != image.rows)
@@ -152,6 +153,7 @@ protected:
     void* pointer_;
     PointerMap& pointer_map_;
     TriangleMap& triangle_map_;
+    bool fill_pointer_map_;
     bool fill_triangle_map_;
 };
 

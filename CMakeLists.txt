@@ -77,6 +77,9 @@ add_library(geolib SHARED
   src/visualization.cpp
 )
 
+# The public headers use C++17 (inline variables, __has_include)
+target_compile_features(geolib PUBLIC cxx_std_17)
+
 target_include_directories(geolib PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
   $<INSTALL_INTERFACE:include>

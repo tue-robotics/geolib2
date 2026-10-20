@@ -22,7 +22,7 @@ void DefaultRenderResult::renderPixel(int x, int y, float depth, int i_triangle)
     {
         image_.at<float>(y, x) = depth;
 
-        if (pointer_)
+        if (fill_pointer_map_)
         {
             pointer_map_[x][y] = pointer_;
         }
